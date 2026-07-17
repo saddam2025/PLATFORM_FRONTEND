@@ -1,0 +1,64 @@
+/* src/styles/tokens.css */
+:root {
+  /* Light mode tokens */
+  --bg-canvas: #f4f6f5;            /* page background */
+  --surface-default: #ffffff;      /* primary surface (cards, panels) */
+  --surface-muted: #fbfbfd;        /* subtle surfaces */
+  --surface-border: rgba(14,13,27,0.04);
+
+  --brand-50: #eef7f0;
+  --brand-100: #d9efe1;
+  --brand-200: #bfe6cc;
+  --brand-500: #1e5e43;            /* primary brand (Emerald) */
+  --brand-700: #174a35;
+
+  --ink-900: #0f1720;
+  --ink-700: #2b2f36;
+  --ink-500: #6b6f76;
+
+  --success-DEFAULT: #16A34A;
+  --danger-DEFAULT: #EF4444;
+  --info-DEFAULT: #0EA5E9;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --shadow-card: 0 2px 10px rgba(23,21,35,0.04);
+  --shadow-floating: 0 10px 40px -10px rgba(0,0,0,0.08);
+
+  /* Accessibility / misc */
+  --focus-ring: 0 6px 18px rgba(30,94,67,0.08);
+}
+
+/* Dark mode overrides */
+html.dark {
+  --bg-canvas: #0b0f13;            /* dark page background */
+  --surface-default: #131920;      /* dark surface */
+  --surface-muted: #0f1417;
+  --surface-border: rgba(255,255,255,0.04);
+
+  --brand-50: #0f2b22;
+  --brand-100: #0d2a20;
+  --brand-200: #0b241b;
+  --brand-500: #1e5e43;            /* keep brand hue but it reads differently on dark */
+  --brand-700: #153a2b;
+
+  --sidebar-bg: #09241a;           /* dedicated sidebar color in dark mode */
+  --ink-900: #E6EEF0;
+  --ink-700: #C7D3D1;
+
+  /* slightly stronger floating shadow for dark mode */
+  --shadow-card: 0 6px 24px rgba(0,0,0,0.5);
+  --shadow-floating: 0 10px 40px -10px rgba(0,0,0,0.18);
+
+  --focus-ring: 0 6px 18px rgba(30,94,67,0.12);
+}
+
+/* Utility classes that reference tokens (optional helpers) */
+.bg-surface-default { background-color: var(--surface-default); }
+.bg-canvas { background-color: var(--bg-canvas); }
+.text-ink-900 { color: var(--ink-900); }
+.text-ink-700 { color: var(--ink-700); }
+.shadow-card { box-shadow: var(--shadow-card); }
+.shadow-floating { box-shadow: var(--shadow-floating); }
+.radius-md { border-radius: var(--radius-md); }
