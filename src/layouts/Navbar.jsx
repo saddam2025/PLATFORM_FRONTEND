@@ -1,55 +1,64 @@
 // src/layouts/Navbar.jsx
-import React, { useContext } from 'react';
+import React from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ThemeContext } from '../contexts/ThemeProvider';
-import { AuthContext } from '../contexts/AuthProvider';
-import Avatar from '../components/ui/Avatar';
+// FIX: use the useAuth hook (matches convention used everywhere else in the
+// app) instead of useContext(AuthContext) directly.
+import { useAuth } from '../hooks/useAuth';
+import ThemeToggle from '../components/ui/ThemeToggle';
 import Button from '../components/ui/Button';
 
-export default function Navbar() {
-  const { theme, toggleTheme } = useContext(ThemeContext);
-  const { user, logout } = useContext(AuthContext);
+// Reduced-scope navbar per the redesign: only logo, theme toggle, and
+// EITHER (Login + Register) when logged out OR (notification bell) when
+// logged in — user avatar/name/logout all moved into the sidebar. A
+// hamburger button is also rendered here (mobile only) to open the sidebar,
+// since Layouts.jsx now controls that state and passes it down.
+export default function Navbar({ onOpenSidebar }) {
+  const { user } = useAuth() || {};
   const { instructorId } = useParams();
 
-  // FIX: '/select-instructor' was never a registered route — the instructor
-  // selector actually lives at '/' (InstructorSelectorPage.jsx's route export).
-  const homeLink = user
-    ? instructorId
-      ? `/${instructorId}`
-      : '/'
-    : '/';
+  const homeLink = instructorId ? `/${instructorId}` : '/';
 
   return (
-    <div className="navbar px-4 lg:px-6 h-16 flex items-center justify-between">
-      <div className="flex items-center gap-4">
-        <Link to={homeLink} className="inline-flex items-center gap-3">
-          <img src="/src/assets/vite.svg" alt="logo" className="w-8 h-8" />
-          <span className="text-lg font-semibold">Mathematics</span>
+    <div className="navbar sticky top-0 z-30 backdrop-blur-md bg-surface-default/80 border-b border-surface-border px-4 lg:px-6 h-16 flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={onOpenSidebar}
+          className="lg:hidden p-2 rounded-full text-ink-700 hover:bg-surface-muted transition-colors active:scale-95"
+          aria-label="فتح القائمة"
+        >
+          <span className="material-symbols-outlined">menu</span>
+        </button>
+
+        <Link to={homeLink} className="inline-flex items-center gap-2">
+          <span className="font-headline-md text-headline-md font-bold text-brand-700">رياضياتي</span>
         </Link>
       </div>
 
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="sm" onClick={toggleTheme} aria-label="Toggle theme">
-          {theme === 'dark' ? 'وضع فاتح' : 'وضع داكن'}
-        </Button>
+        <ThemeToggle />
 
         {user ? (
-          <div className="flex items-center gap-3">
-            <div className="text-right">
-              <div className="text-sm font-medium">{user.name}</div>
-              <div className="text-xs text-ink-500">{user.email}</div>
-            </div>
-            <Avatar src={user.avatar} name={user.name} size="sm" status={user.online ? 'online' : 'offline'} />
-            <Button variant="ghost" size="sm" onClick={logout}>
-              تسجيل الخروج
-            </Button>
-          </div>
+          <button
+            type="button"
+            className="relative p-2 rounded-full text-ink-700 hover:bg-surface-muted transition-colors active:scale-95"
+            aria-label="الإشعارات"
+          >
+            <span className="material-symbols-outlined">notifications</span>
+            {/* Unread-count dot — static for now; wire to the real
+                notifications endpoint once it exists on the backend. */}
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-danger-DEFAULT" />
+          </button>
         ) : (
           <div className="flex items-center gap-2">
             <Link to="/login">
               <Button variant="ghost" size="sm">تسجيل الدخول</Button>
             </Link>
-            <Link to="/register">
+            {/* FIX: previously linked to "/register", but that route is
+                actually scoped as "/:instructorId/register" and requires an
+                instructorId — a bare "/register" 404s. Registration always
+                starts from the instructor selector at "/". */}
+            <Link to="/">
               <Button variant="primary" size="sm">إنشاء حساب</Button>
             </Link>
           </div>

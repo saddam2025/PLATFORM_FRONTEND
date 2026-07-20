@@ -1,64 +1,139 @@
-/* src/styles/tokens.css */
 :root {
-  /* Light mode tokens */
-  --bg-canvas: #f4f6f5;            /* page background */
-  --surface-default: #ffffff;      /* primary surface (cards, panels) */
-  --surface-muted: #fbfbfd;        /* subtle surfaces */
-  --surface-border: rgba(14,13,27,0.04);
+  /* ============================================================
+     LIGHT MODE — values extracted directly from the real Stitch exports
+     (login, register, landing, stage-select, plan, grading screens),
+     mapped onto our existing semantic token names.
+     ============================================================ */
 
-  --brand-50: #eef7f0;
-  --brand-100: #d9efe1;
-  --brand-200: #bfe6cc;
-  --brand-500: #1e5e43;            /* primary brand (Emerald) */
-  --brand-700: #174a35;
+  /* Ink / text */
+  --ink-900: #1C1A28; /* Stitch: on-surface */
+  --ink-800: #2E2B3D;
+  --ink-700: #4F4634; /* Stitch: on-surface-variant */
+  --ink-600: #6B6658;
+  --ink-500: #817661; /* Stitch: outline */
+  --ink-400: #9C9686;
+  --ink-300: #D2C5AD; /* Stitch: outline-variant */
+  --ink-200: #E3DDD0;
+  --ink-100: #F0ECE3;
+  --ink-50: #F7F5F0;
 
-  --ink-900: #0f1720;
-  --ink-700: #2b2f36;
-  --ink-500: #6b6f76;
+  /* Surfaces */
+  --surface-canvas: #FDF8FF; /* Stitch: surface / background */
+  --surface-default: #FFFFFF; /* Stitch: surface-container-lowest */
+  --surface-muted: #F7F1FF; /* Stitch: surface-container-low */
+  --surface-border: #E5E0F4; /* Stitch: surface-variant */
 
-  --success-DEFAULT: #16A34A;
-  --danger-DEFAULT: #EF4444;
-  --info-DEFAULT: #0EA5E9;
+  /* Brand (gold) — already matched Stitch's primary-container exactly */
+  --brand-50: #FFFBEA;
+  --brand-100: #FFF6CC;
+  --brand-200: #FFEDA0;
+  --brand-300: #FFE070;
+  --brand-400: #FFD24A;
+  --brand-500: #FFC839;
+  --brand-600: #F0B300;
+  --brand-700: #C98F00;
 
+  /* Teal — real recurring light-mode accent (checkmarks, positive icons),
+     distinct from brand's own dark-mode gold->teal swap below. */
+  --teal-DEFAULT: #006B5F;
+  --teal-soft: #5BE5D2;
+
+  /* Sidebar — fixed brand color, same in light and dark mode (not
+     redefined in the html.dark block below). */
+  --sidebar-bg: #396756;
+  --sidebar-bg-soft: #46806B;
+
+  /* Navy */
+  --navy-500: #4B3F6B;
+  --navy-700: #2A2340;
+  --navy-900: #1E1A2E;
+
+  /* Semantic */
+  --success-soft: #E6F6EA;
+  --success-DEFAULT: #2FAE60;
+  --success-text: #279A54;
+  --info-soft: #EAF1FF;
+  --info-DEFAULT: #3B7CF6;
+  --danger-soft: #FDEBEA;
+  --danger-DEFAULT: #F0483E;
+  --sage-soft: #EEF6DE;
+  --sage-bar: #B7DD7C;
+  --sage-text: #5C8A2E;
+
+  /* Radii */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
-  --shadow-card: 0 2px 10px rgba(23,21,35,0.04);
-  --shadow-floating: 0 10px 40px -10px rgba(0,0,0,0.08);
 
-  /* Accessibility / misc */
-  --focus-ring: 0 6px 18px rgba(30,94,67,0.08);
+  /* Shadows — gold-tinted glow matches the light-mode brand color */
+  --shadow-card: 0 2px 10px rgba(28, 26, 40, 0.05);
+  --shadow-soft: 0 8px 24px rgba(28, 26, 40, 0.06);
+  --shadow-panel: 0 20px 60px rgba(28, 26, 40, 0.08);
+  --shadow-pop: 0 4px 20px -2px rgba(255, 200, 57, 0.4);
+  --shadow-glow: 0 6px 25px -2px rgba(255, 200, 57, 0.6);
+
+  /* Spacing tokens */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
 }
 
-/* Dark mode overrides */
+/* ============================================================
+   DARK MODE — "Black Blue": near-black blue backgrounds, Teal as the
+   primary accent for active elements/buttons (replaces gold `brand-500`
+   automatically wherever a page uses bg-brand-500 / text-brand-700 / etc).
+   Sidebar intentionally NOT overridden here — it's a constant brand
+   element, matching the same emerald in both themes.
+   ============================================================ */
 html.dark {
-  --bg-canvas: #0b0f13;            /* dark page background */
-  --surface-default: #131920;      /* dark surface */
-  --surface-muted: #0f1417;
-  --surface-border: rgba(255,255,255,0.04);
+  --ink-900: #F5F7FA;
+  --ink-800: #E3E7EF;
+  --ink-700: #C7CEDB;
+  --ink-600: #A9B2C4;
+  --ink-500: #8B93A7;
+  --ink-400: #6B7387;
+  --ink-300: #4B5468;
+  --ink-200: #333B4D;
+  --ink-100: #232938;
+  --ink-50: #161B27;
 
-  --brand-50: #0f2b22;
-  --brand-100: #0d2a20;
-  --brand-200: #0b241b;
-  --brand-500: #1e5e43;            /* keep brand hue but it reads differently on dark */
-  --brand-700: #153a2b;
+  --surface-canvas: #05070C;
+  --surface-default: #0B1220;
+  --surface-muted: #0F1626;
+  --surface-border: rgba(255, 255, 255, 0.08);
 
-  --sidebar-bg: #09241a;           /* dedicated sidebar color in dark mode */
-  --ink-900: #E6EEF0;
-  --ink-700: #C7D3D1;
+  --brand-50: #E6FFFB;
+  --brand-100: #CCFBF4;
+  --brand-200: #99F6E4;
+  --brand-300: #5EEAD4;
+  --brand-400: #2DD4BF;
+  --brand-500: #14B8A6;
+  --brand-600: #0D9488;
+  --brand-700: #0F766E;
 
-  /* slightly stronger floating shadow for dark mode */
-  --shadow-card: 0 6px 24px rgba(0,0,0,0.5);
-  --shadow-floating: 0 10px 40px -10px rgba(0,0,0,0.18);
+  /* Brighter teal for contrast against the near-black canvas */
+  --teal-DEFAULT: #2DD4BF;
+  --teal-soft: #5EEAD4;
 
-  --focus-ring: 0 6px 18px rgba(30,94,67,0.12);
+  --navy-500: #8AA0FF;
+  --navy-700: #A8B8FF;
+  --navy-900: #C6D1FF;
+
+  --success-soft: rgba(52, 211, 153, 0.15);
+  --success-DEFAULT: #34D399;
+  --success-text: #6EE7B7;
+  --info-soft: rgba(96, 165, 250, 0.15);
+  --info-DEFAULT: #60A5FA;
+  --danger-soft: rgba(248, 113, 113, 0.15);
+  --danger-DEFAULT: #F87171;
+  --sage-soft: rgba(163, 230, 53, 0.12);
+  --sage-bar: #A3E635;
+  --sage-text: #BEF264;
+
+  --shadow-card: 0 2px 10px rgba(0, 0, 0, 0.6);
+  --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-panel: 0 20px 60px rgba(0, 0, 0, 0.55);
+  --shadow-pop: 0 4px 20px -2px rgba(20, 184, 166, 0.45);
+  --shadow-glow: 0 6px 25px -2px rgba(20, 184, 166, 0.65);
 }
-
-/* Utility classes that reference tokens (optional helpers) */
-.bg-surface-default { background-color: var(--surface-default); }
-.bg-canvas { background-color: var(--bg-canvas); }
-.text-ink-900 { color: var(--ink-900); }
-.text-ink-700 { color: var(--ink-700); }
-.shadow-card { box-shadow: var(--shadow-card); }
-.shadow-floating { box-shadow: var(--shadow-floating); }
-.radius-md { border-radius: var(--radius-md); }
