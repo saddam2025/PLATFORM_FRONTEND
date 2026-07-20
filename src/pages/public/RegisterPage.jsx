@@ -21,23 +21,78 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen bg-surface-canvas text-ink-900" dir="rtl">
-      <header className="bg-surface-default border-b border-surface-border">
-        <div className="container mx-auto px-4 py-6 flex items-center gap-4">
-          <Avatar src={instructor?.avatar} name={instructor?.name || 'المدرس'} size="md" />
-          <div className="text-right">
-            <h1 className="text-2xl font-semibold">إنشاء حساب جديد</h1>
-            <p className="text-sm text-ink-500 mt-1">
-              {instructor?.name ? `${instructor.name} — إنشاء حساب جديد` : 'إنشاء حساب جديد'}
+      <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
+        {/* Promo panel */}
+        <aside className="relative hidden overflow-hidden p-10 lg:flex lg:flex-col lg:justify-between" style={{ backgroundColor: 'var(--color-sidebar)' }}>
+          <div className="pointer-events-none absolute inset-0 bg-geo-pattern-inverse" />
+          <div
+            className="pointer-events-none absolute -bottom-20 -left-20 h-72 w-72 rounded-full opacity-20 blur-3xl"
+            style={{ backgroundColor: 'var(--color-accent)' }}
+          />
+
+          <div className="relative z-10 flex items-center gap-3">
+            <Avatar src={instructor?.avatar} name={instructor?.name || 'المدرس'} size="md" />
+            <div className="text-right" style={{ color: 'var(--color-sidebar-ink)' }}>
+              <div className="text-lg font-bold">{instructor?.name || 'رياضياتي'}</div>
+              <div className="text-xs" style={{ color: 'var(--color-sidebar-ink-muted)' }}>منصة التعلّم الذكي</div>
+            </div>
+          </div>
+
+          <div className="relative z-10 space-y-4">
+            <span
+              className="inline-flex rounded-full px-4 py-1.5 text-xs font-semibold"
+              style={{ backgroundColor: 'var(--color-accent)', color: 'var(--color-accent-ink)' }}
+            >
+              ابدأ رحلتك التعليمية
+            </span>
+            <h2 className="font-display text-3xl leading-snug text-balance" style={{ color: 'var(--color-sidebar-ink)' }}>
+              تابع رحلتهم التعليمية
+            </h2>
+            <p className="max-w-md text-sm leading-relaxed" style={{ color: 'var(--color-sidebar-ink-muted)' }}>
+              انضم إلى مجتمع التعلّم الذكي وتابع تقدمك خطوةً بخطوة مع أفضل المحتوى التعليمي المصمّم خصيصًا لك.
             </p>
           </div>
-        </div>
-      </header>
 
-      <main className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
-          <RegisterForm instructorId={instructorId} />
-        </div>
-      </main>
+          <div className="relative z-10 flex gap-3">
+            <div className="flex items-center gap-2 rounded-2xl px-4 py-2.5" style={{ backgroundColor: 'rgba(255,255,255,0.08)', color: 'var(--color-sidebar-ink)' }}>
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" style={{ color: 'var(--color-accent)' }}>
+                <path d="M4 6h16v12H4z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+                <path d="M8 10h8M8 14h5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+              </svg>
+              <span className="text-sm font-semibold">محتوى متكامل</span>
+            </div>
+            <div className="flex items-center gap-2 rounded-2xl px-4 py-2.5" style={{ backgroundColor: 'rgba(255,255,255,0.08)', color: 'var(--color-sidebar-ink)' }}>
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" style={{ color: 'var(--color-accent)' }}>
+                <path d="M4 19V5M10 19v-8M16 19v-5M20 19V9" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+              </svg>
+              <span className="text-sm font-semibold">تتبّع التقدّم</span>
+            </div>
+          </div>
+        </aside>
+
+        {/* Form panel */}
+        <main className="flex items-center justify-center px-4 py-10 sm:px-8">
+          <div className="w-full max-w-md">
+            <div className="mb-8 flex items-center gap-4 lg:hidden">
+              <Avatar src={instructor?.avatar} name={instructor?.name || 'المدرس'} size="md" />
+              <div className="text-right">
+                <h1 className="text-xl font-bold text-ink-900">إنشاء حساب جديد</h1>
+              </div>
+            </div>
+
+            <div className="mb-8 hidden text-right lg:block">
+              <h1 className="font-display text-3xl font-bold text-ink-900">حساب جديد</h1>
+              <p className="mt-2 text-sm text-ink-500">
+                {instructor?.name ? `${instructor.name} — إنشاء حساب جديد` : 'انضم إلى مجتمع التعلّم الذكي وتابع تقدّمك'}
+              </p>
+            </div>
+
+            <div className="rounded-3xl bg-surface-default p-6 shadow-card sm:p-8">
+              <RegisterForm instructorId={instructorId} />
+            </div>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

@@ -53,24 +53,51 @@ export default function CourseManagementPage() {
   };
 
   return (
-    <div dir="rtl" className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
+    <div dir="rtl" className="space-y-8">
+      {/* Page header */}
+      <div className="flex items-start justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-ink-900">إدارة الدورات</h1>
-          <p className="text-sm text-ink-500 mt-1">{courses.length} دورة إجمالاً</p>
+          <h1 className="font-display text-3xl font-bold text-ink-900">إدارة الكورسات</h1>
+          <p className="text-sm text-ink-500 mt-2 leading-relaxed">
+            إدارة وتحديث جميع الدورات التعليمية المتاحة على المنصة.
+          </p>
         </div>
         <Button variant="primary" onClick={() => navigate(`/${instructorId}/admin/courses/edit/new`)}>
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+            <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
           دورة جديدة
         </Button>
       </div>
 
-      {/* Search / filter */}
-      <div className="max-w-sm">
-        <Input
-          placeholder="ابحث بعنوان الدورة..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      {/* Toolbar: sort / filter / search */}
+      <div className="bg-surface-default rounded-2xl shadow-card p-4 flex items-center gap-3 flex-wrap">
+        <Button variant="subtle" size="sm">
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+            <path d="M3 6h18M6 12h12M10 18h4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+          </svg>
+          ترتيب
+        </Button>
+        <Button variant="subtle" size="sm">
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+            <path d="M4 5h16l-6 8v5l-4 2v-7L4 5z" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          تصفية
+        </Button>
+        <div className="relative flex-1 min-w-[220px]">
+          <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-ink-400">
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+              <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.7" />
+              <path d="M20 20l-3-3" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+            </svg>
+          </span>
+          <Input
+            className="pr-12"
+            placeholder="البحث عن كورس بواسطة العنوان، المرحلة، أو التصنيف..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
       </div>
 
       {/* Table */}
@@ -78,50 +105,71 @@ export default function CourseManagementPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-right">
             <thead>
-              <tr className="border-b border-surface-border text-ink-500">
-                <th className="px-4 py-3 font-medium">العنوان</th>
-                <th className="px-4 py-3 font-medium">المرحلة</th>
-                <th className="px-4 py-3 font-medium">الفئة</th>
-                <th className="px-4 py-3 font-medium">السعر</th>
-                <th className="px-4 py-3 font-medium">عدد الطلاب</th>
-                <th className="px-4 py-3 font-medium">الحالة</th>
-                <th className="px-4 py-3 font-medium">إجراءات</th>
+              <tr className="bg-surface-muted/60 text-ink-500">
+                <th className="px-5 py-4 font-medium">العنوان</th>
+                <th className="px-5 py-4 font-medium">المرحلة</th>
+                <th className="px-5 py-4 font-medium">التصنيف</th>
+                <th className="px-5 py-4 font-medium">السعر</th>
+                <th className="px-5 py-4 font-medium">عدد الطلاب</th>
+                <th className="px-5 py-4 font-medium">الحالة</th>
+                <th className="px-5 py-4 font-medium">إجراءات</th>
               </tr>
             </thead>
             <tbody>
               {filteredCourses.map((course) => (
-                <tr key={course.id} className="border-b border-surface-border last:border-b-0">
-                  <td className="px-4 py-3 text-ink-900 font-medium">{course.title}</td>
-                  <td className="px-4 py-3 text-ink-700">{course.stage}</td>
-                  <td className="px-4 py-3 text-ink-700">{course.category}</td>
-                  <td className="px-4 py-3 text-ink-700">{formatPrice(course.price)}</td>
-                  <td className="px-4 py-3 text-ink-700">{course.studentsEnrolled.toLocaleString('ar-EG')}</td>
-                  <td className="px-4 py-3">
-                    <button
-                      type="button"
-                      onClick={() => handleTogglePublish(course.id)}
-                      role="switch"
-                      aria-checked={course.isPublished}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        course.isPublished ? 'bg-success-DEFAULT' : 'bg-surface-muted'
-                      }`}
-                    >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          course.isPublished ? '-translate-x-1' : '-translate-x-6'
+                <tr
+                  key={course.id}
+                  className="border-t border-surface-border/70 transition-colors hover:bg-surface-muted/40"
+                >
+                  <td className="px-5 py-4">
+                    <div className="flex items-center gap-3">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-500/12 text-brand-600">
+                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                          <path d="M4 5h16v14H4z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+                          <path d="M8 9h8M8 13h5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                        </svg>
+                      </span>
+                      <span className="font-semibold text-ink-900">{course.title}</span>
+                    </div>
+                  </td>
+                  <td className="px-5 py-4 text-ink-700">{course.stage}</td>
+                  <td className="px-5 py-4">
+                    <span className="inline-flex rounded-full bg-surface-muted px-3 py-1 text-xs text-ink-600">
+                      {course.category}
+                    </span>
+                  </td>
+                  <td className="px-5 py-4">
+                    <span className="font-bold text-ink-900">{formatPrice(course.price)}</span>
+                  </td>
+                  <td className="px-5 py-4 text-ink-700 font-medium">
+                    {course.studentsEnrolled.toLocaleString('ar-EG')}
+                  </td>
+                  <td className="px-5 py-4">
+                    <div className="flex flex-col items-start gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleTogglePublish(course.id)}
+                        role="switch"
+                        aria-checked={course.isPublished}
+                        className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
+                          course.isPublished ? 'bg-success-DEFAULT' : 'bg-surface-muted'
                         }`}
-                      />
-                    </button>
-                    <div className="mt-1">
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                            course.isPublished ? '-translate-x-1' : '-translate-x-6'
+                          }`}
+                        />
+                      </button>
                       <Badge variant={course.isPublished ? 'success' : 'neutral'}>
                         {course.isPublished ? 'منشورة' : 'مسودة'}
                       </Badge>
                     </div>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-5 py-4">
                     {confirmingDeleteId === course.id ? (
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-ink-700">تأكيد الحذف؟</span>
+                      <div className="flex items-center gap-2 rounded-xl bg-danger-DEFAULT/8 px-3 py-2">
+                        <span className="text-xs font-medium text-danger-DEFAULT">تأكيد الحذف؟</span>
                         <Button variant="primary" size="sm" onClick={() => handleDelete(course.id)}>
                           نعم
                         </Button>
@@ -130,21 +178,27 @@ export default function CourseManagementPage() {
                         </Button>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1">
                         <Button
                           variant="ghost"
                           size="sm"
+                          aria-label="تعديل"
                           onClick={() => navigate(`/${instructorId}/admin/courses/edit/${course.id}`)}
                         >
-                          تعديل
+                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                            <path d="M4 20h4l10-10-4-4L4 16v4z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+                          </svg>
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
                           className="text-danger-DEFAULT"
+                          aria-label="حذف"
                           onClick={() => setConfirmingDeleteId(course.id)}
                         >
-                          حذف
+                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                            <path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
                         </Button>
                       </div>
                     )}
@@ -154,13 +208,36 @@ export default function CourseManagementPage() {
 
               {filteredCourses.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-ink-500">
+                  <td colSpan={7} className="px-4 py-12 text-center text-ink-500">
                     لا توجد دورات مطابقة للبحث
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Footer / pagination */}
+        <div className="flex items-center justify-between gap-4 border-t border-surface-border/70 px-5 py-4">
+          <span className="text-xs text-ink-500">
+            عرض 1 - {filteredCourses.length} من {courses.length} كورس
+          </span>
+          <div className="flex items-center gap-1">
+            <button className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-500 hover:bg-surface-muted" aria-label="التالي">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                <path d="M15 6l-6 6 6 6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+            <button className="flex h-8 min-w-8 items-center justify-center rounded-lg bg-accent px-2 text-sm font-semibold text-accent-ink">1</button>
+            <button className="flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-sm text-ink-600 hover:bg-surface-muted">2</button>
+            <button className="flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-sm text-ink-600 hover:bg-surface-muted">3</button>
+            <span className="px-1 text-ink-400">…</span>
+            <button className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-500 hover:bg-surface-muted" aria-label="السابق">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
     </div>

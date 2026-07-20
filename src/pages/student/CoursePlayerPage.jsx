@@ -110,50 +110,69 @@ export default function CoursePlayerPage() {
   return (
     <div className="min-h-screen bg-surface-canvas text-ink-900" dir="rtl">
       <div className="container mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Playlist */}
         <aside className="lg:col-span-1 order-2 lg:order-1">
-          <div className="rounded-2xl bg-surface-default shadow-card p-4">
-            <div className="flex items-center justify-between mb-3">
-              <div className="text-sm text-ink-500">محتوى الدورة</div>
-              <div className="text-xs text-ink-500">{items.length} عناصر</div>
+          <div className="rounded-3xl bg-surface-default shadow-card p-5">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-brand-600">
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                    <path d="M4 5h16M4 12h16M4 19h10" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+                  </svg>
+                </span>
+                <div className="text-sm font-bold text-ink-900">محتوى الدورة</div>
+              </div>
+              <div className="rounded-full bg-surface-muted px-2.5 py-1 text-xs text-ink-500">{items.length} عناصر</div>
             </div>
 
-            <div className="space-y-2">
-              {computed.map((it) => (
+            <div className="space-y-2.5">
+              {computed.map((it, idx) => (
                 <div
                   key={it.id}
-                  className={`flex items-center justify-between gap-3 p-3 rounded-md ${it.locked ? 'bg-surface-muted text-ink-500' : 'hover:bg-surface-muted cursor-pointer'}`}
+                  className={`flex items-center justify-between gap-3 rounded-2xl border p-3 transition-colors ${
+                    it.locked
+                      ? 'border-transparent bg-surface-muted/50 text-ink-400'
+                      : idx === 0
+                        ? 'border-accent/40 bg-accent/8 cursor-pointer'
+                        : 'border-surface-border bg-surface-default hover:bg-surface-muted/50 cursor-pointer'
+                  }`}
                   onClick={() => {
                     if (it.locked) return;
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 flex items-center justify-center rounded bg-white/5">
+                    <div
+                      className={`flex h-9 w-9 items-center justify-center rounded-xl ${
+                        it.locked ? 'bg-surface-muted text-ink-400' : 'bg-brand-500/12 text-brand-600'
+                      }`}
+                    >
                       {it.type === 'lesson' && (
-                        <svg className="w-4 h-4 text-brand-500" viewBox="0 0 24 24" fill="none">
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
                           <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       )}
                       {it.type === 'quiz' && (
-                        <svg className="w-4 h-4 text-brand-500" viewBox="0 0 24 24" fill="none">
-                          <path d="M12 2v20M2 12h20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                          <path d="M9 11l3 3 5-6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                          <rect x="4" y="4" width="16" height="16" rx="3" stroke="currentColor" strokeWidth="1.5" />
                         </svg>
                       )}
                       {it.type === 'assignment' && (
-                        <svg className="w-4 h-4 text-brand-500" viewBox="0 0 24 24" fill="none">
-                          <path d="M7 7h10v10H7z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                          <path d="M5 4h14v16l-7-3-7 3z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
                         </svg>
                       )}
                     </div>
                     <div className="text-sm">
-                      <div className="font-medium text-ink-900">{it.title}</div>
+                      <div className="font-semibold text-ink-900">{it.title}</div>
                       <div className="text-xs text-ink-500">نوع: {it.type}</div>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2">
                     {it.locked ? (
-                      <div className="text-xs text-ink-500 flex items-center gap-1">
+                      <div className="flex items-center gap-1 text-xs text-ink-400">
                         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
                           <path d="M12 17v-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                           <rect x="4" y="10" width="16" height="10" rx="2" stroke="currentColor" strokeWidth="1.5" />
@@ -170,15 +189,19 @@ export default function CoursePlayerPage() {
           </div>
         </aside>
 
-        <section className="lg:col-span-3 order-1 lg:order-2">
-          <div className="rounded-2xl bg-surface-default shadow-card p-4">
-            <div className="flex items-center justify-between mb-3">
+        {/* Player */}
+        <section className="lg:col-span-3 order-1 lg:order-2 space-y-5">
+          <div className="rounded-3xl bg-surface-default shadow-card p-5">
+            <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Avatar src={null} name={user?.name || 'طالب'} size="sm" />
-                <div className="text-sm text-ink-900 font-medium">مشغل الدورة</div>
+                <div>
+                  <div className="text-sm font-bold text-ink-900">مشاهدة المحاضرة</div>
+                  <div className="text-xs text-ink-500">{user?.name || 'طالب'}</div>
+                </div>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 {!isExpired && !isLimitReached && (
                   <>
                     <Badge variant="info" className="text-xs">المشاهدات المتبقية: {remainingViews}</Badge>
@@ -189,26 +212,25 @@ export default function CoursePlayerPage() {
             </div>
 
             {(isExpired || isLimitReached) ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <div className="mb-4">
-                  <svg className="w-16 h-16 text-ink-500" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 2v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M6 8v10a2 2 0 002 2h8a2 2 0 002-2V8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    <rect x="8" y="10" width="8" height="6" rx="1" stroke="currentColor" strokeWidth="1.5" />
+              <div className="flex flex-col items-center justify-center rounded-2xl bg-surface-muted/40 py-16 text-center">
+                <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-danger-DEFAULT/10 text-danger-DEFAULT">
+                  <svg className="w-10 h-10" viewBox="0 0 24 24" fill="none">
+                    <path d="M6 10V8a6 6 0 1112 0v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                    <rect x="4" y="10" width="16" height="11" rx="2" stroke="currentColor" strokeWidth="1.5" />
                   </svg>
                 </div>
 
-                <div className="text-lg font-semibold text-ink-900 mb-2">
+                <div className="mb-2 text-lg font-bold text-ink-900">
                   {isExpired ? 'انتهت صلاحية الوصول لهذه المحاضرة' : 'لقد استنفدت عدد مرات المشاهدة المسموحة'}
                 </div>
-                <div className="text-sm text-ink-500 mb-4">
+                <div className="mb-5 max-w-md text-sm text-ink-500">
                   {isExpired ? 'يرجى تجديد الاشتراك للوصول إلى هذه المحاضرة.' : 'يمكنك التواصل مع الدعم لطلب تمديد أو شراء مشاهدة إضافية.'}
                 </div>
                 <Button variant="primary" onClick={handleContactSupport}>تواصل مع الدعم</Button>
               </div>
             ) : (
               <>
-                <div className="relative w-full overflow-hidden rounded-lg bg-black">
+                <div className="relative w-full overflow-hidden rounded-2xl bg-black ring-1 ring-black/40">
                   <video
                     className="w-full h-auto max-h-[60vh] bg-black"
                     controls
@@ -224,22 +246,39 @@ export default function CoursePlayerPage() {
                     {`${user?.name || 'طالب'} - ${user?.id || '---'}`}
                   </div>
                 </div>
-
-                <div className="mt-4 flex items-center justify-between gap-4">
-                  <div className="text-right">
-                    <div className="text-lg font-semibold text-ink-900">عنوان المحاضرة الحالية</div>
-                    <div className="text-sm text-ink-600 mt-1">وصف قصير للمحاضرة يوضح النقاط الأساسية والنتائج المتوقعة.</div>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    {/* FIX: Button has no "outline" variant */}
-                    <Button variant="ghost" onClick={goToAssignment}>الواجب</Button>
-                    <Button variant="primary" onClick={goToQuiz}>الاختبار</Button>
-                  </div>
-                </div>
               </>
             )}
           </div>
+
+          {!isExpired && !isLimitReached && (
+            <div className="rounded-3xl bg-surface-default shadow-card p-6">
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+                <div className="text-right">
+                  <h1 className="font-display text-2xl font-bold text-ink-900">عنوان المحاضرة الحالية</h1>
+                  <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-600">
+                    وصف قصير للمحاضرة يوضح النقاط الأساسية والنتائج المتوقعة.
+                  </p>
+                </div>
+
+                <div className="flex shrink-0 items-center gap-3">
+                  {/* FIX: Button has no "outline" variant */}
+                  <Button variant="ghost" onClick={goToAssignment}>
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                      <path d="M5 4h14v16l-7-3-7 3z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+                    </svg>
+                    الواجب
+                  </Button>
+                  <Button variant="primary" onClick={goToQuiz}>
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                      <path d="M9 11l3 3 5-6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                      <rect x="4" y="4" width="16" height="16" rx="3" stroke="currentColor" strokeWidth="1.6" />
+                    </svg>
+                    الاختبار
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </section>
       </div>
     </div>

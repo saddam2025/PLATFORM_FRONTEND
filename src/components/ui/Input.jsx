@@ -5,17 +5,22 @@ import clsx from 'clsx';
 export default function Input({ className, error, icon, ...rest }) {
   return (
     <div className={clsx('relative', className)}>
-      {icon && <div className="absolute inset-y-0 end-3 flex items-center pointer-events-none">{icon}</div>}
+      {icon && (
+        <div className="absolute inset-y-0 end-4 flex items-center pointer-events-none text-ink-400">
+          {icon}
+        </div>
+      )}
       <input
         {...rest}
         className={clsx(
-          'input w-full',
-          icon ? 'pr-10' : '',
-          error ? 'border-danger-DEFAULT' : ''
+          'input w-full rounded-lg py-3 px-4 text-base placeholder:text-ink-400',
+          'transition-all duration-200 ease-soft',
+          icon ? 'pe-11' : '',
+          error ? 'border-danger-DEFAULT focus:!shadow-none focus:!border-danger-DEFAULT' : ''
         )}
         aria-invalid={Boolean(error)}
       />
-      {error && <p className="text-xs text-danger-DEFAULT mt-1">{error}</p>}
+      {error && <p className="text-xs text-danger-DEFAULT mt-1.5 ps-1">{error}</p>}
     </div>
   );
 }

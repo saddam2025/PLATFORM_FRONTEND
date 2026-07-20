@@ -18,12 +18,12 @@ export default function ThemeToggle({ className = '' }) {
       role="switch"
       aria-checked={isDark}
       aria-label={isDark ? 'التبديل إلى الوضع الفاتح' : 'التبديل إلى الوضع الداكن'}
-      className={`relative inline-flex h-8 w-14 items-center rounded-pill transition-colors duration-300 active:scale-95
-        ${isDark ? 'bg-gradient-to-l from-surface-muted to-brand-700' : 'bg-gradient-to-l from-brand-200 to-brand-500'}
+      className={`relative inline-flex h-8 w-14 items-center rounded-pill transition-colors duration-300 active:scale-95 ring-1 ring-inset ring-black/5
+        ${isDark ? 'bg-surface-muted' : 'bg-brand-200'}
         ${className}`}
     >
       <span
-        className={`absolute top-1 flex h-6 w-6 items-center justify-center rounded-full bg-surface-default shadow-soft
+        className={`absolute top-1 flex h-6 w-6 items-center justify-center rounded-full bg-surface-DEFAULT shadow-soft
           transition-transform duration-300 ease-soft
           ${isDark ? 'translate-x-1' : 'translate-x-7'}`}
       >
