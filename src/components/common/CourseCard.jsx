@@ -16,46 +16,45 @@ export default function CourseCard({
   const displayPrice = price ?? course.price;
 
   return (
-    <article className="card p-4 flex gap-4 items-start animate-fadeIn">
-      <div className="w-20 h-20 flex-shrink-0">
-        <img
-          src={course.image || '/src/assets/vite.svg'}
-          alt={course.title}
-          className="w-full h-full object-cover rounded-lg"
-        />
-      </div>
-
-      <div className="flex-1 min-w-0">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h3 className="text-lg font-semibold truncate">{course.title}</h3>
-            <p className="text-sm text-ink-500 truncate mt-1">{course.subtitle}</p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {displayPrice != null && (
-              <Badge variant="brand">{displayPrice} ج.م</Badge>
-            )}
-            {course.level && <Badge variant={course.levelVariant || 'info'}>{course.level}</Badge>}
-          </div>
+    <article className="rounded-[var(--radius-lg)] border border-surface-border bg-surface-default p-4 shadow-card transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-soft overflow-hidden animate-fadeIn">
+      <div className="flex items-start gap-4">
+        <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-3xl bg-surface-muted">
+          <img
+            src={course.image || '/src/assets/vite.svg'}
+            alt={course.title}
+            className="h-full w-full object-cover"
+          />
         </div>
 
-        <div className="mt-3 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <Avatar src={course.instructor?.avatar} name={course.instructor?.name} size="sm" />
-            <div className="text-sm">
-              <div className="font-medium">{course.instructor?.name || 'مدرس غير معروف'}</div>
-              <div className="text-ink-500 text-xs">{course.lessonsCount ?? 0} درس · {course.tasksCount ?? 0} واجبات</div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <h3 className="text-lg font-semibold text-ink-900 truncate">{course.title}</h3>
+              <p className="text-sm text-ink-500 mt-2 line-clamp-2">{course.subtitle}</p>
+            </div>
+            <div className="flex flex-col items-end gap-2">
+              {displayPrice != null && <Badge variant="brand">{displayPrice} ج.م</Badge>}
+              {course.level && <Badge variant={course.levelVariant || 'info'}>{course.level}</Badge>}
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={() => onOpen?.(course)}>
-              {openLabel}
-            </Button>
-            <Button variant="primary" size="sm" onClick={() => onEnroll?.(course)}>
-              {enrollLabel}
-            </Button>
+          <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3 min-w-0">
+              <Avatar src={course.instructor?.avatar} name={course.instructor?.name} size="sm" />
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-ink-900 truncate">{course.instructor?.name || 'مدرس غير معروف'}</p>
+                <p className="text-xs text-ink-500 truncate">{course.lessonsCount ?? 0} دروس · {course.tasksCount ?? 0} واجبات</p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-start gap-2">
+              <Button variant="ghost" size="sm" onClick={() => onOpen?.(course)}>
+                {openLabel}
+              </Button>
+              <Button variant="primary" size="sm" onClick={() => onEnroll?.(course)}>
+                {enrollLabel}
+              </Button>
+            </div>
           </div>
         </div>
       </div>

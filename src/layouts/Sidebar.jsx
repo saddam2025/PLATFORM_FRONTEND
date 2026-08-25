@@ -27,6 +27,89 @@ import Button from '../components/ui/Button';
 import Avatar from '../components/ui/Avatar';
 import { useAuth } from '../hooks/useAuth';
 
+function SidebarIcon({ name }) {
+  const shared = 'h-5 w-5';
+  switch (name) {
+    case 'dashboard':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" className={shared} aria-hidden="true">
+          <path d="M4 7h7v7H4V7Z" fill="currentColor" />
+          <path d="M13 4h7v16h-7V4Z" fill="currentColor" opacity="0.7" />
+        </svg>
+      );
+    case 'menu_book':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" className={shared} aria-hidden="true">
+          <path d="M6 4h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6V4Z" stroke="currentColor" strokeWidth="1.8" />
+          <path d="M6 8h12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        </svg>
+      );
+    case 'military_tech':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" className={shared} aria-hidden="true">
+          <path d="M12 3 6 8v10h12V8l-6-5Z" stroke="currentColor" strokeWidth="1.8" />
+          <path d="M6 8h12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        </svg>
+      );
+    case 'assignment_turned_in':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" className={shared} aria-hidden="true">
+          <path d="M8 12.5 11 15.5 16 9.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Z" stroke="currentColor" strokeWidth="1.8" />
+        </svg>
+      );
+    case 'upload_file':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" className={shared} aria-hidden="true">
+          <path d="M12 16V6m0 0L8 10m4-4 4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M6 18h12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        </svg>
+      );
+    case 'vpn_key':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" className={shared} aria-hidden="true">
+          <path d="M7 12a3 3 0 1 1 0-6 3 3 0 0 1 0 6Z" stroke="currentColor" strokeWidth="1.8" />
+          <path d="M10 12h10v2h-2v2h-2v-2H10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
+    case 'admin_panel_settings':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" className={shared} aria-hidden="true">
+          <path d="M12 4l7 3v5c0 5-3 7-7 7s-7-2-7-7V7l7-3Z" stroke="currentColor" strokeWidth="1.8" />
+          <path d="M12 11v5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+          <path d="M9 14h6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        </svg>
+      );
+    case 'quiz':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" className={shared} aria-hidden="true">
+          <path d="M12 3 4 6v12l8 3 8-3V6l-8-3Z" stroke="currentColor" strokeWidth="1.8" />
+          <path d="M9 9h6M9 13h3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        </svg>
+      );
+    case 'settings':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" className={shared} aria-hidden="true">
+          <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.8" />
+          <path d="M4.93 4.93 7.76 7.76M16.24 16.24 19.07 19.07M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        </svg>
+      );
+    case 'family_restroom':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" className={shared} aria-hidden="true">
+          <path d="M8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm8 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" stroke="currentColor" strokeWidth="1.8" />
+          <path d="M5 20c0-3 2-5 5-5s5 2 5 5M15 17c0-2.5 2-4.5 4.5-4.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        </svg>
+      );
+    default:
+      return (
+        <svg viewBox="0 0 24 24" fill="none" className={shared} aria-hidden="true">
+          <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.8" />
+        </svg>
+      );
+  }
+}
+
 function Item({ to, icon, children }) {
   return (
     <NavLink to={to} className="group block">
@@ -34,19 +117,12 @@ function Item({ to, icon, children }) {
         <span
           className={
             isActive
-              ? `relative flex items-center gap-4 justify-start flex-row-reverse rounded-l-full
-                 bg-surface-canvas text-[var(--sidebar-bg)] font-bold px-6 py-3 transition-transform duration-200
-                 after:content-[''] after:absolute after:-top-8 after:right-0 after:h-8 after:w-8 after:bg-transparent after:rounded-br-full after:shadow-[8px_8px_0_8px_var(--surface-canvas)] after:pointer-events-none
-                 before:content-[''] before:absolute before:-bottom-8 before:right-0 before:h-8 before:w-8 before:bg-transparent before:rounded-tr-full before:shadow-[8px_-8px_0_8px_var(--surface-canvas)] before:pointer-events-none`
-              : `flex items-center gap-4 justify-start flex-row-reverse text-white/70 hover:text-white
-                 hover:bg-[var(--sidebar-bg-soft)] rounded-xl px-6 py-3 transition-all duration-300`
+              ? 'flex items-center gap-4 justify-start flex-row-reverse rounded-l-full bg-white/10 text-white font-semibold px-6 py-3 transition duration-200'
+              : 'flex items-center gap-4 justify-start flex-row-reverse text-white/70 hover:text-white hover:bg-white/5 rounded-xl px-6 py-3 transition-colors duration-200'
           }
         >
-          <span
-            className="material-symbols-outlined text-[22px] group-hover:scale-110 transition-transform"
-            style={{ fontVariationSettings: `'FILL' ${isActive ? 1 : 0}` }}
-          >
-            {icon}
+          <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-white/10 text-white">
+            <SidebarIcon name={icon} />
           </span>
           <span className="text-[15px]">{children}</span>
         </span>
@@ -113,8 +189,12 @@ export default function Sidebar() {
       onClick={logout}
       className="group mt-4 flex w-full items-center gap-4 justify-start flex-row-reverse text-white/70 hover:text-white hover:bg-white/5 rounded-xl transition-colors duration-300 px-6 py-3"
     >
-      <span className="material-symbols-outlined text-[22px] group-hover:-translate-x-1 transition-transform">
-        logout
+      <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white/10 text-white transition-transform group-hover:-translate-x-1">
+        <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
+          <path d="M10 8l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M14 12H4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+          <path d="M20 4v16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        </svg>
       </span>
       <span className="text-[15px] font-medium">تسجيل الخروج</span>
     </button>

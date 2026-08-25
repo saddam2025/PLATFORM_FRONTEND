@@ -43,11 +43,10 @@ export default function LoginForm({ onSuccess, instructorId }) {
     }
   };
 
-  // FIX: register link was pointing to "/", a path no page owns (404).
-  // RegisterPage's real route is '/:instructorId/register', so this must
-  // carry instructorId through; falls back to /select-instructor if the
-  // user landed on this form with no instructor context.
-  const registerLink = instructorId ? `/${instructorId}/register` : '/select-instructor';
+  // RegisterPage supports both the instructor-scoped route and the
+  // generic /register fallback now, so unauthenticated users can arrive
+  // at either path without 404.
+  const registerLink = instructorId ? `/${instructorId}/register` : '/register';
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 w-full" dir="rtl">

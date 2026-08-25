@@ -1,6 +1,6 @@
 // src/pages/student/CourseCatalogPage.jsx
 export const route = {
-  path: '/:instructorId/stages/:stageId/courses',
+  path: ['/:instructorId/catalog', '/:instructorId/stages/:stageId/courses'],
   index: false,
   auth: null,
   title: 'الدورات',
@@ -31,10 +31,10 @@ export default function CourseCatalogPage() {
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState(null);
 
-  const stageCourses = useMemo(
-    () => MOCK_COURSES.filter((c) => c.stageId === stageId),
-    [stageId]
-  );
+  const stageCourses = useMemo(() => {
+    if (!stageId) return MOCK_COURSES;
+    return MOCK_COURSES.filter((c) => c.stageId === stageId);
+  }, [stageId]);
 
   const categories = useMemo(
     () => [...new Set(stageCourses.map((c) => c.category))],

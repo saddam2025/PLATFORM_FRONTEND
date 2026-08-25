@@ -9,6 +9,7 @@ import { InstructorProvider } from './contexts/InstructorContext';
 import { SelectedChildProvider } from './contexts/SelectedChildContext';
 import { ThemeProvider } from './contexts/ThemeProvider';
 import useAuth from './hooks/useAuth';
+import DevRoleSwitcher from './components/dev/DevRoleSwitcher';
 
 function RouteGuard({ route, children }) {
   const { user, loading } = useAuth();
@@ -18,11 +19,9 @@ function RouteGuard({ route, children }) {
     return <div className="p-6">جارٍ التحميل...</div>;
   }
 
-  // FIX: instructor selector actually lives at path '/' (see
-  // InstructorSelectorPage.jsx's route export), not '/select-instructor' —
-  // that path was never registered anywhere and hit the catch-all 404 route.
-  // AuthProvider.jsx and Navbar.jsx still reference the wrong path and need
-  // the same fix applied to them separately.
+  // FIX: instructor selector now lives at '/'. The old '/select-instructor'
+  // path was not registered anywhere and would only hit the catch-all 404
+  // route. AuthProvider.jsx is updated to redirect to '/'.
   if (route.auth === 'guest' && user) {
     return <Navigate to={instructorId ? `/${instructorId}` : '/'} replace />;
   }
@@ -148,6 +147,14 @@ export default function App() {
                   <Route path="*" element={<div className="p-6">الصفحة غير موجودة</div>} />
                 </Routes>
               </Suspense>
+
+              {/* DEV-ONLY: floating role switcher for previewing every
+                  dashboard (student/assistant/admin/parent) with mock data.
+                  Mounted outside <Routes> so it persists across navigation.
+                  import.meta.env.DEV is statically inlined by Vite, so this
+                  entire block — and the component itself — is stripped from
+                  production builds. */}
+              {import.meta.env.DEV && <DevRoleSwitcher />}
             </ThemeProvider>
           </SelectedChildProvider>
         </InstructorProvider>

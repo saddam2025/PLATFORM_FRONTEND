@@ -2,11 +2,26 @@
 import React, { useContext } from 'react';
 import { ThemeContext } from '../../contexts/ThemeProvider';
 
-// Rebuilt to use Material Symbols (dark_mode / light_mode) instead of
-// hand-rolled SVG paths, now that the icon system is standardized project-
-// wide. Both icons stay mounted and crossfade via opacity/rotate/scale so
-// the transition is a real crossfade, not a hard text swap (a plain glyph
-// swap wouldn't animate on its own).
+function SunIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
+      <path d="M12 4V2m0 20v-2m8-8h2M2 12h2m13.657-6.343l1.414-1.414M4.929 19.071l1.414-1.414m0-11.314L4.93 4.93M19.071 19.071l-1.414-1.414" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="1.8" />
+    </svg>
+  );
+}
+
+function MoonIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
+      <path
+        d="M21 12.79A9 9 0 0 1 11.21 3 7 7 0 1 0 21 12.79Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
 export default function ThemeToggle({ className = '' }) {
   const { theme, toggleTheme } = useContext(ThemeContext) || {};
   const isDark = theme === 'dark';
@@ -15,33 +30,11 @@ export default function ThemeToggle({ className = '' }) {
     <button
       type="button"
       onClick={toggleTheme}
-      role="switch"
-      aria-checked={isDark}
       aria-label={isDark ? 'التبديل إلى الوضع الفاتح' : 'التبديل إلى الوضع الداكن'}
-      className={`relative inline-flex h-8 w-14 items-center rounded-pill transition-colors duration-300 active:scale-95 ring-1 ring-inset ring-black/5
-        ${isDark ? 'bg-surface-muted' : 'bg-brand-200'}
-        ${className}`}
+      title={isDark ? 'التبديل إلى الوضع الفاتح' : 'التبديل إلى الوضع الداكن'}
+      className={`inline-flex h-10 w-10 items-center justify-center rounded-full border border-surface-border bg-surface-default/80 text-ink-900 shadow-sm transition-transform duration-200 hover:scale-105 focus:outline-none focus-visible:ring-3 focus-visible:ring-brand-500/30 ${className}`}
     >
-      <span
-        className={`absolute top-1 flex h-6 w-6 items-center justify-center rounded-full bg-surface-DEFAULT shadow-soft
-          transition-transform duration-300 ease-soft
-          ${isDark ? 'translate-x-1' : 'translate-x-7'}`}
-      >
-        <span
-          className={`material-symbols-outlined absolute text-[18px] text-brand-600 transition-all duration-300
-            ${isDark ? 'opacity-0 rotate-90 scale-50' : 'opacity-100 rotate-0 scale-100'}`}
-          style={{ fontVariationSettings: "'FILL' 1" }}
-        >
-          light_mode
-        </span>
-        <span
-          className={`material-symbols-outlined absolute text-[18px] text-teal-DEFAULT transition-all duration-300
-            ${isDark ? 'opacity-100 rotate-0 scale-100' : 'opacity-0 -rotate-90 scale-50'}`}
-          style={{ fontVariationSettings: "'FILL' 1" }}
-        >
-          dark_mode
-        </span>
-      </span>
+      {isDark ? <SunIcon /> : <MoonIcon />}
     </button>
   );
 }

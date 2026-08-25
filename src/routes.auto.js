@@ -20,19 +20,25 @@ export async function buildAutoRoutes() {
       continue; // hybrid: only include pages with explicit route metadata
     }
 
+    // Normalize support for route aliasing: a page may expose one or more
+    // path entries (e.g. /login and /:instructorId/login).
+    const paths = Array.isArray(routeMeta.path) ? routeMeta.path : [routeMeta.path];
+
     // Ensure loader is a function that returns a promise resolving the module
     const rawLoader = lazyLoaders[filePath];
     const loader = rawLoader ? () => rawLoader() : () => Promise.resolve(eagerModules[filePath]);
 
-    routes.push({
-      path: routeMeta.path,
-      index: !!routeMeta.index,
-      auth: routeMeta.auth || null,
-      title: routeMeta.title || null,
-      roles: Array.isArray(routeMeta.roles) ? routeMeta.roles : null,
-      loader,
-      _file: filePath,
-    });
+    for (const path of paths) {
+      routes.push({
+        path,
+        index: !!routeMeta.index,
+        auth: routeMeta.auth || null,
+        title: routeMeta.title || null,
+        roles: Array.isArray(routeMeta.roles) ? routeMeta.roles : null,
+        loader,
+        _file: filePath,
+      });
+    }
   }
 
   // stable sort: index routes first, then by path

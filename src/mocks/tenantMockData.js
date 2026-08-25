@@ -14,48 +14,64 @@ export const instructorProfile = {
   monthlyPrice: 199,
   perLecturePrice: 15,
   studentsCount: 1284,
-  coursesCount: 37
+  coursesCount: 4,
 };
 
 export const catalogCourses = [
   {
     id: 'course-101',
     title: 'أساسيات الجبر',
-    thumbnail: '/images/courses/algebra.png',
+    subtitle: 'مراجعة قوية لمفاهيم الجبر الأساسية للمرحلة الإعدادية',
+    image: '/images/courses/algebra.png',
     stage: 'grade-7',
     category: 'الشهر الأول',
-    price: 15,
+    price: 150,
     lessonsCount: 12,
-    isPublished: true
+    tasksCount: 6,
+    level: 'مبتدئ',
+    levelVariant: 'info',
+    instructor: { name: 'أ. أحمد العتيبي', avatar: '/images/instructors/ahmed.png' },
   },
   {
     id: 'course-201',
     title: 'الهندسة المبسطة',
-    thumbnail: '/images/courses/geometry.png',
+    subtitle: 'أساسيات المساحات والزوايا مع أمثلة تطبيقية',
+    image: '/images/courses/geometry.png',
     stage: 'grade-8',
     category: 'الوحدة الثانية',
-    price: 15,
+    price: 180,
     lessonsCount: 9,
-    isPublished: true
+    tasksCount: 5,
+    level: 'متوسط',
+    levelVariant: 'success',
+    instructor: { name: 'أ. أحمد العتيبي', avatar: '/images/instructors/ahmed.png' },
   },
   {
     id: 'course-301',
     title: 'مقدمة في الإحصاء',
-    thumbnail: '/images/courses/stats.png',
+    subtitle: 'تعلم تحليل البيانات والاحتمالات بطريقة سهلة ومباشرة',
+    image: '/images/courses/stats.png',
     stage: 'grade-9',
     category: 'الشهر الأول',
-    price: 15,
+    price: 170,
     lessonsCount: 14,
-    isPublished: true
+    tasksCount: 7,
+    level: 'متوسط',
+    levelVariant: 'brand',
+    instructor: { name: 'أ. أحمد العتيبي', avatar: '/images/instructors/ahmed.png' },
   },
   {
     id: 'course-401',
     title: 'التفاضل والتكامل',
-    thumbnail: '/images/courses/calculus.png',
+    subtitle: 'القاعدة الأساسية لتفاضل الدوال وتطبيقاتها العملية',
+    image: '/images/courses/calculus.png',
     stage: 'grade-11',
     category: 'الوحدة الثالثة',
-    price: 20,
+    price: 220,
     lessonsCount: 16,
-    isPublished: false
+    tasksCount: 8,
+    level: 'متقدم',
+    levelVariant: 'danger',
+    instructor: { name: 'أ. أحمد العتيبي', avatar: '/images/instructors/ahmed.png' },
   }
 ];

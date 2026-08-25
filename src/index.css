@@ -173,3 +173,19 @@ body {
   backdrop-filter: blur(16px);
   border: 1px solid var(--surface-border);
 }
+
+/* Login page decorations */
+.login-left-panel {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--brand-700) 85%, black 10%), var(--brand-800));
+  color: var(--surface-on-brand, #fff);
+}
+
+.dots-bg {
+  background-image: radial-gradient(currentColor 1px, transparent 1px);
+  background-size: 14px 14px;
+  color: rgba(var(--ink-900-rgb, 0 0 0) / 0.04);
+}
+
+@media (max-width: 1024px) {
+  .login-left-panel { display: none; }
+}

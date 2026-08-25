@@ -90,3 +90,41 @@ export const activities = {
     { id: 'a5', type: 'quiz', title: 'أداء اختبار: منتصف الفصل', date: '2026-07-08T10:00:00Z' },
   ],
 };
+
+// ParentDashboard — top-level notifications shown alongside the children list.
+export const parentNotifications = [
+  {
+    id: 'pn-1',
+    childId: 'child-1',
+    title: 'نتيجة اختبار جديدة',
+    body: 'حصلت سارة على 92% في اختبار الأسبوع 5.',
+    date: '2026-07-10T09:35:00Z',
+    read: false,
+  },
+  {
+    id: 'pn-2',
+    childId: 'child-2',
+    title: 'تذكير بالاشتراك',
+    body: 'سيتم تجديد اشتراك يوسف الشهري خلال 5 أيام.',
+    date: '2026-07-27T08:00:00Z',
+    read: false,
+  },
+  {
+    id: 'pn-3',
+    childId: 'child-1',
+    title: 'واجب متأخر',
+    body: 'لدى سارة واجب لم يتم تسليمه بعد: نظرية فيثاغورس.',
+    date: '2026-07-06T07:00:00Z',
+    read: true,
+  },
+];
+
+export const parentProfile = {
+  id: 'parent-1',
+  name: 'وليد العتيبي',
+  email: 'walid.otaibi@example.com',
+  phone: '+20 101 234 5678',
+  role: 'parent',
+  instructorId: 'ins-1',
+  linkedChildIds: ['child-1', 'child-2'],
+};

@@ -71,9 +71,7 @@ export function AuthProvider({ children }) {
 
         saveSession(tkn, userObj);
         setLoading(false);
-        // FIX: '/select-instructor' was never a registered route — the
-        // instructor selector actually lives at '/' (see App.jsx's RouteGuard
-        // comment and InstructorSelectorPage.jsx's route export).
+        // Redirect to the public landing (Instructor selector) after login.
         navigate('/', { replace: true });
         return { ok: true, data: userObj };
       } catch (err) {
@@ -91,6 +89,19 @@ export function AuthProvider({ children }) {
     saveSession(null, null);
     navigate('/login', { replace: true });
   }, [navigate, saveSession]);
+
+  // DEV-ONLY: lets a role-switcher UI preview each dashboard (student, admin,
+  // assistant, parent) with mock data, without hitting the real backend.
+  // Bypasses authService.login entirely and writes straight to the session.
+  // Guarded so it's a no-op in production builds (import.meta.env.DEV is
+  // statically replaced by Vite, so this branch is dropped from prod bundles).
+  const devLoginAs = useCallback(
+    (mockUser) => {
+      if (!import.meta.env.DEV) return;
+      saveSession('dev-mock-token', mockUser);
+    },
+    [saveSession]
+  );
 
   const refreshUser = useCallback(async () => {
     const stored = readStoredToken();
@@ -141,6 +152,7 @@ export function AuthProvider({ children }) {
         login,
         logout,
         refreshUser,
+        devLoginAs,
       }}
     >
       {children}

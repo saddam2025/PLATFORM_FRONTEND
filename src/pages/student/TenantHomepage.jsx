@@ -1,73 +1,157 @@
-// src/pages/student/TenantHomepage.jsx
-import { instructorProfile, catalogCourses } from "../../mocks/tenantMockData.js";
-import CourseCard from "../../components/common/CourseCard.jsx";
+export const route = {
+  path: '/:instructorId',
+  index: true,
+  auth: null,
+  title: 'الصفحة الرئيسية'
+};
+
+import { useNavigate, useParams } from 'react-router-dom';
+import CourseCard from '../../components/common/CourseCard.jsx';
+import Button from '../../components/ui/Button';
+import useTenantData from '../../hooks/useTenantData.js';
 
 export default function TenantHomepage() {
-  return (
-    <div className="flex flex-col gap-10">
-      <section
-        className="relative overflow-hidden rounded-[var(--radius-xl)] p-8 sm:p-12"
-        style={{ backgroundColor: "var(--color-sidebar)" }}
-      >
-        <div className="pointer-events-none absolute inset-0 bg-geo-pattern-inverse" />
-        {/* Soft accent glow */}
-        <div
-          className="pointer-events-none absolute -left-16 -top-16 h-56 w-56 rounded-full opacity-20 blur-3xl"
-          style={{ backgroundColor: "var(--color-accent)" }}
-        />
-        <div className="relative z-10 flex flex-col gap-4">
-          <span
-            className="w-fit rounded-full px-4 py-1.5 text-xs font-semibold"
-            style={{ backgroundColor: "var(--color-accent)", color: "var(--color-accent-ink)" }}
-          >
-            منصة Math و رياضة
-          </span>
-          <h1 className="font-display text-3xl sm:text-4xl text-balance" style={{ color: "var(--color-sidebar-ink)" }}>
-            {instructorProfile.name}
-          </h1>
-          <p className="max-w-xl text-sm leading-relaxed" style={{ color: "var(--color-sidebar-ink-muted)" }}>
-            {instructorProfile.bio}
-          </p>
+  const { instructorId } = useParams();
+  const navigate = useNavigate();
+  const { instructorProfile, catalogCourses, loading, error } = useTenantData(instructorId);
 
-          <div className="mt-2 flex flex-wrap gap-3">
-            <div
-              className="flex items-center gap-2 rounded-2xl px-4 py-2.5"
-              style={{ backgroundColor: "rgba(255,255,255,0.08)", color: "var(--color-sidebar-ink)" }}
-            >
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" style={{ color: "var(--color-accent)" }}>
-                <path d="M4 6h16v12H4z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-                <path d="M8 10h8M8 14h5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-              </svg>
-              <span className="text-sm font-semibold">{catalogCourses.length} كورس متاح</span>
+  if (loading) {
+    return (
+      <div className="space-y-10">
+        <div className="rounded-[var(--radius-xl)] bg-surface-muted p-8 sm:p-12 animate-pulse" style={{ minHeight: '240px' }} />
+        <div className="space-y-4">
+          <div className="h-12 rounded-2xl bg-surface-muted animate-pulse" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[...Array(3)].map((_, idx) => (
+              <div key={idx} className="h-56 rounded-2xl bg-surface-muted animate-pulse" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !instructorProfile) {
+    return (
+      <div className="rounded-[var(--radius-xl)] bg-surface-muted p-8 sm:p-12 text-center text-ink-500">
+        حدث خطأ أثناء تحميل الصفحة. يرجى إعادة المحاولة لاحقًا.
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-10">
+      <section className="rounded-[var(--radius-xl)] border border-surface-border bg-surface-default shadow-card overflow-hidden">
+        <div className="grid gap-8 items-center px-6 py-8 lg:grid-cols-[1.4fr_1fr]">
+          <div className="space-y-6">
+            <div className="inline-flex items-center gap-2 rounded-full bg-brand-50 px-4 py-2 text-sm font-semibold text-brand-700">
+              منصة {instructorProfile.subject} الذكية
             </div>
-            <div
-              className="flex items-center gap-2 rounded-2xl px-4 py-2.5"
-              style={{ backgroundColor: "rgba(255,255,255,0.08)", color: "var(--color-sidebar-ink)" }}
-            >
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" style={{ color: "var(--color-accent)" }}>
-                <path d="M12 3l2.5 5 5.5.8-4 3.9.9 5.5L12 16.5 7.1 18.2l.9-5.5-4-3.9L9.5 8z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
-              </svg>
-              <span className="text-sm font-semibold">تعلّم بذكاء</span>
+
+            <div className="space-y-4">
+              <h1 className="max-w-3xl text-3xl font-display font-semibold text-ink-900 sm:text-4xl">
+                تعلم الرياضيات بسهولة مع {instructorProfile.name}
+              </h1>
+              <p className="max-w-2xl text-sm leading-7 text-ink-600">
+                {instructorProfile.bio} انضم إلى محتوى مصمم بعناية، مع متابعة شخصية وأسلوب تدريسي يناسب جميع المراحل.
+              </p>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="rounded-3xl border border-surface-border bg-surface-muted p-4 text-center">
+                <div className="text-sm text-ink-500">الطلاب المسجلون</div>
+                <div className="mt-2 text-xl font-semibold text-ink-900">{instructorProfile.studentsCount.toLocaleString('ar-EG')}</div>
+              </div>
+              <div className="rounded-3xl border border-surface-border bg-surface-muted p-4 text-center">
+                <div className="text-sm text-ink-500">الكورسات المتاحة</div>
+                <div className="mt-2 text-xl font-semibold text-ink-900">{instructorProfile.coursesCount}</div>
+              </div>
+              <div className="rounded-3xl border border-surface-border bg-surface-muted p-4 text-center">
+                <div className="text-sm text-ink-500">المراحل</div>
+                <div className="mt-2 text-xl font-semibold text-ink-900">{instructorProfile.stagesOffered.length}</div>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <Button
+                variant="primary"
+                size="lg"
+                className="min-w-[180px]"
+                onClick={() => navigate(`/${instructorId}/catalog`)}
+              >
+                استعرض الكورسات
+              </Button>
+              <Button
+                variant="ghost"
+                size="lg"
+                className="min-w-[180px]"
+                onClick={() => navigate('/')}
+              >
+                تغيير المدرس
+              </Button>
+            </div>
+          </div>
+
+          <div className="rounded-[var(--radius-xl)] bg-brand-500/10 p-5 shadow-card">
+            <div className="relative overflow-hidden rounded-[var(--radius-xl)] bg-surface-default p-6">
+              <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-brand-500/20 to-transparent" />
+              <div className="relative flex flex-col items-center gap-4 text-center">
+                <div className="h-40 w-40 overflow-hidden rounded-full border-4 border-surface-default bg-surface-muted">
+                  <img
+                    src={instructorProfile.avatar}
+                    alt={instructorProfile.name}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <div className="text-xl font-semibold text-ink-900">{instructorProfile.name}</div>
+                  <p className="text-sm text-ink-500">{instructorProfile.tagline}</p>
+                </div>
+              </div>
+              <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                <div className="rounded-3xl border border-surface-border bg-surface-muted p-4 text-center">
+                  <div className="text-xs text-ink-500">سعر الاشتراك الشهري</div>
+                  <div className="mt-2 text-lg font-semibold text-ink-900">{instructorProfile.monthlyPrice} ر.س</div>
+                </div>
+                <div className="rounded-3xl border border-surface-border bg-surface-muted p-4 text-center">
+                  <div className="text-xs text-ink-500">سعر المحاضرة</div>
+                  <div className="mt-2 text-lg font-semibold text-ink-900">{instructorProfile.perLecturePrice} ر.س</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section>
-        <div className="mb-5 flex items-center justify-between">
-          <h2 className="font-display text-xl" style={{ color: "var(--color-ink)" }}>
-            الكورسات المتاحة
-          </h2>
-          <span className="cursor-pointer text-sm font-semibold transition-opacity hover:opacity-80" style={{ color: "var(--color-accent-strong)" }}>
+      <section className="rounded-[var(--radius-xl)] border border-surface-border bg-surface-default shadow-card p-6">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-2">
+            <h2 className="font-display text-2xl font-semibold text-ink-900">الكورسات المتاحة</h2>
+            <p className="text-sm text-ink-500">اختر من بين أحدث الدورات المصممة لتقوية مهاراتك الحسابية.</p>
+          </div>
+          <Button variant="subtle" size="md" onClick={() => navigate(`/${instructorId}/catalog`)}>
             عرض الكل
-          </span>
+          </Button>
         </div>
 
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {catalogCourses.map((course) => (
-            <CourseCard key={course._id} course={course} />
-          ))}
-        </div>
+        {catalogCourses.length === 0 ? (
+          <div className="rounded-2xl border border-surface-border bg-surface-muted p-10 text-center text-ink-500">
+            لا توجد دورات منشورة بعد. تابعنا قريبًا للحصول على محتوى جديد.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            {catalogCourses.map((course) => (
+              <CourseCard
+                key={course.id}
+                course={course}
+                openLabel="عرض التفاصيل"
+                enrollLabel="اشترك"
+                onOpen={() => navigate(`/${instructorId}/courses/${course.id}`)}
+                onEnroll={() => navigate(`/${instructorId}/checkout/${course.id}`)}
+              />
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );
