@@ -1,6 +1,6 @@
 // src/pages/student/QuizTakingPage.jsx
 export const route = {
-  path: '/:instructorId/courses/:courseId/quizzes/:quizId',
+  path: ['/:instructorId/courses/:courseId/quizzes/:quizId', '/:instructorId/quiz/take/:quizId'],
   index: false,
   auth: 'required',
   roles: ['student'],

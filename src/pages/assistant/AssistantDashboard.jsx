@@ -2,7 +2,8 @@
 export const route = {
   path: '/:instructorId/assistant/dashboard',
   index: false,
-  auth: 'assistant',
+  auth: 'required',
+  roles: ['assistant', 'admin', 'teacher'],
   title: 'لوحة المساعد'
 };
 

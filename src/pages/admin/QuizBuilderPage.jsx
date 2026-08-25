@@ -1,8 +1,9 @@
 // src/pages/admin/QuizBuilderPage.jsx
 export const route = {
-  path: '/:instructorId/admin/courses/:courseId/quizzes/manage',
+  path: ['/:instructorId/admin/quiz-builder', '/:instructorId/admin/courses/:courseId/quizzes/manage'],
   index: false,
-  auth: 'admin',
+  auth: 'required',
+  roles: ['admin', 'teacher'],
   title: 'منشئ الاختبارات'
 };
 

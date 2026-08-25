@@ -57,7 +57,7 @@ export default function CourseDetailPage() {
     <div dir="rtl" className="space-y-6 pb-28">
       {/* Back link */}
       <button
-        onClick={() => navigate(`/${instructorId}/courses`)}
+        onClick={() => navigate(`/${instructorId}/catalog`)}
         className="flex items-center gap-2 text-sm text-ink-500 transition-colors hover:text-ink-900"
       >
         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">

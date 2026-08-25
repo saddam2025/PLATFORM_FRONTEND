@@ -32,7 +32,7 @@ export default function LoginForm({ onSuccess, instructorId }) {
     if (!validate()) return;
 
     try {
-      const res = await login({ email: form.email, password: form.password });
+      const res = await login({ email: form.email, password: form.password }, instructorId);
       if (res.ok) {
         onSuccess?.();
       } else {

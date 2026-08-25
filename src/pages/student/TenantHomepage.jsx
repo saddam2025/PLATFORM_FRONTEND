@@ -41,34 +41,36 @@ export default function TenantHomepage() {
 
   return (
     <div className="space-y-10">
-      <section className="rounded-[var(--radius-xl)] border border-surface-border bg-surface-default shadow-card overflow-hidden">
-        <div className="grid gap-8 items-center px-6 py-8 lg:grid-cols-[1.4fr_1fr]">
+      <section className="relative overflow-hidden rounded-[var(--radius-xl)] bg-navy-900 shadow-panel">
+        <div className="absolute -left-20 -top-24 h-72 w-72 rounded-full bg-brand-400/30 blur-3xl" />
+        <div className="absolute -bottom-20 right-1/3 h-52 w-52 rounded-full bg-teal-DEFAULT/20 blur-3xl" />
+        <div className="relative grid items-center gap-8 px-6 py-8 lg:grid-cols-[1.4fr_1fr] lg:px-10 lg:py-11">
           <div className="space-y-6">
-            <div className="inline-flex items-center gap-2 rounded-full bg-brand-50 px-4 py-2 text-sm font-semibold text-brand-700">
-              منصة {instructorProfile.subject} الذكية
+            <div className="inline-flex w-fit items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-brand-100 ring-1 ring-white/15">
+              ✦ منصة {instructorProfile.subject} الذكية
             </div>
 
             <div className="space-y-4">
-              <h1 className="max-w-3xl text-3xl font-display font-semibold text-ink-900 sm:text-4xl">
+              <h1 className="max-w-3xl text-3xl font-display font-extrabold text-white sm:text-5xl">
                 تعلم الرياضيات بسهولة مع {instructorProfile.name}
               </h1>
-              <p className="max-w-2xl text-sm leading-7 text-ink-600">
+              <p className="max-w-2xl text-sm leading-7 text-white/75">
                 {instructorProfile.bio} انضم إلى محتوى مصمم بعناية، مع متابعة شخصية وأسلوب تدريسي يناسب جميع المراحل.
               </p>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-3">
-              <div className="rounded-3xl border border-surface-border bg-surface-muted p-4 text-center">
-                <div className="text-sm text-ink-500">الطلاب المسجلون</div>
-                <div className="mt-2 text-xl font-semibold text-ink-900">{instructorProfile.studentsCount.toLocaleString('ar-EG')}</div>
+              <div className="rounded-2xl border border-white/10 bg-white/10 p-4 text-center backdrop-blur-sm">
+                <div className="text-sm text-white/65">الطلاب المسجلون</div>
+                <div className="mt-2 text-xl font-bold text-white">{instructorProfile.studentsCount.toLocaleString('ar-EG')}</div>
               </div>
-              <div className="rounded-3xl border border-surface-border bg-surface-muted p-4 text-center">
-                <div className="text-sm text-ink-500">الكورسات المتاحة</div>
-                <div className="mt-2 text-xl font-semibold text-ink-900">{instructorProfile.coursesCount}</div>
+              <div className="rounded-2xl border border-white/10 bg-white/10 p-4 text-center backdrop-blur-sm">
+                <div className="text-sm text-white/65">الكورسات المتاحة</div>
+                <div className="mt-2 text-xl font-bold text-white">{instructorProfile.coursesCount}</div>
               </div>
-              <div className="rounded-3xl border border-surface-border bg-surface-muted p-4 text-center">
-                <div className="text-sm text-ink-500">المراحل</div>
-                <div className="mt-2 text-xl font-semibold text-ink-900">{instructorProfile.stagesOffered.length}</div>
+              <div className="rounded-2xl border border-white/10 bg-white/10 p-4 text-center backdrop-blur-sm">
+                <div className="text-sm text-white/65">المراحل</div>
+                <div className="mt-2 text-xl font-bold text-white">{instructorProfile.stagesOffered.length}</div>
               </div>
             </div>
 
@@ -76,7 +78,7 @@ export default function TenantHomepage() {
               <Button
                 variant="primary"
                 size="lg"
-                className="min-w-[180px]"
+                className="min-w-[180px] bg-white text-navy-900 hover:bg-brand-50"
                 onClick={() => navigate(`/${instructorId}/catalog`)}
               >
                 استعرض الكورسات
@@ -84,7 +86,7 @@ export default function TenantHomepage() {
               <Button
                 variant="ghost"
                 size="lg"
-                className="min-w-[180px]"
+                className="min-w-[180px] border-white/30 text-white hover:bg-white/10"
                 onClick={() => navigate('/')}
               >
                 تغيير المدرس
@@ -92,8 +94,8 @@ export default function TenantHomepage() {
             </div>
           </div>
 
-          <div className="rounded-[var(--radius-xl)] bg-brand-500/10 p-5 shadow-card">
-            <div className="relative overflow-hidden rounded-[var(--radius-xl)] bg-surface-default p-6">
+          <div className="rounded-[var(--radius-xl)] bg-white/10 p-3 ring-1 ring-white/15 backdrop-blur-sm">
+            <div className="relative overflow-hidden rounded-[calc(var(--radius-xl)-8px)] bg-surface-default p-6">
               <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-brand-500/20 to-transparent" />
               <div className="relative flex flex-col items-center gap-4 text-center">
                 <div className="h-40 w-40 overflow-hidden rounded-full border-4 border-surface-default bg-surface-muted">
@@ -123,7 +125,7 @@ export default function TenantHomepage() {
         </div>
       </section>
 
-      <section className="rounded-[var(--radius-xl)] border border-surface-border bg-surface-default shadow-card p-6">
+      <section className="rounded-[var(--radius-xl)] border border-surface-border bg-surface-default p-6 shadow-card">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-2">
             <h2 className="font-display text-2xl font-semibold text-ink-900">الكورسات المتاحة</h2>

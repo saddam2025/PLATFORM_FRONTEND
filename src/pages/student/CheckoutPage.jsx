@@ -68,7 +68,7 @@ export default function CheckoutPage() {
           if (isSubscription) {
             navigate(`/${instructorId}/dashboard`);
           } else {
-            navigate(`/${instructorId}/player/${courseId}`);
+            navigate(`/${instructorId}/courses/${courseId}/learn`);
           }
         }, 1500);
       } else {

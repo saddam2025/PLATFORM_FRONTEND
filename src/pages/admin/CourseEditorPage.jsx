@@ -9,7 +9,8 @@
 export const route = {
   path: '/:instructorId/admin/courses/edit/:courseId',
   index: false,
-  auth: 'admin',
+  auth: 'required',
+  roles: ['admin', 'teacher', 'assistant'],
   title: 'محرر الدورة'
 };
 

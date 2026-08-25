@@ -31,7 +31,7 @@ export default function SubscriptionPlanPage() {
   ];
 
   const goToSubscriptionCheckout = () => {
-    navigate(`/${instructorId}/checkout/subscription/${stageId}`);
+    navigate(`/${instructorId}/checkout/subscription?stageId=${encodeURIComponent(stageId)}`);
   };
 
   const goToCourses = () => {

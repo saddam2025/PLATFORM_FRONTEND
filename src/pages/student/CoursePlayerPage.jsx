@@ -96,15 +96,15 @@ export default function CoursePlayerPage() {
   const videoSrc = '/media/mock-course-video.mp4';
 
   const handleContactSupport = () => {
-    navigate('/support');
+    window.location.href = 'mailto:support@riyadiaty.example.com';
   };
 
   const goToAssignment = () => {
-    navigate(`/${instructorId}/courses/${courseId}/assignments`);
+    navigate(`/${instructorId}/courses/${courseId}/assignments/a1`);
   };
 
   const goToQuiz = () => {
-    navigate(`/${instructorId}/courses/${courseId}/quizzes`);
+    navigate(`/${instructorId}/courses/${courseId}/quizzes/quiz-1`);
   };
 
   return (

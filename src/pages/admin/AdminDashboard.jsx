@@ -2,7 +2,8 @@
 export const route = {
   path: '/:instructorId/admin/dashboard',
   index: false,
-  auth: 'admin',
+  auth: 'required',
+  roles: ['admin', 'teacher'],
   title: 'لوحة التحكم'
 };
 
@@ -166,15 +167,11 @@ export default function AdminDashboard() {
           <Link to={`/${instructorId}/admin/courses`}>
             <Button variant="primary">إدارة الدورات</Button>
           </Link>
-          <Link to={`/${instructorId}/admin/scratch-cards`}>
+          <Link to={`/${instructorId}/admin/scratchcards`}>
             <Button variant="ghost">أكواد الدخول / كروت الشحن</Button>
           </Link>
-          <Link to={`/${instructorId}/admin/settings`}>
-            <Button variant="ghost">الإعدادات</Button>
-          </Link>
-          <Button variant="ghost" onClick={handleExportStudents}>
-            تصدير بيانات الطلاب
-          </Button>
+          {user?.role === 'admin' && <Link to={`/${instructorId}/admin/settings`}><Button variant="ghost">الإعدادات</Button></Link>}
+          <Link to={`/${instructorId}/admin/students/export`}><Button variant="ghost">تصدير بيانات الطلاب</Button></Link>
         </div>
       </div>
     </div>

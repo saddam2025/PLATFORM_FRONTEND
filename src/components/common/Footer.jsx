@@ -24,16 +24,16 @@ export default function Footer() {
           <div className="text-right">
             <h3 className="text-sm font-semibold uppercase tracking-wider text-ink-900">أولياء الأمور</h3>
             <ul className="mt-4 space-y-3 text-sm text-ink-600">
-              <li><Link to="/ins-1/parent" className="transition hover:text-ink-900">لوحة تحكم ولي الأمر</Link></li>
-              <li><Link to="/ins-1/parent/reports/child-1" className="transition hover:text-ink-900">تقارير الحضور والغياب</Link></li>
+              <li><Link to="/ins-1/parent/dashboard" className="transition hover:text-ink-900">لوحة تحكم ولي الأمر</Link></li>
+              <li><Link to="/ins-1/parent/reports" className="transition hover:text-ink-900">تقارير الحضور والغياب</Link></li>
             </ul>
           </div>
 
           <div className="text-right">
             <h3 className="text-sm font-semibold uppercase tracking-wider text-ink-900">الدعم الفني</h3>
             <ul className="mt-4 space-y-3 text-sm text-ink-600">
-              <li><Link to="/contact" className="transition hover:text-ink-900">تواصل معنا</Link></li>
-              <li><Link to="/faq" className="transition hover:text-ink-900">الأسئلة الشائعة</Link></li>
+              <li><a href="mailto:support@riyadiaty.example.com" className="transition hover:text-ink-900">تواصل معنا</a></li>
+              <li><Link to="/ins-1/notifications" className="transition hover:text-ink-900">الإشعارات والمساعدة</Link></li>
             </ul>
           </div>
         </div>

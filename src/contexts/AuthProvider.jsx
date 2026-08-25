@@ -22,6 +22,19 @@ function readStoredToken() {
   }
 }
 
+function dashboardPathFor(userObj, instructorId) {
+  const base = instructorId || userObj?.instructorId;
+  if (!base) return '/';
+  switch (userObj?.role) {
+    case 'admin':
+    case 'teacher': return `/${base}/admin/dashboard`;
+    case 'assistant': return `/${base}/assistant/dashboard`;
+    case 'parent': return `/${base}/parent/dashboard`;
+    case 'student': return `/${base}/dashboard`;
+    default: return `/${base}`;
+  }
+}
+
 export function AuthProvider({ children }) {
   const navigate = useNavigate();
   const [token, setToken] = useState(() => readStoredToken());
@@ -57,7 +70,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = useCallback(
-    async (credentials) => {
+    async (credentials, instructorId) => {
       setLoading(true);
       try {
         const res = await authService.login(credentials);
@@ -71,8 +84,7 @@ export function AuthProvider({ children }) {
 
         saveSession(tkn, userObj);
         setLoading(false);
-        // Redirect to the public landing (Instructor selector) after login.
-        navigate('/', { replace: true });
+        navigate(dashboardPathFor(userObj, instructorId), { replace: true });
         return { ok: true, data: userObj };
       } catch (err) {
         setLoading(false);

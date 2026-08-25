@@ -91,47 +91,43 @@ export default function StudentDashboard() {
       </div>
 
       {/* Enrolled courses */}
-      <section>
-        <h2 className="text-lg font-semibold text-ink-900 mb-4">دوراتي</h2>
+      <section className="rounded-[var(--radius-xl)] border border-surface-border bg-surface-default p-5 shadow-card sm:p-6">
+        <div className="mb-5 flex items-end justify-between gap-4"><div><p className="text-sm font-semibold text-brand-600">تابع تقدّمك</p><h2 className="mt-1 text-xl font-extrabold text-ink-900">دوراتي الحالية</h2></div><Button variant="subtle" size="sm" onClick={() => navigate(`/${instructorId}/catalog`)}>استكشف الكورسات</Button></div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {MOCK_ENROLLED_COURSES.map((course) => {
             const remainingDays = daysLeft(course.accessExpiresAt);
             return (
-              <div key={course.id} className="bg-surface-default rounded-2xl shadow-card p-4 flex flex-col gap-3">
-                <div className="w-full h-32 rounded-lg overflow-hidden bg-surface-muted">
+              <div key={course.id} className="group overflow-hidden rounded-[var(--radius-md)] border border-surface-border bg-surface-default p-3 transition hover:-translate-y-1 hover:shadow-soft">
+                <div className="relative h-32 w-full overflow-hidden rounded-xl bg-surface-muted">
                   <img
                     src={course.thumbnailUrl || '/src/assets/vite.svg'}
                     alt={course.title}
-                    className="w-full h-full object-cover"
+                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                   />
+                  <span className="absolute bottom-2 right-2 rounded-lg bg-navy-900/85 px-2 py-1 text-xs font-bold text-white">{course.progressPercent}% مكتمل</span>
                 </div>
-
-                <h3 className="font-semibold text-ink-900 truncate">{course.title}</h3>
-
-                <div>
+                <div className="space-y-3 p-1 pt-4"><h3 className="font-bold text-ink-900 truncate">{course.title}</h3><div>
                   <div className="w-full h-2 rounded-full bg-surface-muted overflow-hidden">
                     <div
                       className="h-full bg-brand-500 rounded-full"
                       style={{ width: `${course.progressPercent}%` }}
                     />
                   </div>
-                  <div className="text-xs text-ink-500 mt-1">{course.progressPercent}% مكتمل</div>
-                </div>
-
-                <div className="flex items-center gap-2 flex-wrap">
+                  <div className="mt-1 text-xs text-ink-500">استمر، أنت على الطريق الصحيح</div></div>
+                <div className="flex flex-wrap items-center gap-2">
                   <Badge variant="info">متبقي {course.viewsRemaining} مشاهدات</Badge>
                   <Badge variant={remainingDays <= 2 ? 'danger' : 'neutral'}>
                     {remainingDays} يوم متبقي
                   </Badge>
                 </div>
 
-                <Button
+                <Button className="w-full"
                   variant="primary"
                   size="sm"
-                  onClick={() => navigate(`/${instructorId}/player/${course.id}`)}
+                  onClick={() => navigate(`/${instructorId}/courses/${course.id}/learn`)}
                 >
                   استمرار
-                </Button>
+                </Button></div>
               </div>
             );
           })}

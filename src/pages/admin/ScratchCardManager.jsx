@@ -3,7 +3,7 @@ export const route = {
   path: '/:instructorId/admin/scratchcards',
   index: false,
   auth: 'required',
-  roles: ['admin', 'assistant'],
+  roles: ['admin', 'assistant', 'teacher'],
   title: 'أكواد التفعيل',
 };
 

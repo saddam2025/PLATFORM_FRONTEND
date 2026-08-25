@@ -2,7 +2,8 @@
 export const route = {
   path: '/:instructorId/assistant/grade/:assignmentId',
   index: false,
-  auth: 'assistant',
+  auth: 'required',
+  roles: ['assistant', 'admin', 'teacher'],
   title: 'تصحيح الواجب'
 };
 

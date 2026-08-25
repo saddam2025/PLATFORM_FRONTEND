@@ -21,9 +21,9 @@ import { parentProfile } from '../../mocks/parentData';
 
 const ROLES = [
   { key: 'student', label: 'طالب', user: studentProfile, path: (iid) => `/${iid}/dashboard` },
-  { key: 'assistant', label: 'مساعد', user: assistantProfile, path: (iid) => `/${iid}/assistant` },
-  { key: 'admin', label: 'مدير', user: adminProfile, path: (iid) => `/${iid}/admin` },
-  { key: 'parent', label: 'ولي أمر', user: parentProfile, path: (iid) => `/${iid}/parent` },
+  { key: 'assistant', label: 'مساعد', user: assistantProfile, path: (iid) => `/${iid}/assistant/dashboard` },
+  { key: 'admin', label: 'مدير', user: adminProfile, path: (iid) => `/${iid}/admin/dashboard` },
+  { key: 'parent', label: 'ولي أمر', user: parentProfile, path: (iid) => `/${iid}/parent/dashboard` },
 ];
 
 export default function DevRoleSwitcher() {

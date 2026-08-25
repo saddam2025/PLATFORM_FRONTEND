@@ -1,6 +1,6 @@
 // src/components/forms/RegisterForm.jsx
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Input from '../ui/Input';
 import Button from '../ui/Button';
 import Badge from '../ui/Badge';
@@ -10,7 +10,6 @@ import api from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
 
 export default function RegisterForm({ instructorId: propInstructorId }) {
-  const navigate = useNavigate();
   const auth = useAuth() || {};
   const loginFn = auth.login || null;
 
@@ -149,7 +148,7 @@ export default function RegisterForm({ instructorId: propInstructorId }) {
       // there's no separate "register+session" helper).
       if (loginFn) {
         try {
-          await loginFn({ email: form.email.trim(), password: form.password });
+          await loginFn({ email: form.email.trim(), password: form.password }, propInstructorId);
         } catch (loginErr) {
           setServerError(loginErr?.message || 'تم التسجيل ولكن فشل تسجيل الدخول تلقائياً');
           setSubmitting(false);
@@ -157,16 +156,8 @@ export default function RegisterForm({ instructorId: propInstructorId }) {
         }
       }
 
-      // NOTE: AuthProvider's login() already navigates internally to '/' on
-      // success. We still override this to send authenticated users to the
-      // most appropriate instructor-scoped landing page when we know the
-      // instructorId. Otherwise preserve the generic home route.
-      const destination = propInstructorId
-        ? form.role === 'parent'
-          ? `/${propInstructorId}/parent/dashboard`
-          : `/${propInstructorId}/dashboard`
-        : '/';
-      navigate(destination);
+      // AuthProvider selects the correct role dashboard after the session is
+      // established; do not override that destination with the public home.
     } catch (err) {
       // FIX: api.js's response interceptor already normalizes axios errors into
       // a plain { message, status } object before rejecting (see api.js), so the

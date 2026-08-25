@@ -57,7 +57,7 @@ export default function InstructorSelectorPage() {
               <h1 className="mt-6 text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl">اتعلم الرياضيات بطريقة أبسط مع رياضياتي</h1>
               <p className="mt-4 max-w-2xl text-sm leading-7 text-white/80 sm:text-base">انضم لمجموعة من المدرسين المتميزين، اختر مسارك وتعامل مع محتوى منسق يساعدك على التفوق.</p>
               <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
-                <Button variant="primary" size="lg" onClick={openLogin}>ابدأ رحلتك الآن</Button>
+                <Button variant="ghost"  size="lg" onClick={openLogin}>ابدأ رحلتك الآن</Button>
                 <Button variant="primary" size="lg" onClick={scrollToTeachers}>تصفح المعلمين</Button>
               </div>
             </div>

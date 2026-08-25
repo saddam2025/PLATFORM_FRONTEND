@@ -224,9 +224,10 @@ export default function Sidebar() {
 
         <nav className="flex-1 space-y-2">
           <Item to={`${base}/assistant/dashboard`} icon="dashboard">لوحة المساعد</Item>
-          {canGrade && <Item to={`${base}/assistant/grade/placeholder`} icon="assignment_turned_in">تصحيح الواجبات</Item>}
+          {canGrade && <Item to={`${base}/assistant/grade/a1`} icon="assignment_turned_in">تصحيح الواجبات</Item>}
           {/* Requirement #15: assistants have identical upload permissions to teachers */}
           <Item to={`${base}/admin/courses`} icon="upload_file">رفع محتوى تعليمي</Item>
+          <Item to={`${base}/assistant/messages`} icon="family_restroom">رسائل أولياء الأمور</Item>
           <Item to={`${base}/admin/scratchcards`} icon="vpn_key">أكواد الوصول</Item>
         </nav>
 
@@ -246,34 +247,30 @@ export default function Sidebar() {
         <Header avatarSrc={selected?.avatar} name={selected?.name || 'اختر مدرس'} subtitle={selected?.tagline || 'منصة الرياضيات'} />
 
         <nav className="flex-1 space-y-2">
-          <Item to={`${base}/dashboard`} icon="dashboard">لوحة التحكم</Item>
+          <Item to={`${base}/admin/dashboard`} icon="dashboard">لوحة التحكم</Item>
           <Item to={`${base}/catalog`} icon="menu_book">الكورسات</Item>
 
           <div className="pt-3 mt-3 border-t border-white/10">
             <div className="text-xs font-medium text-white/50 px-3 mb-2">المساعِد</div>
             <div className="space-y-2">
               <Item to={`${base}/assistant/dashboard`} icon="dashboard">لوحة المساعد</Item>
-              {canGrade && <Item to={`${base}/assistant/grade/placeholder`} icon="assignment_turned_in">تصحيح الواجبات</Item>}
+              {canGrade && <Item to={`${base}/assistant/grade/a1`} icon="assignment_turned_in">تصحيح الواجبات</Item>}
             </div>
           </div>
 
           <div className="pt-3 mt-3 border-t border-white/10">
             <div className="text-xs font-medium text-white/50 px-3 mb-2">الإدارة</div>
             <div className="space-y-2">
-              <Item to={`${base}/admin`} icon="admin_panel_settings">لوحة المشرف</Item>
+              <Item to={`${base}/admin/dashboard`} icon="admin_panel_settings">لوحة المشرف</Item>
               <Item to={`${base}/admin/courses`} icon="menu_book">إدارة الكورسات</Item>
               <Item to={`${base}/admin/quiz-builder`} icon="quiz">منشئ الاختبارات</Item>
               <Item to={`${base}/admin/scratchcards`} icon="vpn_key">أكواد الوصول</Item>
-              <Item to={`${base}/admin/settings`} icon="settings">إعدادات المنصة</Item>
+              <Item to={`${base}/admin/students/export`} icon="menu_book">تصدير الطلاب</Item>
+              <Item to={`${base}/admin/reels`} icon="upload_file">رفع مقطع سريع</Item>
+              {role === 'admin' && <Item to={`${base}/admin/settings`} icon="settings">إعدادات المنصة</Item>}
             </div>
           </div>
 
-          <div className="pt-3 mt-3 border-t border-white/10">
-            <div className="text-xs font-medium text-white/50 px-3 mb-2">أولياء الأمور</div>
-            <div className="space-y-2">
-              <Item to={`${base}/parent/dashboard`} icon="family_restroom">لوحة ولي الأمر</Item>
-            </div>
-          </div>
         </nav>
 
         <InstructorsList />

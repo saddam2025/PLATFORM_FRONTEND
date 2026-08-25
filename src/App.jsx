@@ -11,6 +11,19 @@ import { ThemeProvider } from './contexts/ThemeProvider';
 import useAuth from './hooks/useAuth';
 import DevRoleSwitcher from './components/dev/DevRoleSwitcher';
 
+function roleHome(user, instructorId) {
+  const base = instructorId || user?.instructorId;
+  if (!base) return '/';
+  switch (user?.role) {
+    case 'admin':
+    case 'teacher': return `/${base}/admin/dashboard`;
+    case 'assistant': return `/${base}/assistant/dashboard`;
+    case 'parent': return `/${base}/parent/dashboard`;
+    case 'student': return `/${base}/dashboard`;
+    default: return `/${base}`;
+  }
+}
+
 function RouteGuard({ route, children }) {
   const { user, loading } = useAuth();
   const { instructorId } = useParams();
@@ -23,7 +36,7 @@ function RouteGuard({ route, children }) {
   // path was not registered anywhere and would only hit the catch-all 404
   // route. AuthProvider.jsx is updated to redirect to '/'.
   if (route.auth === 'guest' && user) {
-    return <Navigate to={instructorId ? `/${instructorId}` : '/'} replace />;
+    return <Navigate to={roleHome(user, instructorId)} replace />;
   }
 
   // FIX: every page built so far exports auth as a role string directly
@@ -43,7 +56,7 @@ function RouteGuard({ route, children }) {
   }
 
   if (requiredRoles.length > 0 && (!user || !requiredRoles.includes(user.role))) {
-    return <Navigate to="/" replace />;
+    return <Navigate to={roleHome(user, instructorId)} replace />;
   }
 
   return children;
