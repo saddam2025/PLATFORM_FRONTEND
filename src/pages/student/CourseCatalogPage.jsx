@@ -6,8 +6,8 @@ export const route = {
   title: 'الدورات',
 };
 
-import React, { useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import CourseCard from '../../components/common/CourseCard';
 import Input from '../../components/ui/Input';
 import Badge from '../../components/ui/Badge';
@@ -28,8 +28,11 @@ const MOCK_COURSES = [
 export default function CourseCatalogPage() {
   const { instructorId, stageId } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState(null);
+
+  useEffect(() => setSearch(searchParams.get('search') || ''), [searchParams]);
 
   const stageCourses = useMemo(() => {
     if (!stageId) return MOCK_COURSES;

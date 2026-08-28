@@ -137,6 +137,36 @@ body {
   animation: fadeIn .25s cubic-bezier(.4,0,.2,1) both;
 }
 
+/* Landing page: its marketing sections use image-oriented light surfaces in
+   light mode, so explicitly map those surfaces back to the shared tokens
+   when the global theme switches to dark. */
+html.dark .landing-page {
+  background: var(--surface-canvas) !important;
+  color: var(--ink-900);
+}
+html.dark .landing-page .landing-light-section,
+html.dark .landing-page .landing-light-section [class*="bg-white"] {
+  background-color: var(--surface-default) !important;
+}
+html.dark .landing-page .landing-light-section [class*="bg-[#eaf5ff]"],
+html.dark .landing-page .landing-light-section [class*="bg-[#f5f9ff]"] {
+  background-color: var(--surface-muted) !important;
+}
+html.dark .landing-page .landing-light-section [class*="text-[#"] {
+  color: var(--ink-700) !important;
+}
+html.dark .landing-page .landing-light-section h2,
+html.dark .landing-page .landing-light-section h3 {
+  color: var(--ink-900);
+}
+html.dark .landing-page .landing-dark-section article {
+  background-color: var(--surface-default) !important;
+  color: var(--ink-900) !important;
+}
+html.dark .landing-page .landing-dark-section article [class*="text-[#"] {
+  color: var(--ink-700) !important;
+}
+
 /* ============================================================
    MOTION DESIGN SYSTEM — matches the provided reference exactly.
    Card lift, button scale, and color transitions are applied as plain

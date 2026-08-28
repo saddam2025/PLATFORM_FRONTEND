@@ -6,8 +6,9 @@ import { InstructorContext } from '../../contexts/InstructorContext';
 import Avatar from '../../components/ui/Avatar';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
+import CourseCard from '../../components/common/CourseCard';
 import Footer from '../../components/common/Footer';
-import { landingAssets, landingTeachers, landingFeatures } from '../../mocks/landingMockData';
+import { landingAssets, landingTeachers, landingFeatures, landingCourses } from '../../mocks/landingMockData';
 import Navbar from '../../layouts/Navbar';
 
 const valuePoints = [
@@ -33,7 +34,7 @@ export default function InstructorSelectorPage() {
   };
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#f5f9ff] text-[#102650]" dir="rtl">
+    <div className="landing-page min-h-screen overflow-x-hidden bg-[#f5f9ff] text-[#102650]" dir="rtl">
       <div className="bg-[#0c254a] px-3 pb-14 sm:px-6 lg:px-10">
         <Navbar />
         <section className="mx-auto grid max-w-7xl items-center gap-10 px-3 pb-6 pt-16 lg:grid-cols-2 lg:px-8 lg:pb-14 lg:pt-24">
@@ -54,7 +55,7 @@ export default function InstructorSelectorPage() {
       </div>
 
       <main>
-        <section className="mx-auto max-w-7xl px-5 py-20 lg:px-8">
+        <section className="landing-light-section mx-auto max-w-7xl px-5 py-20 lg:px-8">
           <div className="grid items-center gap-10 lg:grid-cols-2">
             <div className="rounded-[2rem] bg-white p-3 shadow-card">
               <img src={landingAssets.features} alt="مميزات المنصة" className="w-full rounded-[1.5rem] object-contain" />
@@ -98,7 +99,7 @@ export default function InstructorSelectorPage() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-7xl px-5 py-20 lg:px-8">
+        <section className="landing-light-section mx-auto max-w-7xl px-5 py-20 lg:px-8">
           <div className="grid items-center gap-10 lg:grid-cols-2">
             <div className="order-2 rounded-[2rem] bg-[#eaf5ff] p-3 lg:order-1">
               <img src={landingAssets.knowledge} alt="محتوى تعليمي متنوع" className="w-full rounded-[1.5rem] object-contain" />
@@ -112,7 +113,7 @@ export default function InstructorSelectorPage() {
           </div>
         </section>
 
-        <section ref={teachersRef} className="bg-[#102f5c] px-5 py-20 text-white lg:px-8">
+        <section ref={teachersRef} className="landing-dark-section bg-[#102f5c] px-5 py-20 text-white lg:px-8">
           <div className="mx-auto max-w-7xl">
             <div className="max-w-2xl text-right">
               <span className="text-sm font-extrabold text-[#9fe4ff]">اختار اللي يناسبك</span>
@@ -141,7 +142,17 @@ export default function InstructorSelectorPage() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-7xl px-5 py-20 lg:px-8">
+        <section className="landing-light-section mx-auto max-w-7xl px-5 py-20 lg:px-8">
+          <div className="mb-7 flex items-center justify-between gap-4">
+            <div className="text-right"><span className="text-sm font-extrabold text-[#1081f5]">اختيارات سريعة</span><h2 className="mt-2 text-3xl font-extrabold">محاضرات موصى بها</h2></div>
+            <Button variant="ghost" onClick={() => navigate(`/${landingTeachers[0]?.id || 'teacher-1'}/catalog`)}>عرض الكل</Button>
+          </div>
+          <div className="flex gap-5 overflow-x-auto pb-3">
+            {landingCourses.map((course) => <div key={course.id} className="min-w-[280px] flex-1"><CourseCard course={course} onOpen={() => navigate(`/${course.instructorId}/courses/${course.id}`)} onEnroll={() => navigate(`/${course.instructorId}/checkout/${course.id}`)} /></div>)}
+          </div>
+        </section>
+
+        <section className="landing-light-section mx-auto max-w-7xl px-5 py-20 lg:px-8">
           <div className="grid items-center gap-10 rounded-[2.25rem] bg-[#eaf5ff] p-7 lg:grid-cols-2 lg:p-12">
             <div className="text-right">
               <span className="text-sm font-extrabold text-[#1081f5]">تابع مستواك</span>

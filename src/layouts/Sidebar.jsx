@@ -245,7 +245,6 @@ export default function Sidebar() {
           <div className="pt-3 mt-3 border-t border-white/10">
             <div className="text-xs font-medium text-white/50 px-3 mb-2">الإدارة</div>
             <div className="space-y-2">
-              <Item to={`${base}/admin/dashboard`} icon="admin_panel_settings">لوحة المشرف</Item>
               <Item to={`${base}/admin/courses`} icon="menu_book">إدارة الكورسات</Item>
               <Item to={`${base}/admin/quiz-builder`} icon="quiz">منشئ الاختبارات</Item>
               <Item to={`${base}/admin/scratchcards`} icon="vpn_key">أكواد الوصول</Item>
