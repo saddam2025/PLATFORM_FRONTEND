@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import Logo from './Logo';
 
 export default function Footer() {
   return (
@@ -7,8 +8,8 @@ export default function Footer() {
       <div className="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-4">
           <div className="text-right">
-            <div className="text-lg font-semibold text-ink-900">رياضياتي</div>
-            <p className="mt-3 text-sm leading-6 text-ink-600">منصة تعليمية متكاملة للطلاب في الرياضيات مع متابعة شخصية ومحتوى متميز.</p>
+            <Logo className="mb-3" />
+            <p className="text-sm leading-6 text-ink-600">كل اللي محتاجه عشان تتعلم وتطوّر مستواك، موجود في مكان واحد.</p>
           </div>
 
           <div className="text-right">
@@ -40,7 +41,7 @@ export default function Footer() {
       </div>
 
       <div className="border-t border-surface-border bg-surface-muted px-4 py-4 text-center text-xs text-ink-500 sm:px-6 lg:px-8">
-        © {new Date().getFullYear()} رياضياتي. جميع الحقوق محفوظة.
+        © {new Date().getFullYear()} منصة. كل الحقوق محفوظة.
       </div>
     </footer>
   );

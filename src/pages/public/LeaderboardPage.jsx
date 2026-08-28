@@ -1,6 +1,6 @@
 // src/pages/public/LeaderboardPage.jsx
 export const route = {
-  path: '/:instructorId/leaderboard',
+  path: ['/:instructorId/leaderboard', '/:instructorId/parent/leaderboard'],
   index: false,
   auth: null,
   title: 'لوحة الشرف'

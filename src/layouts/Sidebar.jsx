@@ -23,9 +23,9 @@
 import React, { useContext } from 'react';
 import { NavLink, useParams } from 'react-router-dom';
 import { InstructorContext } from '../contexts/InstructorContext';
-import Button from '../components/ui/Button';
 import Avatar from '../components/ui/Avatar';
 import { useAuth } from '../hooks/useAuth';
+import Logo from '../components/common/Logo';
 
 function SidebarIcon({ name }) {
   const shared = 'h-5 w-5';
@@ -110,6 +110,8 @@ function SidebarIcon({ name }) {
   }
 }
 
+export const sidebarActiveItemClass = 'flex items-center gap-4 justify-start flex-row-reverse rounded-l-full bg-white text-[var(--sidebar-bg)] font-semibold px-6 py-3 transition duration-200';
+
 function Item({ to, icon, children }) {
   return (
     <NavLink to={to} className="group block">
@@ -117,7 +119,7 @@ function Item({ to, icon, children }) {
         <span
           className={
             isActive
-              ? 'flex items-center gap-4 justify-start flex-row-reverse rounded-l-full bg-white/10 text-white font-semibold px-6 py-3 transition duration-200'
+              ? sidebarActiveItemClass
               : 'flex items-center gap-4 justify-start flex-row-reverse text-white/70 hover:text-white hover:bg-white/5 rounded-xl px-6 py-3 transition-colors duration-200'
           }
         >
@@ -134,13 +136,8 @@ function Item({ to, icon, children }) {
 function BrandHeader() {
   return (
     <div className="mb-8 flex items-center gap-3 px-2">
-      <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-500 text-ink-900 text-xl font-extrabold shadow-pop">
-        Σ
-      </span>
-      <div className="leading-tight">
-        <div className="text-lg font-extrabold text-white">رياضياتي</div>
-        <div className="text-xs text-white/60">منصة التعلم الذكي</div>
-      </div>
+      <Logo light />
+      <div className="text-xs text-white/60">منصة التعلم الذكي</div>
     </div>
   );
 }
@@ -173,16 +170,6 @@ export default function Sidebar() {
     </div>
   );
 
-  const ChangeInstructorButton = () => (
-    <Button
-      variant="ghost"
-      size="sm"
-      className="w-full !bg-white/10 !text-white !border-white/20 !shadow-none hover:!bg-white/20 hover:scale-[1.02] active:scale-95 transition-all duration-300"
-    >
-      تغيير المدرس
-    </Button>
-  );
-
   const LogoutLink = () => (
     <button
       type="button"
@@ -208,9 +195,6 @@ export default function Sidebar() {
           <div className="truncate font-semibold text-white">{name}</div>
           <div className="truncate text-xs text-white/60">{subtitle}</div>
         </div>
-      </div>
-      <div className="mt-4">
-        <ChangeInstructorButton />
       </div>
     </div>
   );
@@ -244,7 +228,7 @@ export default function Sidebar() {
     return (
       <div className="flex flex-col h-full bg-[var(--sidebar-bg)] text-white px-4 py-8 overflow-y-auto">
         <BrandHeader />
-        <Header avatarSrc={selected?.avatar} name={selected?.name || 'اختر مدرس'} subtitle={selected?.tagline || 'منصة الرياضيات'} />
+        <Header avatarSrc={selected?.avatar} name={selected?.name || 'اختر مدرس'} subtitle={selected?.tagline || 'منصة تعليمية'} />
 
         <nav className="flex-1 space-y-2">
           <Item to={`${base}/admin/dashboard`} icon="dashboard">لوحة التحكم</Item>
@@ -285,7 +269,7 @@ export default function Sidebar() {
   return (
     <div className="flex flex-col h-full bg-[var(--sidebar-bg)] text-white px-4 py-8 overflow-y-auto">
       <BrandHeader />
-      <Header avatarSrc={user?.avatar || selected?.avatar} name={user?.name || 'طالب'} subtitle={selected?.name || 'منصة الرياضيات'} />
+      <Header avatarSrc={user?.avatar || selected?.avatar} name={user?.name || 'طالب'} subtitle={selected?.name || 'منصة تعليمية'} />
 
       <nav className="flex-1 space-y-2">
         <Item to={`${base}/dashboard`} icon="dashboard">لوحة التحكم</Item>

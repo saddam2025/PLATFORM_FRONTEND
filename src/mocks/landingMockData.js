@@ -1,20 +1,27 @@
-import heroImage from '../assets/hero.png';
-import teacherOneImage from '../assets/landing-teacher-1.png';
-import teacherTwoImage from '../assets/landing-teacher-2.png';
+import heroImage from '../assets/landing/landing hero.jpg';
+import featuresImage from '../assets/landing/landign features.jpg';
+import platformImage from '../assets/landing/landing page 1.png';
+import knowledgeImage from '../assets/landing/landing_knowledge.jpg';
+import progressImage from '../assets/landing/landing_progress.jpg';
+import whyImage from '../assets/landing/landing_why choose us.jpg';
+import authImage from '../assets/landing/log in and sign up pages.jpg';
 
 export const landingAssets = {
-  // CHANGE THIS IMAGE:
-  // src/assets/hero.png
   hero: heroImage,
+  features: featuresImage,
+  platform: platformImage,
+  knowledge: knowledgeImage,
+  progress: progressImage,
+  why: whyImage,
+  auth: authImage,
 };
 
 export const landingTeachers = [
   {
     id: 'teacher-1',
     name: 'أ. ياسمين السعدي',
-    avatar: teacherOneImage,
-    subject: 'الرياضيات',
-    bio: 'تخصص في تعليم الرياضيات بأساليب سهلة وممتعة للطلاب.',
+    subject: 'محتوى تعليمي',
+    bio: 'شرح منظم يساعدك تتابع وتفهم خطوة بخطوة.',
     stage: 'الصف التاسع',
     rating: 4.9,
     studentsCount: 320,
@@ -22,9 +29,8 @@ export const landingTeachers = [
   {
     id: 'teacher-2',
     name: 'أ. خالد الشمري',
-    avatar: teacherTwoImage,
-    subject: 'الرياضيات',
-    bio: 'مدرب متمرس يساعد الطلاب على التفوق في الامتحانات.',
+    subject: 'محتوى تعليمي',
+    bio: 'خبرة تساعدك تختار المحتوى اللي يناسب مستواك.',
     stage: 'الصف الحادي عشر',
     rating: 4.8,
     studentsCount: 410,
@@ -40,9 +46,9 @@ export const landingFeatures = [
 ];
 
 export const landingCourses = [
-  { id: 'c-1', title: 'الأساسيات الرياضية', instructorId: 'teacher-1', price: 0, duration: '8 أسابيع', image: teacherOneImage },
-  { id: 'c-2', title: 'الجبر المتقدم', instructorId: 'teacher-1', price: 120, duration: '10 أسابيع', image: teacherTwoImage },
-  { id: 'c-3', title: 'الهندسة التطبيقية', instructorId: 'teacher-2', price: 150, duration: '12 أسابيع', image: teacherOneImage },
-  { id: 'c-4', title: 'التحضير للامتحانات', instructorId: 'teacher-2', price: 200, duration: '6 أسابيع', image: teacherTwoImage },
-  { id: 'c-5', title: 'محاضرات سريعة', instructorId: 'teacher-1', price: 30, duration: 'مباشر', image: teacherOneImage },
+  { id: 'c-1', title: 'محتوى البداية', instructorId: 'teacher-1', price: 0, duration: '8 أسابيع', image: platformImage },
+  { id: 'c-2', title: 'تعلّم بطريقة منظمة', instructorId: 'teacher-1', price: 120, duration: '10 أسابيع', image: knowledgeImage },
+  { id: 'c-3', title: 'مراجعة وتطبيق', instructorId: 'teacher-2', price: 150, duration: '12 أسابيع', image: featuresImage },
+  { id: 'c-4', title: 'استعد لهدفك', instructorId: 'teacher-2', price: 200, duration: '6 أسابيع', image: progressImage },
+  { id: 'c-5', title: 'جلسات سريعة', instructorId: 'teacher-1', price: 30, duration: 'مباشر', image: whyImage },
 ];

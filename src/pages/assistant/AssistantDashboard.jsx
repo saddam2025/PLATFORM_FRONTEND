@@ -128,10 +128,6 @@ export default function AssistantDashboard() {
                           <Button variant="primary" size="sm">تصحيح</Button>
                         </Link>
                       ) : (
-                        // FIX: Button.jsx only defines 'primary' | 'ghost' | 'subtle' variants.
-                        // 'outline' isn't one of them, so the variant class lookup returned
-                        // undefined and the button rendered with no variant styling at all.
-                        // 'ghost' (bordered, transparent bg) is the correct match here.
                         <Button variant="ghost" size="sm" onClick={() => { /* view details */ }}>عرض</Button>
                       )}
                     </div>

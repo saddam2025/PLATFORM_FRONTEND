@@ -56,7 +56,7 @@ function GradesTab({ childId }) {
                   score >= 85 ? 'text-green-700' : score >= 60 ? 'text-yellow-700' : 'text-red-700';
                 return (
                   <tr key={g.id} className="border-t border-surface-border">
-                    <td className="py-3 px-3 text-right">{g.title}</td>
+                  <td className="py-3 px-3 text-right">{g.title}</td>
                     <td className={`py-3 px-3 text-right font-semibold ${colorClass}`}>{g.score}</td>
                     <td className="py-3 px-3 text-right text-sm text-ink-500">{formatDate(g.date)}</td>
                   </tr>

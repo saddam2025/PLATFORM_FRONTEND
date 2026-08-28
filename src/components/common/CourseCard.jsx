@@ -8,7 +8,7 @@ export default function CourseCard({ course, onOpen, onEnroll, price, openLabel 
   const displayPrice = price ?? course.price;
   return <article className="group overflow-hidden rounded-[var(--radius-lg)] border border-surface-border bg-surface-default shadow-card transition duration-300 hover:-translate-y-1 hover:shadow-soft animate-fadeIn">
     <div className="relative h-44 overflow-hidden bg-gradient-to-bl from-brand-100 via-brand-50 to-surface-muted">
-      <img src={course.image || '/src/assets/hero.png'} alt={course.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+      {course.image ? <img src={course.image} alt={course.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" /> : <div className="grid h-full place-items-center text-4xl" aria-hidden="true">📚</div>}
       <div className="absolute inset-0 bg-gradient-to-t from-navy-900/35 to-transparent" />
       <div className="absolute left-4 top-4">{displayPrice != null && <Badge variant="brand">{displayPrice === 0 ? 'مجاني' : `${displayPrice} ج.م`}</Badge>}</div>
       {course.level && <div className="absolute right-4 top-4"><Badge variant={course.levelVariant || 'info'}>{course.level}</Badge></div>}

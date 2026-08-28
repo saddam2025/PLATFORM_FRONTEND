@@ -228,7 +228,7 @@ export const scratchCardSamples = {
 
 // TenantSettingsPage
 export const tenantSettings = {
-  brandName: 'رياضياتي',
+  brandName: 'منصة',
   logoUrl: '/images/instructors/ahmed.png',
   primaryColor: '#F5B915',
   subject: 'رياضيات',
