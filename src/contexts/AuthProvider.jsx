@@ -23,6 +23,7 @@ function readStoredToken() {
 }
 
 function dashboardPathFor(userObj, instructorId) {
+  if (userObj?.role === 'super_admin') return '/super-admin';
   const base = instructorId || userObj?.instructorId;
   if (!base) return '/';
   switch (userObj?.role) {

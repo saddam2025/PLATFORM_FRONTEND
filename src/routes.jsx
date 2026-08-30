@@ -39,6 +39,12 @@ const ParentDashboard = lazy(() => import('./pages/parent/ParentDashboard.jsx'))
 const ChildReportsPage = lazy(() => import('./pages/parent/ChildReportsPage.jsx'));
 const ParentActivityPage = lazy(() => import('./pages/parent/ParentActivityPage.jsx'));
 
+/* Super-admin pages (mounted by App.jsx's explicit non-tenant route group). */
+const SuperAdminDashboard = lazy(() => import('./pages/super-admin/SuperAdminDashboard.jsx'));
+const TenantsListPage = lazy(() => import('./pages/super-admin/TenantsListPage.jsx'));
+const TenantCreatePage = lazy(() => import('./pages/super-admin/TenantCreatePage.jsx'));
+const TenantDetailPage = lazy(() => import('./pages/super-admin/TenantDetailPage.jsx'));
+
 /* Route collections */
 const publicRoutes = [
   { path: '/select-instructor', element: InstructorSelectorPage },
@@ -76,7 +82,15 @@ const scopedRoutes = [
   { path: 'parent/activity/:childId', element: ParentActivityPage },
 ];
 
+const superAdminRoutes = [
+  { index: true, element: SuperAdminDashboard, allowedRoles: ['super_admin'] },
+  { path: 'tenants', element: TenantsListPage, allowedRoles: ['super_admin'] },
+  { path: 'tenants/new', element: TenantCreatePage, allowedRoles: ['super_admin'] },
+  { path: 'tenants/:id', element: TenantDetailPage, allowedRoles: ['super_admin'] },
+];
+
 export default {
   public: publicRoutes,
   scoped: scopedRoutes,
+  superAdmin: superAdminRoutes,
 };

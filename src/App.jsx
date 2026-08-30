@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-
 import { buildAutoRoutes } from './routes.auto';
 import Layouts from './layouts/Layouts';
 import ParentLayout from './layouts/ParentLayout';
+import SuperAdminLayout from './layouts/SuperAdminLayout';
 import { AuthProvider } from './contexts/AuthProvider';
 import { InstructorProvider } from './contexts/InstructorContext';
 import { SelectedChildProvider } from './contexts/SelectedChildContext';
@@ -12,6 +13,7 @@ import useAuth from './hooks/useAuth';
 import DevRoleSwitcher from './components/dev/DevRoleSwitcher';
 
 function roleHome(user, instructorId) {
+  if (user?.role === 'super_admin') return '/super-admin';
   const base = instructorId || user?.instructorId;
   if (!base) return '/';
   switch (user?.role) {
@@ -100,7 +102,7 @@ export default function App() {
               <Suspense fallback={<div className="p-6">جارٍ التحميل...</div>}>
                 <Routes>
                   {routes
-                    .filter((r) => r.path && !r.path.startsWith('/:instructorId'))
+                    .filter((r) => r.path && !r.path.startsWith('/:instructorId') && !r.path.startsWith('/super-admin'))
                     .map((r) => {
                       if (!r.loader) return null;
                       const Component = React.lazy(r.loader);
@@ -111,7 +113,20 @@ export default function App() {
                       );
                       if (r.index) return <Route key={r.path} index element={element} />;
                       return <Route key={r.path} path={r.path} element={element} />;
-                    })}
+                  })}
+
+                  <Route path="/super-admin" element={<RouteGuard route={{ auth: 'required', roles: ['super_admin'] }}><SuperAdminLayout /></RouteGuard>}>
+                    {routes
+                      .filter((r) => r.path && r.path.startsWith('/super-admin'))
+                      .map((r) => {
+                        if (!r.loader) return null;
+                        const Component = React.lazy(r.loader);
+                        const element = <RouteGuard route={r}><Component /></RouteGuard>;
+                        if (r.index) return <Route key={r.path} index element={element} />;
+                        const nestedPath = r.path.replace('/super-admin/', '');
+                        return <Route key={r.path} path={nestedPath} element={element} />;
+                      })}
+                  </Route>
 
                   <Route path="/:instructorId/parent" element={<ParentLayout />}>
                     {routes
