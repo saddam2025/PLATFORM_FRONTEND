@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
+import { resolveApiAssetUrl } from '../../services/api';
 
 function initialsFromName(name) {
   if (!name) return '';
@@ -9,7 +10,7 @@ function initialsFromName(name) {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-export default function Avatar({ src, name, size = 'md', status }) {
+export default function Avatar({ src, avatarUrl, name, size = 'md', status, className: extraClassName }) {
   const sizes = {
     xs: 'w-6 h-6 text-xs',
     sm: 'w-9 h-9 text-sm',
@@ -19,13 +20,15 @@ export default function Avatar({ src, name, size = 'md', status }) {
   const className = clsx(
     'inline-flex items-center justify-center rounded-full overflow-hidden',
     'bg-brand-100 text-brand-700 font-bold ring-2 ring-surface-DEFAULT shadow-card',
-    sizes[size]
+    sizes[size],
+    extraClassName
   );
+  const imageSrc = resolveApiAssetUrl(avatarUrl || src);
 
   return (
     <div className="relative inline-flex items-center">
-      {src ? (
-        <img src={src || "/placeholder.svg"} alt={name || 'avatar'} className={className} />
+      {imageSrc ? (
+        <img src={imageSrc} alt={name || 'avatar'} className={className} />
       ) : (
         <div className={className} aria-hidden>
           <span>{initialsFromName(name)}</span>
@@ -48,7 +51,9 @@ export default function Avatar({ src, name, size = 'md', status }) {
 
 Avatar.propTypes = {
   src: PropTypes.string,
+  avatarUrl: PropTypes.string,
   name: PropTypes.string,
   size: PropTypes.oneOf(['xs', 'sm', 'md', 'lg']),
   status: PropTypes.oneOf(['online', 'away', 'offline']),
+  className: PropTypes.string,
 };

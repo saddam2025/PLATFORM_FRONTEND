@@ -1,5 +1,5 @@
 // src/services/instructorService.js
-import api from './api';
+import { instructorProfile } from '../mocks/tenantMockData';
 
 /**
  * Instructor related API calls.
@@ -8,21 +8,24 @@ import api from './api';
 
 const instructorService = {
   list: async (opts = {}) => {
-    // opts can include pagination or filters; we pass them as query params
-    const config = {};
-    if (opts && Object.keys(opts).length) config.params = opts;
-    return api.get('/instructors', config);
+    // TODO: replace this local fallback with GET /public/tenants (or an
+    // equivalent unauthenticated, active-tenant endpoint) once the backend
+    // exposes one. /super-admin/tenants is role-protected and must never be
+    // used by the public instructor selector.
+    void opts;
+    return { data: [instructorProfile], status: 200, headers: {} };
   },
 
   get: async (id) => {
     if (!id) throw { message: 'Instructor id is required' };
-    return api.get(`/instructors/${id}`);
+    // See the public-listing TODO above; preserve mock behaviour meanwhile.
+    return { data: instructorProfile.id === id ? instructorProfile : null, status: 200, headers: {} };
   },
 
   // optional helper to select instructor server-side (if your API supports it)
   select: async (id) => {
     if (!id) throw { message: 'Instructor id is required' };
-    return api.post(`/instructors/${id}/select`);
+    return { data: instructorProfile.id === id ? instructorProfile : null, status: 200, headers: {} };
   },
 };
 

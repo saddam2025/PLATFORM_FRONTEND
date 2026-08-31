@@ -6,12 +6,14 @@ export const route = {
   title: 'إعدادات المنصة'
 };
 
-import React, { useContext, useState } from 'react';
+import React, { useContext, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
+import Avatar from '../../components/ui/Avatar';
 import api from '../../services/api';
+import authService from '../../services/authService';
 // FIX: real hook file is src/hooks/useAuth.js — there is no src/contexts/AuthContext.jsx.
 import { useAuth } from '../../hooks/useAuth';
 import { ThemeContext } from '../../contexts/ThemeProvider';
@@ -34,7 +36,76 @@ function generateCode() {
 
 export default function TenantSettingsPage() {
   const { instructorId } = useParams();
-  const { user } = useAuth() || {};
+  const { user, updateUser = () => {} } = useAuth() || {};
+
+  // ============================================================
+  // My Profile — avatar upload (independent from tenant branding)
+  // ============================================================
+  const avatarInputRef = useRef(null);
+  const avatarObjectUrlRef = useRef(null);
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarError, setAvatarError] = useState('');
+  const [avatarSuccess, setAvatarSuccess] = useState('');
+
+  const clearAvatarPreview = () => {
+    if (avatarObjectUrlRef.current) {
+      URL.revokeObjectURL(avatarObjectUrlRef.current);
+      avatarObjectUrlRef.current = null;
+    }
+    setAvatarPreview(null);
+  };
+
+  const handleAvatarChange = (event) => {
+    const file = event.target.files?.[0] || null;
+    setAvatarError('');
+    setAvatarSuccess('');
+    clearAvatarPreview();
+    setAvatarFile(null);
+
+    if (!file) return;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      setAvatarError('يرجى اختيار صورة بصيغة JPEG أو PNG أو WebP فقط.');
+      event.target.value = '';
+      return;
+    }
+    if (file.size > 3 * 1024 * 1024) {
+      setAvatarError('حجم الصورة يجب ألا يتجاوز 3 ميجابايت.');
+      event.target.value = '';
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    avatarObjectUrlRef.current = previewUrl;
+    setAvatarFile(file);
+    setAvatarPreview(previewUrl);
+  };
+
+  const handleAvatarUpload = async () => {
+    if (!avatarFile || avatarUploading) return;
+    setAvatarUploading(true);
+    setAvatarError('');
+    setAvatarSuccess('');
+    try {
+      const response = await authService.uploadAvatar(avatarFile);
+      const avatarUrl = response?.data?.data?.avatarUrl;
+      if (!avatarUrl) throw new Error('لم يُرجع الخادم رابط الصورة الجديدة.');
+
+      // Keep both field names during the transition from older mock user data.
+      updateUser({ avatarUrl, avatar: avatarUrl });
+      clearAvatarPreview();
+      setAvatarFile(null);
+      if (avatarInputRef.current) avatarInputRef.current.value = '';
+      setAvatarSuccess('تم تحديث صورتك الشخصية بنجاح.');
+    } catch (error) {
+      // api.js rejects with the backend JSON body, so this preserves its
+      // specific validation message when one is available.
+      setAvatarError(error?.message || 'تعذر رفع الصورة. حاول مرة أخرى.');
+    } finally {
+      setAvatarUploading(false);
+    }
+  };
 
   // ============================================================
   // Section 1 — Branding
@@ -259,6 +330,43 @@ export default function TenantSettingsPage() {
             {user?.name ? `مرحباً ${user.name} — ` : ''}إدارة الهوية البصرية والدفع والمساعدين وأكواد الوصول
           </p>
         </div>
+
+        {/* Separate personal profile from tenant-wide branding settings. */}
+        <section className="rounded-2xl bg-surface-default shadow-card p-6 mb-4">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-4">
+              <Avatar
+                avatarUrl={avatarPreview || user?.avatarUrl || user?.avatar}
+                name={user?.name || 'المستخدم'}
+                size="lg"
+              />
+              <div>
+                <h2 className="text-lg font-semibold text-ink-900">ملفي الشخصي</h2>
+                <p className="mt-1 text-sm text-ink-500">غيّر صورتك الشخصية. الصيغ المدعومة: JPEG وPNG وWebP، حتى 3 ميجابايت.</p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <input
+                ref={avatarInputRef}
+                id="avatarUpload"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="sr-only"
+                onChange={handleAvatarChange}
+              />
+              <Button type="button" variant="ghost" onClick={() => avatarInputRef.current?.click()} disabled={avatarUploading}>
+                تغيير الصورة
+              </Button>
+              <Button type="button" variant="primary" onClick={handleAvatarUpload} disabled={!avatarFile || avatarUploading}>
+                {avatarUploading ? 'جاري الرفع...' : 'حفظ الصورة'}
+              </Button>
+            </div>
+          </div>
+
+          {avatarError && <div role="alert" className="mt-4 rounded-md bg-danger-soft p-3 text-sm text-danger-DEFAULT">{avatarError}</div>}
+          {avatarSuccess && <div role="status" className="mt-4 rounded-md bg-success-soft p-3 text-sm text-success-DEFAULT">{avatarSuccess}</div>}
+        </section>
 
         {/* Section 1: Branding */}
         <section className="rounded-2xl bg-surface-default shadow-card p-6 mb-4">

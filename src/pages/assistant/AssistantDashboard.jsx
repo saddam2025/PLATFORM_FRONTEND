@@ -60,7 +60,7 @@ export default function AssistantDashboard() {
               <p className="text-sm text-ink-500 mt-1">لوحة تصحيح الواجبات</p>
             </div>
             <div>
-              <Avatar name={user?.name || 'المساعد'} src={user?.avatar} size="md" />
+              <Avatar name={user?.name || 'المساعد'} src={user?.avatarUrl || user?.avatar} size="md" />
             </div>
           </div>
         </header>

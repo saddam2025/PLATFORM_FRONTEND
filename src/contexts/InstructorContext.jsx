@@ -2,7 +2,6 @@
 import React, { createContext, useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import instructorService from '../services/instructorService';
-import useAuth from '../hooks/useAuth';
 
 export const InstructorContext = createContext({
   instructors: [],
@@ -13,7 +12,6 @@ export const InstructorContext = createContext({
 });
 
 export function InstructorProvider({ children }) {
-  const { user, loading: authLoading } = useAuth();
   const [instructors, setInstructors] = useState([]);
   const [selected, setSelected] = useState(() => {
     try {
@@ -45,14 +43,11 @@ export function InstructorProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    // FIX: only prefetch once auth resolution is done AND the user is
-    // authenticated. Previously this fired unconditionally on mount,
-    // including on /login, /register, and other public/unauthenticated
-    // pages, potentially hitting a protected endpoint with no token.
-    if (!authLoading && user) {
-      fetchInstructors();
-    }
-  }, [authLoading, user, fetchInstructors]);
+    // TODO: this safely serves mock tenant data until the backend provides a
+    // public active-tenant listing endpoint. Do not substitute the protected
+    // /super-admin/tenants endpoint here.
+    fetchInstructors();
+  }, [fetchInstructors]);
 
   return (
     <InstructorContext.Provider

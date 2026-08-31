@@ -22,6 +22,15 @@ const authService = {
     return api.get('/auth/me');
   },
 
+  uploadAvatar: async (file) => {
+    const formData = new FormData();
+    // This field name is part of the backend contract (uploadAvatar middleware).
+    formData.append('avatar', file);
+    return api.patch('/auth/me/avatar', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+
   logout: async () => {
     // optional server-side logout endpoint
     try {

@@ -204,7 +204,7 @@ export default function Sidebar() {
     return (
       <div className="flex flex-col h-full bg-[var(--sidebar-bg)] text-white px-4 py-8 overflow-y-auto">
         <BrandHeader />
-        <Header avatarSrc={user?.avatar || selected?.avatar} name={user?.name || selected?.name || 'مساعد'} subtitle="لوحة المساعد" />
+        <Header avatarSrc={user?.avatarUrl || user?.avatar || selected?.avatar} name={user?.name || selected?.name || 'مساعد'} subtitle="لوحة المساعد" />
 
         <nav className="flex-1 space-y-2">
           <Item to={`${base}/assistant/dashboard`} icon="dashboard">لوحة المساعد</Item>
@@ -228,7 +228,7 @@ export default function Sidebar() {
     return (
       <div className="flex flex-col h-full bg-[var(--sidebar-bg)] text-white px-4 py-8 overflow-y-auto">
         <BrandHeader />
-        <Header avatarSrc={selected?.avatar} name={selected?.name || 'اختر مدرس'} subtitle={selected?.tagline || 'منصة تعليمية'} />
+        <Header avatarSrc={user?.avatarUrl || user?.avatar || selected?.avatar} name={user?.name || selected?.name || 'اختر مدرس'} subtitle={selected?.tagline || 'منصة تعليمية'} />
 
         <nav className="flex-1 space-y-2">
           <Item to={`${base}/admin/dashboard`} icon="dashboard">لوحة التحكم</Item>
@@ -268,7 +268,7 @@ export default function Sidebar() {
   return (
     <div className="flex flex-col h-full bg-[var(--sidebar-bg)] text-white px-4 py-8 overflow-y-auto">
       <BrandHeader />
-      <Header avatarSrc={user?.avatar || selected?.avatar} name={user?.name || 'طالب'} subtitle={selected?.name || 'منصة تعليمية'} />
+      <Header avatarSrc={user?.avatarUrl || user?.avatar || selected?.avatar} name={user?.name || 'طالب'} subtitle={selected?.name || 'منصة تعليمية'} />
 
       <nav className="flex-1 space-y-2">
         <Item to={`${base}/dashboard`} icon="dashboard">لوحة التحكم</Item>

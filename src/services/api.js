@@ -33,6 +33,18 @@ export function setAuthToken(token) {
   }
 }
 
+// Upload APIs return paths such as /uploads/avatars/file.webp. Resolve only
+// those backend-owned paths against the API origin when frontend and backend
+// run on different development ports.
+export function resolveApiAssetUrl(url) {
+  if (!url || !url.startsWith('/uploads/')) return url;
+  try {
+    return new URL(url, instance.defaults.baseURL).toString();
+  } catch {
+    return url;
+  }
+}
+
 // initialize token from storage if present
 try {
   const stored = localStorage.getItem(TOKEN_KEYS[0]) || localStorage.getItem(TOKEN_KEYS[1]);

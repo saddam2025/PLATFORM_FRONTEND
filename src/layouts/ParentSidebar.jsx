@@ -52,7 +52,7 @@ export default function ParentSidebar() {
 
       <div className="mb-6 rounded-2xl bg-white/5 p-4 ring-1 ring-white/10">
         <div className="flex items-center gap-3">
-          <Avatar src={user?.avatar || selected?.avatar} name={user?.name || selected?.name || 'ولي الأمر'} size="md" />
+          <Avatar src={user?.avatarUrl || user?.avatar || selected?.avatar} name={user?.name || selected?.name || 'ولي الأمر'} size="md" />
           <div className="flex-1 min-w-0">
             <div className="truncate font-semibold text-white">{user?.name || 'ولي الأمر'}</div>
             <div className="truncate text-xs text-white/60">{selected?.name || 'منصة تعليمية'}</div>

@@ -12,6 +12,7 @@ export const AuthContext = createContext({
   login: async () => {},
   logout: () => {},
   refreshUser: async () => {},
+  updateUser: () => {},
 });
 
 function readStoredToken() {
@@ -103,6 +104,19 @@ export function AuthProvider({ children }) {
     navigate('/login', { replace: true });
   }, [navigate, saveSession]);
 
+  // Applies a local update from authenticated profile actions (such as avatar
+  // upload) so every consumer of useAuth rerenders without a page reload.
+  const updateUser = useCallback((updates) => {
+    setUser((currentUser) => {
+      if (!currentUser) return currentUser;
+      const nextUser = { ...currentUser, ...updates };
+      try {
+        localStorage.setItem('mp_user', JSON.stringify(nextUser));
+      } catch {}
+      return nextUser;
+    });
+  }, []);
+
   // DEV-ONLY: lets a role-switcher UI preview each dashboard (student, admin,
   // assistant, parent) with mock data, without hitting the real backend.
   // Bypasses authService.login entirely and writes straight to the session.
@@ -165,6 +179,7 @@ export function AuthProvider({ children }) {
         login,
         logout,
         refreshUser,
+        updateUser,
         devLoginAs,
       }}
     >

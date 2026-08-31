@@ -73,7 +73,7 @@ export default function StudentDashboard() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <Avatar src={user?.avatar} name={user?.name} size="md" />
+          <Avatar src={user?.avatarUrl || user?.avatar} name={user?.name} size="md" />
           <div>
             <div className="text-lg font-semibold text-ink-900">
               مرحباً {user?.name || 'الطالب'}
