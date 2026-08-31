@@ -29,7 +29,7 @@ export default function Navbar({ sidebarOpen = false, onToggleSidebar }) {
         <Logo to={homeLink} light />
       </div>
       <nav className="flex items-center gap-2 sm:gap-3">
-        <form onSubmit={submitSearch} className="hidden items-center gap-2 rounded-full bg-[#173454] px-4 py-2 text-sm font-bold text-white lg:flex"><label htmlFor="site-search" className="sr-only">ابحث في المحتوى</label><span aria-hidden="true">⌕</span><input id="site-search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="ابحث في المحتوى" className="w-32 bg-transparent text-white outline-none placeholder:text-white/75" /></form>
+        {user?.role !== 'super_admin' && <form onSubmit={submitSearch} className="hidden items-center gap-2 rounded-full bg-[#173454] px-4 py-2 text-sm font-bold text-white lg:flex"><label htmlFor="site-search" className="sr-only">ابحث في المحتوى</label><span aria-hidden="true">⌕</span><input id="site-search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="ابحث في المحتوى" className="w-32 bg-transparent text-white outline-none placeholder:text-white/75" /></form>}
         <ThemeToggle className="!border-white/20 !bg-white/10 !text-white !shadow-none" />
         {user ? <Link to={accountLink} className="inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-2 text-sm font-bold text-[#0759a8] transition hover:bg-white"><UserIcon /><span className="hidden sm:inline">حسابي</span></Link> : <><Link to={loginLink}><Button variant="ghost" size="sm">تسجيل الدخول</Button></Link><Link to={registerLink}><Button variant="primary" size="sm">حساب جديد</Button></Link></>}
       </nav>
