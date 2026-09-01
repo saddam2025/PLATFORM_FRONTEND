@@ -57,9 +57,10 @@ try {
 instance.interceptors.response.use(
   (res) => res,
   (error) => {
-    const payload =
-      error?.response?.data ||
-      { message: error.message || 'Network error', status: error?.response?.status || 0 };
+    const responseData = error?.response?.data;
+    const payload = responseData
+      ? { ...responseData, status: responseData.status || error.response.status }
+      : { message: error.message || 'Network error', status: error?.response?.status || 0 };
     return Promise.reject(payload);
   }
 );

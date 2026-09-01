@@ -6,10 +6,12 @@ export const route = {
   title: 'لوحة الشرف'
 };
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import Avatar from '../../components/ui/Avatar';
-import Badge from '../../components/ui/Badge';
-import Button from '../../components/ui/Button';
+import ProfileLink from '../../components/ui/ProfileLink';
+import { useAuth } from '../../hooks/useAuth';
+import leaderboardService from '../../services/leaderboardService';
 
 const MOCK_STUDENTS = [
   { id: 's1', name: 'أحمد علي', avatar: null, stage: 'الصف السابع', homeworkAvg: 92, examAvg: 88, totalScore: 90 },
@@ -30,12 +32,12 @@ const MOCK_STUDENTS = [
 ];
 
 const STAGES = [
-  'الصف السابع',
-  'الصف الثامن',
-  'الصف التاسع',
-  'الصف العاشر',
-  'الصف الحادي عشر',
-  'الصف الثاني عشر'
+  { value: 'grade-7', label: 'الصف السابع' },
+  { value: 'grade-8', label: 'الصف الثامن' },
+  { value: 'grade-9', label: 'الصف التاسع' },
+  { value: 'grade-10', label: 'الصف العاشر' },
+  { value: 'grade-11', label: 'الصف الحادي عشر' },
+  { value: 'grade-12', label: 'الصف الثاني عشر' }
 ];
 
 const VISIBLE_REST_STEP = 3;
@@ -108,18 +110,62 @@ const RANK_STYLES = {
 // right, 1st place is centered and raised, and 3rd place renders on the left.
 const PODIUM_ORDER = [2, 1, 3];
 
+function stageLabel(stage) {
+  return STAGES.find((item) => item.value === stage)?.label || stage || 'غير محدد';
+}
+
+function StudentIdentity({ student, size, className, canViewProfile }) {
+  const content = (
+    <div className={className}>
+      <Avatar src={student.avatarUrl || student.avatar} name={student.name} size={size} />
+      {size === 'sm' && <div className="text-sm font-medium text-ink-900 transition-colors group-hover:text-brand-600 dark:group-hover:text-brand-400">{student.name}</div>}
+    </div>
+  );
+
+  if (!canViewProfile || !student.studentId) return content;
+  return (
+    <ProfileLink userId={String(student.studentId)} profileType="student" ariaLabel={`عرض ملف الطالب ${student.name}`} className="rounded-xl">
+      {content}
+    </ProfileLink>
+  );
+}
+
 export default function LeaderboardPage() {
+  const { instructorId } = useParams();
+  const { user } = useAuth();
   const [stageFilter, setStageFilter] = useState('all');
   const [visibleRestCount, setVisibleRestCount] = useState(VISIBLE_REST_STEP);
+  const [students, setStudents] = useState(MOCK_STUDENTS);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    setLoadError('');
+    leaderboardService.list(instructorId, stageFilter)
+      .then((response) => {
+        if (active) setStudents(response?.data?.data || []);
+      })
+      .catch((error) => {
+        if (active) {
+          setStudents([]);
+          setLoadError(error?.message || 'تعذر تحميل لوحة الشرف. حاول مرة أخرى.');
+        }
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => { active = false; };
+  }, [instructorId, stageFilter]);
+
+  const canViewStudentProfiles = user?.role === 'admin' || user?.role === 'assistant';
 
   const sorted = useMemo(() => {
-    return [...MOCK_STUDENTS].sort((a, b) => b.totalScore - a.totalScore);
-  }, []);
+    return [...students].sort((a, b) => b.totalScore - a.totalScore);
+  }, [students]);
 
-  const filtered = useMemo(() => {
-    if (stageFilter === 'all') return sorted;
-    return sorted.filter((s) => s.stage === stageFilter);
-  }, [sorted, stageFilter]);
+  const filtered = sorted;
 
   const byRank = {
     1: filtered[0],
@@ -152,8 +198,8 @@ export default function LeaderboardPage() {
               className="appearance-none bg-surface-default border border-surface-border rounded-xl pl-9 pr-4 py-2.5 text-sm text-ink-700 cursor-pointer transition-colors hover:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
             >
               <option value="all">كل المراحل</option>
-              {STAGES.map((s) => (
-                <option key={s} value={s}>{s}</option>
+              {STAGES.map((stage) => (
+                <option key={stage.value} value={stage.value}>{stage.label}</option>
               ))}
             </select>
             <ChevronDownIcon className="w-4 h-4 text-ink-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -162,6 +208,8 @@ export default function LeaderboardPage() {
       </header>
 
       <main className="container mx-auto px-4 py-8 space-y-6">
+        {loading && <div className="rounded-xl bg-surface-default p-4 text-center text-sm text-ink-500">جارٍ تحميل لوحة الشرف...</div>}
+        {loadError && <div role="alert" className="rounded-xl bg-danger-soft p-4 text-center text-sm text-danger-DEFAULT">{loadError}</div>}
         {/* Top 3 podium */}
         <section className="grid grid-cols-1 sm:grid-cols-3 gap-6 items-end">
           {PODIUM_ORDER.map((rank) => {
@@ -183,7 +231,11 @@ export default function LeaderboardPage() {
                 )}
 
                 <div className="relative">
-                  <Avatar src={student.avatar} name={student.name} size="lg" className={`rounded-full ${style.ring}`} />
+                  {canViewStudentProfiles && student.studentId ? (
+                    <ProfileLink userId={String(student.studentId)} profileType="student" ariaLabel={`عرض ملف الطالب ${student.name}`}>
+                      <Avatar src={student.avatarUrl || student.avatar} name={student.name} size="lg" className={`rounded-full ${style.ring}`} />
+                    </ProfileLink>
+                  ) : <Avatar src={student.avatarUrl || student.avatar} name={student.name} size="lg" className={`rounded-full ${style.ring}`} />}
                   <span
                     className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold ${style.badge}`}
                   >
@@ -195,7 +247,7 @@ export default function LeaderboardPage() {
                   <div className="text-base font-semibold text-ink-900 transition-colors group-hover:text-brand-600 dark:group-hover:text-brand-400">
                     {student.name}
                   </div>
-                  <div className="text-xs text-ink-500 mt-1">{student.stage}</div>
+                  <div className="text-xs text-ink-500 mt-1">{stageLabel(student.stage)}</div>
                 </div>
 
                 <div className={`mt-4 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-bold ${style.scorePill}`}>
@@ -235,14 +287,9 @@ export default function LeaderboardPage() {
                         </span>
                       </td>
                       <td className="py-4 px-3">
-                        <div className="flex items-center gap-3">
-                          <Avatar src={s.avatar} name={s.name} size="sm" />
-                          <div className="text-sm font-medium text-ink-900 transition-colors hover:text-brand-600 dark:hover:text-brand-400">
-                            {s.name}
-                          </div>
-                        </div>
+                        <StudentIdentity student={s} size="sm" className="flex items-center gap-3" canViewProfile={canViewStudentProfiles} />
                       </td>
-                      <td className="py-4 px-3 text-sm text-ink-700">{s.stage}</td>
+                      <td className="py-4 px-3 text-sm text-ink-700">{stageLabel(s.stage)}</td>
                       <td className="py-4 px-3 text-sm text-ink-700">{s.homeworkAvg}%</td>
                       <td className="py-4 px-3 text-sm text-ink-700">{s.examAvg}%</td>
                       <td className="py-4 px-3 text-sm font-bold text-brand-600 dark:text-brand-400">{s.totalScore}</td>

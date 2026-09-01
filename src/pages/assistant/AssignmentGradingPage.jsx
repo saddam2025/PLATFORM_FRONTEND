@@ -48,17 +48,6 @@ export default function AssignmentGradingPage() {
     }
   }, [lacksPermission, instructorId, navigate]);
 
-  // While redirecting, show a small loading card
-  if (lacksPermission) {
-    return (
-      <div className="p-6">
-        <div className="rounded-2xl bg-surface-default shadow-card p-6 text-center">
-          <p className="text-sm text-ink-500">جارِ التحقق من الصلاحيات...</p>
-        </div>
-      </div>
-    );
-  }
-
   // Mock assignment data (fallback)
   const assignment = useMemo(() => {
     return {
@@ -81,6 +70,18 @@ export default function AssignmentGradingPage() {
   const [successVisible, setSuccessVisible] = useState(false);
 
   const isPdf = assignment?.fileUrl?.toLowerCase?.().endsWith('.pdf');
+
+  // This return must stay after all hooks so a permission change never
+  // changes the component's hook order.
+  if (lacksPermission) {
+    return (
+      <div className="p-6">
+        <div className="rounded-2xl bg-surface-default shadow-card p-6 text-center">
+          <p className="text-sm text-ink-500">جارِ التحقق من الصلاحيات...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Small helper to map status -> Badge variant, so the header badge
   // uses the same visual language as AssistantDashboard's list.
@@ -137,11 +138,7 @@ export default function AssignmentGradingPage() {
           <div className="flex items-center justify-between">
             <div className="text-right">
               <h1 className="text-2xl font-semibold">{assignment.studentName}</h1>
-              {/* FIX: text-ink-600 doesn't exist in tokens.css (only 900/700/500/300).
-                  Using text-ink-500, the existing secondary-text token. */}
-              <p className="text-sm text-ink-500 mt-1">
-                {assignment.courseTitle} — {formatDateTime(assignment.submittedAt)}
-              </p>
+              <p className="text-sm text-ink-500 mt-1">{assignment.courseTitle} — {formatDateTime(assignment.submittedAt)}</p>
             </div>
             <div>
               {/* FIX: badge now reflects the live `status` state (updates as the

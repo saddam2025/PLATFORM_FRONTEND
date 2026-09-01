@@ -33,6 +33,8 @@ const CourseEditorPage = lazy(() => import('./pages/admin/CourseEditorPage.jsx')
 const QuizBuilderPage = lazy(() => import('./pages/admin/QuizBuilderPage.jsx'));
 const ScratchCardManager = lazy(() => import('./pages/admin/ScratchCardManager.jsx'));
 const TenantSettingsPage = lazy(() => import('./pages/admin/TenantSettingsPage.jsx'));
+const StudentProfilePage = lazy(() => import('./pages/shared/StudentProfilePage.jsx'));
+const AssistantProfilePage = lazy(() => import('./pages/shared/AssistantProfilePage.jsx'));
 
 /* Parent pages */
 const ParentDashboard = lazy(() => import('./pages/parent/ParentDashboard.jsx'));
@@ -75,6 +77,12 @@ const scopedRoutes = [
   { path: 'admin/quiz-builder', element: QuizBuilderPage },
   { path: 'admin/scratchcards', element: ScratchCardManager },
   { path: 'admin/settings', element: TenantSettingsPage },
+
+  // Shared protected profiles. Runtime routing reads page route exports via
+  // routes.auto.js; these entries keep this legacy route collection aligned.
+  { path: 'profiles/students/:studentId', element: StudentProfilePage, allowedRoles: ['admin', 'assistant'] },
+  { path: 'profiles/assistants/:assistantId', element: AssistantProfilePage, allowedRoles: ['admin', 'parent'] },
+  { path: 'parent/profiles/assistants/:assistantId', element: AssistantProfilePage, allowedRoles: ['admin', 'parent'] },
 
   // parent
   { path: 'parent', element: ParentDashboard },

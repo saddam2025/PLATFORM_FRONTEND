@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import { resolveApiAssetUrl } from '../../services/api';
+import ProfileLink from './ProfileLink';
 
 function initialsFromName(name) {
   if (!name) return '';
@@ -10,7 +11,7 @@ function initialsFromName(name) {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-export default function Avatar({ src, avatarUrl, name, size = 'md', status, className: extraClassName }) {
+export default function Avatar({ src, avatarUrl, name, size = 'md', status, className: extraClassName, linkToProfile = false, userId, profileType }) {
   const sizes = {
     xs: 'w-6 h-6 text-xs',
     sm: 'w-9 h-9 text-sm',
@@ -24,16 +25,22 @@ export default function Avatar({ src, avatarUrl, name, size = 'md', status, clas
     extraClassName
   );
   const imageSrc = resolveApiAssetUrl(avatarUrl || src);
+  const avatarContent = imageSrc ? (
+    <img src={imageSrc} alt={name || 'avatar'} className={className} />
+  ) : (
+    <div className={className} aria-hidden>
+      <span>{initialsFromName(name)}</span>
+    </div>
+  );
+  const canLink = linkToProfile && userId && ['student', 'assistant'].includes(profileType);
 
   return (
     <div className="relative inline-flex items-center">
-      {imageSrc ? (
-        <img src={imageSrc} alt={name || 'avatar'} className={className} />
-      ) : (
-        <div className={className} aria-hidden>
-          <span>{initialsFromName(name)}</span>
-        </div>
-      )}
+      {canLink ? (
+        <ProfileLink userId={userId} profileType={profileType} ariaLabel={`عرض ملف ${name || 'المستخدم'}`}>
+          {avatarContent}
+        </ProfileLink>
+      ) : avatarContent}
 
       {status && (
         <span
@@ -56,4 +63,7 @@ Avatar.propTypes = {
   size: PropTypes.oneOf(['xs', 'sm', 'md', 'lg']),
   status: PropTypes.oneOf(['online', 'away', 'offline']),
   className: PropTypes.string,
+  linkToProfile: PropTypes.bool,
+  userId: PropTypes.string,
+  profileType: PropTypes.oneOf(['student', 'assistant']),
 };
