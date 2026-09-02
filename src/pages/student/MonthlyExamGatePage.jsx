@@ -1,6 +1,53 @@
 export const route = { path: '/:instructorId/monthly-exam', index: false, auth: 'student', title: 'اختبار الشهر' };
-import React, { useState } from 'react';
+
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Button from '../../components/ui/Button';
-import { monthlyExamGate } from '../../mocks/studentMockData';
-export default function MonthlyExamGatePage() { const { instructorId } = useParams(); const navigate = useNavigate(); const [ready, setReady] = useState(false); const exam = monthlyExamGate; return <div className="mx-auto max-w-2xl pt-8 text-center" dir="rtl"><section className="overflow-hidden rounded-[var(--radius-xl)] bg-navy-900 p-8 text-white shadow-panel sm:p-12"><span className="inline-grid h-16 w-16 place-items-center rounded-3xl bg-white/15 text-3xl">✦</span><p className="mt-6 text-sm font-bold text-brand-200">تحدّي الشهر</p><h1 className="mt-2 text-3xl font-extrabold">{exam.title}</h1><p className="mx-auto mt-4 max-w-lg leading-7 text-white/70">أكمل الاختبار لفتح محتوى الشهر التالي وقياس تقدّمك الحقيقي.</p><div className="mt-8 grid grid-cols-3 gap-3 text-right"><div className="rounded-2xl bg-white/10 p-4"><b>{exam.questionsCount}</b><small className="mt-1 block text-white/60">سؤالًا</small></div><div className="rounded-2xl bg-white/10 p-4"><b>{exam.durationMinutes}</b><small className="mt-1 block text-white/60">دقيقة</small></div><div className="rounded-2xl bg-white/10 p-4"><b>{exam.passingScore}%</b><small className="mt-1 block text-white/60">درجة النجاح</small></div></div><label className="mt-8 flex cursor-pointer items-center justify-center gap-2 text-sm text-white/80"><input checked={ready} onChange={(e) => setReady(e.target.checked)} type="checkbox" className="accent-brand-400" />أنا مستعد للبدء الآن</label><Button disabled={!ready} className="mt-5 w-full !bg-white !text-navy-900" size="lg" onClick={() => navigate(`/${instructorId}/quiz/take/${exam.examId}`)}>ابدأ الاختبار</Button></section></div>; }
+import useAuth from '../../hooks/useAuth';
+import quizService from '../../services/quizService';
+import subscriptionService from '../../services/subscriptionService';
+
+const errorMessage = (error, fallback) => error?.message || fallback;
+
+export default function MonthlyExamGatePage() {
+  const { instructorId } = useParams();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [exam, setExam] = useState(null);
+  const [eligibility, setEligibility] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const load = useCallback(async () => {
+    const studentId = user?._id || user?.id;
+    const stage = user?.stage;
+    if (!studentId || !stage) {
+      setError('تعذر تحديد بيانات الطالب أو المرحلة الدراسية.');
+      setLoading(false);
+      return;
+    }
+    setLoading(true); setError(''); setExam(null); setEligibility(null);
+    try {
+      const subscriptionResponse = await subscriptionService.getCurrent(studentId, stage);
+      const subscription = subscriptionResponse?.data?.data;
+      const monthlyExam = subscription?.monthlyExam;
+      if (!monthlyExam?.quizId) {
+        setLoading(false);
+        return;
+      }
+      setExam({ ...monthlyExam, subscriptionId: subscription._id });
+      const eligibilityResponse = await quizService.checkMonthlyExamEligibility(monthlyExam.quizId);
+      setEligibility(eligibilityResponse?.data?.data || null);
+    } catch (requestError) {
+      setError(errorMessage(requestError, 'تعذر تحميل اختبار الشهر. حاول مرة أخرى.'));
+    } finally { setLoading(false); }
+  }, [user]);
+
+  useEffect(() => { load(); }, [load]);
+
+  if (loading) return <div dir="rtl" className="mx-auto max-w-2xl rounded-[var(--radius-xl)] bg-surface-default p-8 text-center text-ink-500 shadow-card">جارٍ التحقق من اختبار الشهر...</div>;
+  if (error) return <div dir="rtl" role="alert" className="mx-auto max-w-2xl rounded-[var(--radius-xl)] bg-danger-soft p-8 text-center text-danger-DEFAULT"><p>{error}</p><Button variant="subtle" className="mt-4" onClick={load}>إعادة المحاولة</Button></div>;
+  if (!exam) return <div dir="rtl" className="mx-auto max-w-2xl rounded-[var(--radius-xl)] bg-surface-default p-8 text-center shadow-card"><h1 className="text-2xl font-extrabold text-ink-900">لا يتوفر اختبار شهر حالي</h1><p className="mt-3 text-ink-600">لا يوجد اختبار مرتبط باشتراكك الحالي لهذه المرحلة.</p></div>;
+  if (!eligibility?.eligible) return <div dir="rtl" className="mx-auto max-w-2xl rounded-[var(--radius-xl)] bg-surface-default p-8 text-center shadow-card"><p className="text-sm font-bold text-brand-600">اختبار الشهر {exam.month}</p><h1 className="mt-2 text-2xl font-extrabold text-ink-900">لا يمكنك بدء الاختبار حالياً</h1><p className="mt-4 text-ink-600">{eligibility?.reason || 'لم تتحقق أهلية الاختبار.'}</p></div>;
+  return <div dir="rtl" className="mx-auto max-w-2xl rounded-[var(--radius-xl)] bg-surface-default p-8 text-center shadow-card"><p className="text-sm font-bold text-brand-600">اختبار الشهر {exam.month}</p><h1 className="mt-2 text-2xl font-extrabold text-ink-900">أنت مؤهل لبدء الاختبار</h1><p className="mt-4 text-ink-600">يتم التحقق من أهليتك من الخادم قبل تحميل الأسئلة.</p><Button className="mt-6" onClick={() => navigate(`/${instructorId}/quiz/take/${exam.quizId}`, { state: { monthlyExam: { subscriptionId: exam.subscriptionId } } })}>بدء الاختبار</Button></div>;
+}
