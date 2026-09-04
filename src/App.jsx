@@ -1,6 +1,6 @@
 // src/App.jsx
 import React, { Suspense, useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { buildAutoRoutes } from './routes.auto';
 import Layouts from './layouts/Layouts';
 import ParentLayout from './layouts/ParentLayout';
@@ -10,25 +10,10 @@ import { InstructorProvider } from './contexts/InstructorContext';
 import { SelectedChildProvider } from './contexts/SelectedChildContext';
 import { ThemeProvider } from './contexts/ThemeProvider';
 import useAuth from './hooks/useAuth';
-import DevRoleSwitcher from './components/dev/DevRoleSwitcher';
-
-function roleHome(user, instructorId) {
-  if (user?.role === 'super_admin') return '/super-admin';
-  const base = instructorId || user?.instructorId;
-  if (!base) return '/';
-  switch (user?.role) {
-    case 'admin':
-    case 'teacher': return `/${base}/admin/dashboard`;
-    case 'assistant': return `/${base}/assistant/dashboard`;
-    case 'parent': return `/${base}/parent/dashboard`;
-    case 'student': return `/${base}/dashboard`;
-    default: return `/${base}`;
-  }
-}
+import { dashboardPathFor } from './utils/dashboardPath';
 
 function RouteGuard({ route, children }) {
   const { user, loading } = useAuth();
-  const { instructorId } = useParams();
 
   if (loading) {
     return <div className="p-6">جارٍ التحميل...</div>;
@@ -38,7 +23,7 @@ function RouteGuard({ route, children }) {
   // path was not registered anywhere and would only hit the catch-all 404
   // route. AuthProvider.jsx is updated to redirect to '/'.
   if (route.auth === 'guest' && user) {
-    return <Navigate to={roleHome(user, instructorId)} replace />;
+    return <Navigate to={dashboardPathFor(user)} replace />;
   }
 
   // FIX: every page built so far exports auth as a role string directly
@@ -58,7 +43,7 @@ function RouteGuard({ route, children }) {
   }
 
   if (requiredRoles.length > 0 && (!user || !requiredRoles.includes(user.role))) {
-    return <Navigate to={roleHome(user, instructorId)} replace />;
+    return <Navigate to={dashboardPathFor(user)} replace />;
   }
 
   return children;
@@ -176,13 +161,6 @@ export default function App() {
                 </Routes>
               </Suspense>
 
-              {/* DEV-ONLY: floating role switcher for previewing every
-                  dashboard (student/assistant/admin/parent) with mock data.
-                  Mounted outside <Routes> so it persists across navigation.
-                  import.meta.env.DEV is statically inlined by Vite, so this
-                  entire block — and the component itself — is stripped from
-                  production builds. */}
-              {import.meta.env.DEV && <DevRoleSwitcher />}
             </ThemeProvider>
           </SelectedChildProvider>
         </InstructorProvider>

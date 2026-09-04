@@ -42,8 +42,6 @@ const MOCK_ENROLLED_COURSES = [
   },
 ];
 
-const MOCK_PARENT_ACCESS_CODE = 'PARENT-7X4K9Q';
-
 function daysLeft(dateString) {
   const diff = Math.ceil((new Date(dateString) - new Date()) / (1000 * 60 * 60 * 24));
   return diff > 0 ? diff : 0;
@@ -57,10 +55,12 @@ export default function StudentDashboard() {
   const [copied, setCopied] = useState(false);
 
   const walletBalance = user?.walletBalance ?? 0;
+  const parentAccessCode = user?.parentAccessCode || null;
 
   const handleCopyCode = async () => {
+    if (!parentAccessCode) return;
     try {
-      await navigator.clipboard.writeText(MOCK_PARENT_ACCESS_CODE);
+      await navigator.clipboard.writeText(parentAccessCode);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -135,16 +135,16 @@ export default function StudentDashboard() {
       </section>
 
       {/* Parent access code */}
-      <section className="bg-surface-default rounded-2xl shadow-card p-6">
+      <section id="parent-access-code" className="bg-surface-default rounded-2xl shadow-card p-6 scroll-mt-24">
         <h2 className="text-lg font-semibold text-ink-900 mb-2">كود ربط ولي الأمر</h2>
         <p className="text-sm text-ink-500 mb-4">
           شارك هذا الكود مع ولي أمرك لربط حسابه بحسابك عند التسجيل
         </p>
         <div className="flex items-center gap-3">
           <div className="flex-1 px-4 py-2 rounded-lg bg-surface-muted font-mono text-ink-900 text-sm">
-            {MOCK_PARENT_ACCESS_CODE}
+            {parentAccessCode || 'الكود غير متاح حالياً، حاول تحديث الصفحة'}
           </div>
-          <Button variant="ghost" size="sm" onClick={handleCopyCode}>
+          <Button variant="ghost" size="sm" onClick={handleCopyCode} disabled={!parentAccessCode}>
             {copied ? 'تم النسخ' : 'نسخ'}
           </Button>
         </div>

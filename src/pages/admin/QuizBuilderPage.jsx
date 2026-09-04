@@ -3,14 +3,16 @@ export const route = {
   path: ['/:instructorId/admin/quiz-builder', '/:instructorId/admin/courses/:courseId/quizzes/manage'],
   index: false,
   auth: 'required',
-  roles: ['admin', 'teacher'],
+  roles: ['admin', 'assistant', 'teacher'],
   title: 'منشئ الاختبارات'
 };
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
+import { useAuth } from '../../hooks/useAuth';
+import api from '../../services/api';
 
 function makeEmptyQuestion() {
   return {
@@ -26,13 +28,61 @@ function makeEmptyQuestion() {
 export default function QuizBuilderPage() {
   const { instructorId, courseId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth() || {};
+  const lacksPermission = user?.role === 'assistant' && !user?.permissions?.includes('can_grade_exams');
 
+  const [quizId, setQuizId] = useState(null);
   const [title, setTitle] = useState('');
   const [passingScore, setPassingScore] = useState(50);
   const [timeLimitMinutes, setTimeLimitMinutes] = useState(15);
   const [questions, setQuestions] = useState([makeEmptyQuestion()]);
   const [showSuccess, setShowSuccess] = useState(false);
   const [errors, setErrors] = useState({});
+  const [loadError, setLoadError] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (lacksPermission) {
+      navigate(`/${instructorId}/assistant/dashboard`, { replace: true });
+      return undefined;
+    }
+    if (!courseId) {
+      setLoadError('اختر دورة أولاً لإنشاء أو تعديل اختبارها.');
+      setLoading(false);
+      return undefined;
+    }
+    let active = true;
+    async function loadQuiz() {
+      setLoading(true);
+      setLoadError(null);
+      try {
+        const response = await api.get(`/instructors/${instructorId}/courses/${courseId}/quiz`);
+        if (!active) return;
+        const quiz = response.data.data;
+        if (quiz) {
+          setQuizId(quiz._id);
+          setTitle(quiz.title || '');
+          setPassingScore(quiz.passingScore ?? 50);
+          setTimeLimitMinutes(quiz.timeLimitMinutes ?? 15);
+          setQuestions(quiz.questions.map((question) => ({
+            id: question._id || `q-${Date.now()}`,
+            text: question.text,
+            options: question.options,
+            correctOptionIndex: question.correctOptionIndex,
+            points: question.points,
+            explanation: question.explanation || ''
+          })));
+        }
+      } catch (err) {
+        if (active) setLoadError(err?.message || 'تعذر تحميل الاختبار.');
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+    loadQuiz();
+    return () => { active = false; };
+  }, [courseId, instructorId, lacksPermission, navigate]);
 
   const updateQuestion = (qIndex, patch) => {
     setQuestions((prev) =>
@@ -81,19 +131,17 @@ export default function QuizBuilderPage() {
     return Object.keys(nextErrors).length === 0;
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!validate()) {
       setShowSuccess(false);
       return;
     }
 
     const payload = {
-      courseId,
       title,
       passingScore: Number(passingScore),
       timeLimitMinutes: Number(timeLimitMinutes),
       questions: questions.map((q) => ({
-        id: q.id,
         text: q.text,
         options: q.options,
         correctOptionIndex: q.correctOptionIndex,
@@ -102,15 +150,25 @@ export default function QuizBuilderPage() {
       }))
     };
 
-    // Mock save — no quizService/backend endpoint exists yet.
-    // eslint-disable-next-line no-console
-    console.log('Quiz payload (mock save):', payload);
-
-    setShowSuccess(true);
-    setTimeout(() => {
+    setSaving(true);
+    setLoadError(null);
+    try {
+      const response = quizId
+        ? await api.patch(`/quizzes/${quizId}`, payload)
+        : await api.post(`/instructors/${instructorId}/courses/${courseId}/quiz`, payload);
+      setQuizId(response.data.data._id);
+      setShowSuccess(true);
+      setTimeout(() => {
       navigate(`/${instructorId}/admin/courses`);
-    }, 1200);
+      }, 1200);
+    } catch (err) {
+      setLoadError(err?.message || 'تعذر حفظ الاختبار.');
+    } finally {
+      setSaving(false);
+    }
   };
+
+  if (lacksPermission || loading) return <div dir="rtl" className="max-w-3xl mx-auto p-6 text-ink-600">جارٍ تحميل منشئ الاختبارات...</div>;
 
   return (
     <div dir="rtl" className="max-w-3xl mx-auto space-y-6">
@@ -124,6 +182,7 @@ export default function QuizBuilderPage() {
           تم حفظ الاختبار بنجاح، جارٍ التحويل...
         </div>
       )}
+      {loadError && <div role="alert" className="rounded-2xl bg-danger-soft p-4 text-danger-DEFAULT text-sm">{loadError}</div>}
 
       {/* Basic settings */}
       <div className="bg-surface-default rounded-2xl shadow-card p-6 space-y-4">
@@ -249,8 +308,8 @@ export default function QuizBuilderPage() {
       </div>
 
       <div className="flex justify-end">
-        <Button variant="primary" onClick={handleSave}>
-          حفظ الاختبار
+        <Button variant="primary" onClick={handleSave} disabled={saving || !courseId}>
+          {saving ? 'جارٍ الحفظ...' : 'حفظ الاختبار'}
         </Button>
       </div>
     </div>

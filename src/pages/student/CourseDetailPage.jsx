@@ -6,31 +6,11 @@ export const route = {
   title: 'تفاصيل الدورة',
 };
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
-
-const MOCK_COURSE = {
-  id: 'course-101',
-  title_en: 'Algebra Fundamentals',
-  title_ar: 'أساسيات الجبر',
-  description_en: 'A comprehensive introduction to core algebra concepts.',
-  description_ar: 'مقدمة شاملة لأهم مفاهيم الجبر الأساسية، تشمل المعادلات والمتباينات والدوال الخطية مع أمثلة تطبيقية.',
-  price: 150,
-  thumbnailUrl: null,
-  syllabus: [
-    'مقدمة في الجبر',
-    'المعادلات من الدرجة الأولى',
-    'المتباينات',
-    'الدوال الخطية',
-    'تطبيقات عملية ومراجعة',
-  ],
-  assignmentsCount: 5,
-  quizzesCount: 5,
-  accessPeriodDays: 10,
-  maxViews: 10,
-};
+import instructorService from '../../services/instructorService';
 
 function LockIcon() {
   return (
@@ -49,9 +29,19 @@ function LockIcon() {
 export default function CourseDetailPage() {
   const { instructorId, courseId } = useParams();
   const navigate = useNavigate();
+  const [course, setCourse] = useState(null);
+  const [error, setError] = useState('');
 
-  // In production this would be fetched by courseId; using mock data for now.
-  const course = { ...MOCK_COURSE, id: courseId || MOCK_COURSE.id };
+  useEffect(() => {
+    let active = true;
+    instructorService.getCourse(instructorId, courseId)
+      .then((response) => { if (active) setCourse(response.data); })
+      .catch((requestError) => { if (active) setError(requestError.message || 'تعذر تحميل الدورة.'); });
+    return () => { active = false; };
+  }, [instructorId, courseId]);
+
+  if (error) return <div dir="rtl" className="rounded-2xl bg-danger-soft p-6 text-center text-danger-DEFAULT">{error}</div>;
+  if (!course) return <div dir="rtl" className="rounded-2xl bg-surface-muted p-6 text-center text-ink-500">جارٍ تحميل الدورة...</div>;
 
   return (
     <div dir="rtl" className="space-y-6 pb-28">
@@ -70,8 +60,8 @@ export default function CourseDetailPage() {
       <section className="relative overflow-hidden rounded-3xl shadow-card">
         <div className="h-64 w-full sm:h-72">
           <img
-            src={course.thumbnailUrl || '/src/assets/vite.svg'}
-            alt={course.title_ar}
+            src={course.image || '/src/assets/vite.svg'}
+            alt={course.title}
             className="h-full w-full object-cover"
           />
         </div>
@@ -91,9 +81,9 @@ export default function CourseDetailPage() {
           <span className="mb-3 inline-flex rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white backdrop-blur">
             دورة متقدمة
           </span>
-          <h1 className="font-display text-3xl font-bold text-white text-balance">{course.title_ar}</h1>
+          <h1 className="font-display text-3xl font-bold text-white text-balance">{course.title}</h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/80">
-            {course.description_ar}
+            {course.subtitle}
           </p>
         </div>
       </section>
@@ -133,71 +123,10 @@ export default function CourseDetailPage() {
             </span>
             <h2 className="text-lg font-bold text-ink-900">عن الدورة</h2>
           </div>
-          <p className="text-sm leading-relaxed text-ink-600">{course.description_ar}</p>
-          <div className="mt-5 flex items-center gap-3 text-xs">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-muted px-3 py-1.5 text-ink-700">
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
-                <path d="M5 4h14v16l-7-3-7 3z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-              </svg>
-              {course.assignmentsCount} واجبات
-            </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-muted px-3 py-1.5 text-ink-700">
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
-                <path d="M9 11l3 3 5-6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                <rect x="4" y="4" width="16" height="16" rx="3" stroke="currentColor" strokeWidth="1.6" />
-              </svg>
-              {course.quizzesCount} اختبارات
-            </span>
-          </div>
+          <p className="text-sm leading-relaxed text-ink-600">{course.subtitle || 'لا يوجد وصف متاح لهذه الدورة حاليًا.'}</p>
         </section>
       </div>
 
-      {/* Syllabus */}
-      <section className="rounded-2xl bg-surface-default p-6 shadow-card">
-        <div className="mb-5 flex items-center gap-2">
-          <span className="text-brand-600">
-            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
-              <path d="M4 5h16M4 12h16M4 19h10" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-            </svg>
-          </span>
-          <h2 className="text-lg font-bold text-ink-900">محتوى الدورة</h2>
-        </div>
-        <ol className="space-y-3">
-          {course.syllabus.map((lesson, idx) => (
-            <li
-              key={idx}
-              className={`flex items-center justify-between rounded-2xl border px-4 py-3.5 transition-colors ${
-                idx === 0
-                  ? 'border-accent/40 bg-accent/8'
-                  : 'border-surface-border bg-surface-muted/40'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <span
-                  className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${
-                    idx === 0 ? 'bg-accent text-accent-ink' : 'bg-surface-default text-ink-500'
-                  }`}
-                >
-                  {idx + 1}
-                </span>
-                <div>
-                  <span className="block text-sm font-semibold text-ink-800">{lesson}</span>
-                  {idx === 0 && <span className="text-xs text-ink-500">متاح للمعاينة</span>}
-                </div>
-              </div>
-              {idx === 0 ? (
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-500/12 text-brand-600">
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
-                </span>
-              ) : (
-                <LockIcon />
-              )}
-            </li>
-          ))}
-        </ol>
-      </section>
 
       {/* Sticky CTA */}
       <div className="fixed bottom-0 inset-x-0 z-10 border-t border-surface-border bg-surface-default/95 p-4 backdrop-blur">

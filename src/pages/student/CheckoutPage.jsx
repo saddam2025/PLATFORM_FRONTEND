@@ -7,75 +7,84 @@ export const route = {
   title: 'الدفع',
 };
 
-import React, { useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import Input from '../../components/ui/Input';
+import React, { useEffect, useState } from 'react';
+import { useParams, useSearchParams } from 'react-router-dom';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
+import api from '../../services/api';
+import courseService from '../../services/courseService';
 
-const MOCK_COURSE = {
-  title: 'أساسيات الجبر',
-  price: 150,
-};
-
-const MOCK_SUBSCRIPTION = {
-  title: 'اشتراك شهري',
-  price: 300,
-};
+function stageLabel(stageId) {
+  const stages = {
+    'grade-7': 'الصف السابع',
+    'grade-8': 'الصف الثامن',
+    'grade-9': 'الصف التاسع',
+    'grade-10': 'الصف العاشر',
+    'grade-11': 'الصف الحادي عشر',
+    'grade-12': 'الصف الثاني عشر'
+  };
+  return stages[stageId] || stageId;
+}
 
 export default function CheckoutPage() {
   const { instructorId, courseId } = useParams();
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
+  const [course, setCourse] = useState(null);
+  const [loadingOrder, setLoadingOrder] = useState(true);
+  const [orderError, setOrderError] = useState('');
+  const [paymobLoading, setPaymobLoading] = useState(false);
+  const [paymobError, setPaymobError] = useState('');
+  const [iframeUrl, setIframeUrl] = useState('');
 
   const isSubscription = courseId === 'subscription';
   const stageId = searchParams.get('stageId');
-  const order = isSubscription ? MOCK_SUBSCRIPTION : MOCK_COURSE;
 
-  const [method, setMethod] = useState('scratchcard');
+  useEffect(() => {
+    let active = true;
 
-  // Scratch card state
-  const [code, setCode] = useState('');
-  const [codeError, setCodeError] = useState('');
-  const [activating, setActivating] = useState(false);
-  const [success, setSuccess] = useState(false);
-
-  // Paymob state
-  const [paymobLoading, setPaymobLoading] = useState(true);
-
-  React.useEffect(() => {
-    if (method === 'paymob') {
-      setPaymobLoading(true);
-      const t = setTimeout(() => setPaymobLoading(false), 1200);
-      return () => clearTimeout(t);
-    }
-  }, [method]);
-
-  const handleActivate = (e) => {
-    e.preventDefault();
-    setCodeError('');
-    if (!code.trim()) {
-      setCodeError('الرجاء إدخال الكود');
-      return;
+    if (isSubscription) {
+      setLoadingOrder(false);
+      setCourse(null);
+      setOrderError(stageId ? '' : 'لم يتم تحديد المرحلة الدراسية للاشتراك.');
+      return () => { active = false; };
     }
 
-    setActivating(true);
-    setTimeout(() => {
-      setActivating(false);
-      if (code.trim() === 'VALID123') {
-        setSuccess(true);
-        setTimeout(() => {
-          if (isSubscription) {
-            navigate(`/${instructorId}/dashboard`);
-          } else {
-            navigate(`/${instructorId}/courses/${courseId}/learn`);
-          }
-        }, 1500);
-      } else {
-        setCodeError('الكود غير صالح أو مستخدم من قبل');
-      }
-    }, 600);
+    setLoadingOrder(true);
+    setOrderError('');
+    courseService.get(instructorId, courseId)
+      .then((response) => {
+        if (active) setCourse(response?.data?.data || null);
+      })
+      .catch((error) => {
+        if (active) setOrderError(error?.message || 'تعذر تحميل تفاصيل الدورة.');
+      })
+      .finally(() => {
+        if (active) setLoadingOrder(false);
+      });
+
+    return () => { active = false; };
+  }, [courseId, instructorId, isSubscription, stageId]);
+
+  const startPaymobCheckout = async () => {
+    setPaymobLoading(true);
+    setPaymobError('');
+
+    try {
+      const response = isSubscription
+        ? await api.post(`/subscriptions/${stageId}/checkout`, { instructorId, paymentMethod: 'paymob' })
+        : await api.post(`/courses/${courseId}/checkout/paymob`);
+      const nextIframeUrl = response?.data?.data?.iframeUrl;
+      if (!nextIframeUrl) throw new Error('لم تُرجع بوابة الدفع رابط الإطار المطلوب.');
+      setIframeUrl(nextIframeUrl);
+    } catch (error) {
+      setPaymobError(error?.message || 'تعذر بدء عملية الدفع الإلكتروني.');
+    } finally {
+      setPaymobLoading(false);
+    }
   };
+
+  const orderTitle = isSubscription ? 'اشتراك شهري' : (course?.title_ar || course?.title_en);
+  const orderPrice = isSubscription ? null : course?.price;
 
   return (
     <div dir="rtl" className="max-w-4xl mx-auto space-y-6">
@@ -86,98 +95,52 @@ export default function CheckoutPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Payment methods */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setMethod('scratchcard')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                method === 'scratchcard'
-                  ? 'bg-brand-500 text-ink-900'
-                  : 'bg-surface-default border border-surface-border text-ink-700'
-              }`}
-            >
-              بطاقة شحن
-            </button>
-            <button
-              type="button"
-              onClick={() => setMethod('paymob')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                method === 'paymob'
-                  ? 'bg-brand-500 text-ink-900'
-                  : 'bg-surface-default border border-surface-border text-ink-700'
-              }`}
-            >
-              الدفع الإلكتروني
-            </button>
-          </div>
+      {loadingOrder && <div className="rounded-xl bg-surface-default p-4 text-center text-sm text-ink-500">جارٍ تحميل تفاصيل الطلب...</div>}
+      {orderError && <div role="alert" className="rounded-xl bg-danger-soft p-4 text-center text-sm text-danger-DEFAULT">{orderError}</div>}
 
-          {method === 'scratchcard' && (
-            <div className="bg-surface-default rounded-2xl shadow-card p-6">
-              {success ? (
-                <div className="rounded-md p-4 bg-success-soft text-success-DEFAULT text-sm">
-                  تم التفعيل بنجاح! جارٍ التحويل...
-                </div>
-              ) : (
-                <form onSubmit={handleActivate} className="space-y-4">
-                  <div>
-                    <label htmlFor="scratchcode" className="block text-sm font-medium text-ink-700 mb-1">
-                      كود بطاقة الشحن
-                    </label>
-                    <Input
-                      id="scratchcode"
-                      name="scratchcode"
-                      value={code}
-                      onChange={(e) => {
-                        setCode(e.target.value);
-                        setCodeError('');
-                      }}
-                      placeholder="أدخل الكود هنا"
-                      error={codeError}
-                    />
-                  </div>
-                  <Button type="submit" variant="primary" disabled={activating}>
-                    {activating ? 'جارٍ التفعيل...' : 'تفعيل'}
-                  </Button>
-                </form>
+      {!loadingOrder && !orderError && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-4">
+            <section className="bg-surface-default rounded-2xl shadow-card p-6">
+              <h2 className="text-lg font-semibold text-ink-900">الدفع الإلكتروني</h2>
+              <p className="mt-2 text-sm text-ink-600">
+                سيتم فتح بوابة Paymob الآمنة لإتمام الدفع عند توفرها للخطة المختارة.
+              </p>
+
+              {paymobError && <div role="alert" className="mt-4 rounded-xl bg-danger-soft p-4 text-sm text-danger-DEFAULT">{paymobError}</div>}
+
+              {!iframeUrl && (
+                <Button className="mt-5" variant="primary" onClick={startPaymobCheckout} disabled={paymobLoading}>
+                  {paymobLoading ? 'جارٍ فتح بوابة الدفع...' : 'الدفع عبر Paymob'}
+                </Button>
               )}
-            </div>
-          )}
 
-          {method === 'paymob' && (
-            <div className="bg-surface-default rounded-2xl shadow-card p-6">
-              {paymobLoading ? (
-                <div className="h-64 rounded-xl bg-surface-muted animate-pulse flex items-center justify-center text-ink-500 text-sm">
-                  جاري تحميل بوابة الدفع...
-                </div>
-              ) : (
-                // TODO(backend): replace this placeholder with the real Paymob
-                // iframe integration once the payment gateway endpoint/keys
-                // are wired up server-side (see TenantSettingsPage's Paymob
-                // section for where the API key/integration ID are configured).
-                <div className="bg-surface-muted rounded-xl h-64 flex items-center justify-center text-ink-500">
-                  بوابة الدفع (Paymob)
-                </div>
+              {iframeUrl && (
+                <iframe
+                  title="بوابة دفع Paymob"
+                  src={iframeUrl}
+                  className="mt-5 h-[680px] w-full rounded-xl border border-surface-border"
+                  allow="payment"
+                />
               )}
-            </div>
-          )}
-        </div>
+            </section>
+          </div>
 
-        {/* Order summary */}
-        <div className="bg-surface-default rounded-2xl shadow-card p-6 h-fit space-y-4">
-          <h2 className="text-lg font-semibold text-ink-900">ملخص الطلب</h2>
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-ink-600">{order.title}</span>
-            {isSubscription && stageId && <Badge variant="neutral">{stageId}</Badge>}
-          </div>
-          <div className="border-t border-surface-border pt-4 flex items-center justify-between">
-            <span className="font-semibold text-ink-900">المجموع</span>
-            <span className="font-semibold text-ink-900">{order.price} ج.م</span>
-          </div>
+          <aside className="bg-surface-default rounded-2xl shadow-card p-6 h-fit space-y-4">
+            <h2 className="text-lg font-semibold text-ink-900">ملخص الطلب</h2>
+            <div className="flex items-center justify-between text-sm gap-3">
+              <span className="text-ink-600">{orderTitle}</span>
+              {isSubscription && stageId && <Badge variant="neutral">{stageLabel(stageId)}</Badge>}
+            </div>
+            <div className="border-t border-surface-border pt-4 flex items-center justify-between">
+              <span className="font-semibold text-ink-900">المجموع</span>
+              <span className="font-semibold text-ink-900">
+                {typeof orderPrice === 'number' ? `${orderPrice} ج.م` : 'يُحدده الخادم عند تفعيل الاشتراك'}
+              </span>
+            </div>
+          </aside>
         </div>
-      </div>
+      )}
     </div>
   );
 }

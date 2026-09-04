@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import authService from '../services/authService';
 import { setAuthToken as setApiAuthToken } from '../services/api';
+import { dashboardPathFor } from '../utils/dashboardPath';
 
 export const AuthContext = createContext({
   user: null,
@@ -20,20 +21,6 @@ function readStoredToken() {
     return localStorage.getItem('math-auth-token') || localStorage.getItem('mp_token') || null;
   } catch {
     return null;
-  }
-}
-
-function dashboardPathFor(userObj, instructorId) {
-  if (userObj?.role === 'super_admin') return '/super-admin';
-  const base = instructorId || userObj?.instructorId;
-  if (!base) return '/';
-  switch (userObj?.role) {
-    case 'admin':
-    case 'teacher': return `/${base}/admin/dashboard`;
-    case 'assistant': return `/${base}/assistant/dashboard`;
-    case 'parent': return `/${base}/parent/dashboard`;
-    case 'student': return `/${base}/dashboard`;
-    default: return `/${base}`;
   }
 }
 
@@ -72,7 +59,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = useCallback(
-    async (credentials, instructorId) => {
+    async (credentials) => {
       setLoading(true);
       try {
         const res = await authService.login(credentials);
@@ -86,7 +73,7 @@ export function AuthProvider({ children }) {
 
         saveSession(tkn, userObj);
         setLoading(false);
-        navigate(dashboardPathFor(userObj, instructorId), { replace: true });
+        navigate(dashboardPathFor(userObj), { replace: true });
         return { ok: true, data: userObj };
       } catch (err) {
         setLoading(false);
@@ -116,19 +103,6 @@ export function AuthProvider({ children }) {
       return nextUser;
     });
   }, []);
-
-  // DEV-ONLY: lets a role-switcher UI preview each dashboard (student, admin,
-  // assistant, parent) with mock data, without hitting the real backend.
-  // Bypasses authService.login entirely and writes straight to the session.
-  // Guarded so it's a no-op in production builds (import.meta.env.DEV is
-  // statically replaced by Vite, so this branch is dropped from prod bundles).
-  const devLoginAs = useCallback(
-    (mockUser) => {
-      if (!import.meta.env.DEV) return;
-      saveSession('dev-mock-token', mockUser);
-    },
-    [saveSession]
-  );
 
   const refreshUser = useCallback(async () => {
     const stored = readStoredToken();
@@ -180,7 +154,6 @@ export function AuthProvider({ children }) {
         logout,
         refreshUser,
         updateUser,
-        devLoginAs,
       }}
     >
       {children}

@@ -14,13 +14,14 @@ export const route = {
   title: 'محرر الدورة'
 };
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
 // FIX: real hook file is src/hooks/useAuth.js — there is no src/contexts/AuthContext.jsx.
 import { useAuth } from '../../hooks/useAuth';
+import courseService from '../../services/courseService';
 
 // Same 6 grades used in StageSelectorPage, kept in sync intentionally.
 const STAGES = [
@@ -61,36 +62,17 @@ export default function CourseEditorPage() {
   // assistants per feature #15 ("identical permissions" once granted).
   const canUploadVideo = role === 'admin' || permissions.includes('can_upload_video');
 
-  // Mock "existing course" lookup for edit mode — no real backend yet, so this
-  // mirrors the same useMemo-based mock pattern used in AssignmentGradingPage.
-  const existingCourse = useMemo(() => {
-    if (isNew) return null;
-    return {
-      id: courseId,
-      title_en: 'Algebra Basics',
-      title_ar: 'أساسيات الجبر',
-      description_en: 'An introduction to algebraic thinking.',
-      description_ar: 'مقدمة في التفكير الجبري.',
-      price: 150,
-      stage: 'grade-9',
-      category: 'الشهر الأول',
-      accessPeriodDays: 10,
-      maxViews: 10,
-      isPublished: true
-    };
-  }, [isNew, courseId]);
-
   // ---- Basic info ----
-  const [titleEn, setTitleEn] = useState(existingCourse?.title_en || '');
-  const [titleAr, setTitleAr] = useState(existingCourse?.title_ar || '');
-  const [descriptionEn, setDescriptionEn] = useState(existingCourse?.description_en || '');
-  const [descriptionAr, setDescriptionAr] = useState(existingCourse?.description_ar || '');
-  const [price, setPrice] = useState(existingCourse?.price ?? '');
+  const [titleEn, setTitleEn] = useState('');
+  const [titleAr, setTitleAr] = useState('');
+  const [descriptionEn, setDescriptionEn] = useState('');
+  const [descriptionAr, setDescriptionAr] = useState('');
+  const [price, setPrice] = useState('');
 
   // ---- Stage & category ----
-  const [stage, setStage] = useState(existingCourse?.stage || STAGES[0].id);
+  const [stage, setStage] = useState(STAGES[0].id);
   const [categories, setCategories] = useState(['الشهر الأول', 'الوحدة الثانية']);
-  const [category, setCategory] = useState(existingCourse?.category || categories[0]);
+  const [category, setCategory] = useState(categories[0]);
   const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
 
@@ -115,35 +97,12 @@ export default function CourseEditorPage() {
 
   // ---- Video (single file per course, matches Course schema's videoUrl_encrypted field) ----
   const [videoFile, setVideoFile] = useState(null);
-  const [videoUploadProgress, setVideoUploadProgress] = useState(0);
-  const [videoUploading, setVideoUploading] = useState(false);
   const videoInputRef = useRef(null);
 
-  // Carried over from the original file's real upload call, but converted to
-  // a mock fake-progress simulation per the spec ("mock upload progress bar
-  // (fake progress via setInterval 0-100% over 2s on file select)") — this
-  // page has no real backend endpoint yet, matching every other page built so far.
   const handleVideoChange = (e) => {
     if (!canUploadVideo) return; // defensive guard in addition to the disabled attribute
     const f = e.target.files?.[0] ?? null;
     setVideoFile(f);
-    if (!f) {
-      setVideoUploadProgress(0);
-      return;
-    }
-
-    setVideoUploading(true);
-    setVideoUploadProgress(0);
-    const start = Date.now();
-    const interval = setInterval(() => {
-      const elapsed = Date.now() - start;
-      const pct = Math.min(100, Math.round((elapsed / 2000) * 100));
-      setVideoUploadProgress(pct);
-      if (pct >= 100) {
-        clearInterval(interval);
-        setVideoUploading(false);
-      }
-    }, 100);
   };
 
   // ---- Homework attachment ----
@@ -171,15 +130,16 @@ export default function CourseEditorPage() {
     setQuestions((prev) => prev.map((q) => (q.id === id ? { ...q, explanation } : q)));
 
   // ---- Access rules (feature #3) ----
-  const [accessPeriodDays, setAccessPeriodDays] = useState(existingCourse?.accessPeriodDays ?? 10);
-  const [maxViews, setMaxViews] = useState(existingCourse?.maxViews ?? 10);
+  const [accessPeriodDays, setAccessPeriodDays] = useState(10);
+  const [maxViews, setMaxViews] = useState(10);
 
   // ---- Publish toggle ----
-  const [isPublished, setIsPublished] = useState(existingCourse?.isPublished ?? false);
+  const [isPublished, setIsPublished] = useState(false);
 
   // ---- Submit ----
   const [saving, setSaving] = useState(false);
   const [successMessage, setSuccessMessage] = useState(null);
+  const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
     // Release the object URL when the component unmounts or the file changes,
@@ -189,13 +149,35 @@ export default function CourseEditorPage() {
     };
   }, [thumbnailPreview]);
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    if (isNew) return undefined;
+    let active = true;
+    courseService.get(instructorId, courseId)
+      .then((response) => {
+        if (!active) return;
+        const course = response.data.data;
+        setTitleEn(course.title_en || '');
+        setTitleAr(course.title_ar || '');
+        setDescriptionEn(course.description_en || '');
+        setDescriptionAr(course.description_ar || '');
+        setPrice(course.price ?? '');
+        setStage(course.stage || STAGES[0].id);
+        const courseCategory = course.categoryId?.name || categories[0];
+        setCategories((previous) => previous.includes(courseCategory) ? previous : [...previous, courseCategory]);
+        setCategory(courseCategory);
+        setAccessPeriodDays(course.accessPeriodDays ?? 10);
+        setMaxViews(course.maxViews ?? 10);
+        setIsPublished(Boolean(course.isPublished));
+      })
+      .catch((requestError) => { if (active) setLoadError(requestError.message || 'تعذر تحميل الدورة.'); });
+    return () => { active = false; };
+  }, [courseId, instructorId, isNew]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
 
     const payload = {
-      id: isNew ? undefined : courseId,
-      instructorId,
       title_en: titleEn,
       title_ar: titleAr,
       description_en: descriptionEn,
@@ -203,24 +185,28 @@ export default function CourseEditorPage() {
       price: Number(price) || 0,
       stage,
       category,
-      thumbnailFileName: thumbnailFile?.name || null,
-      videoFileName: videoFile?.name || null,
-      homeworkFileName: homeworkFile?.name || null,
       questions,
       accessPeriodDays: Number(accessPeriodDays) || 0,
       maxViews: Number(maxViews) || 0,
       isPublished
     };
 
-    // Mock save — no real API endpoint yet, matching every other page built so far.
-    // In production: await api.post(`/instructors/${instructorId}/courses`, payload)
-    // eslint-disable-next-line no-console
-    console.log('Course payload:', payload);
-
-    setSuccessMessage('تم حفظ الدورة بنجاح');
-    setTimeout(() => {
+    try {
+      if (isNew) await courseService.create(instructorId, payload, { thumbnail: thumbnailFile, video: videoFile, homework: homeworkFile });
+      else {
+        // The current PATCH controller does not accept or return quiz questions;
+        // do not imply that question edits have been persisted.
+        const { questions: ignoredQuestions, ...courseFields } = payload;
+        void ignoredQuestions;
+        await courseService.update(instructorId, courseId, courseFields, { thumbnail: thumbnailFile, video: videoFile, homework: homeworkFile });
+      }
+      setSuccessMessage('تم حفظ الدورة بنجاح');
       navigate(`/${instructorId}/admin/courses`);
-    }, 900);
+    } catch (requestError) {
+      setLoadError(requestError.message || 'تعذر حفظ الدورة.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -239,6 +225,7 @@ export default function CourseEditorPage() {
         {successMessage && (
           <div className="rounded-md p-3 bg-success-soft text-success-DEFAULT mb-4 text-sm">{successMessage}</div>
         )}
+        {loadError && <div role="alert" className="rounded-md p-3 bg-danger-soft text-danger-DEFAULT mb-4 text-sm">{loadError}</div>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* 1. Basic info */}
@@ -335,7 +322,7 @@ export default function CourseEditorPage() {
                 )}
               </div>
 
-              {/* Video — single file, mock progress bar */}
+              {/* Video uploads as multipart field "video" when the form is saved. */}
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <label className="block text-sm font-medium text-ink-700">ملف الفيديو</label>
@@ -354,15 +341,7 @@ export default function CourseEditorPage() {
                 {videoFile && (
                   <div className="mt-3">
                     <div className="text-xs text-ink-500 mb-1">{videoFile.name}</div>
-                    <div className="w-full h-2 rounded-full bg-surface-muted overflow-hidden">
-                      <div
-                        className="h-full bg-brand-500 transition-all duration-150"
-                        style={{ width: `${videoUploadProgress}%` }}
-                      />
-                    </div>
-                    <div className="text-xs text-ink-500 mt-1">
-                      {videoUploading ? `جاري الرفع... ${videoUploadProgress}%` : 'تم الرفع'}
-                    </div>
+                    <div className="text-xs text-ink-500 mt-1">سيتم رفع الملف عند حفظ الدورة.</div>
                   </div>
                 )}
               </div>

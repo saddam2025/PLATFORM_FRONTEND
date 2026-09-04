@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { catalogCourses, instructorProfile } from '../mocks/tenantMockData.js';
+import instructorService from '../services/instructorService';
 
 export default function useTenantData(instructorId) {
   const [loading, setLoading] = useState(true);
@@ -13,17 +13,27 @@ export default function useTenantData(instructorId) {
     setLoading(true);
     setError(null);
 
-    const timer = window.setTimeout(() => {
-      if (!instructorId) {
-        setData({ instructorProfile: null, catalogCourses: [] });
-        setError('لم يتم العثور على المعلم.');
-      } else {
-        setData({ instructorProfile, catalogCourses });
-      }
+    if (!instructorId) {
+      setData({ instructorProfile: null, catalogCourses: [] });
+      setError('لم يتم العثور على المنصة.');
       setLoading(false);
-    }, 50);
+      return undefined;
+    }
 
-    return () => window.clearTimeout(timer);
+    let active = true;
+    Promise.all([instructorService.get(instructorId), instructorService.getCourses(instructorId)])
+      .then(([tenantResponse, coursesResponse]) => {
+        if (active) setData({ instructorProfile: tenantResponse.data, catalogCourses: coursesResponse.data });
+      })
+      .catch((requestError) => {
+        if (active) {
+          setData({ instructorProfile: null, catalogCourses: [] });
+          setError(requestError.message || 'تعذر تحميل بيانات المنصة.');
+        }
+      })
+      .finally(() => { if (active) setLoading(false); });
+
+    return () => { active = false; };
   }, [instructorId]);
 
   return {

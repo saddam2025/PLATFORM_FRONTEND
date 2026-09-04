@@ -208,7 +208,7 @@ export default function Sidebar() {
 
         <nav className="flex-1 space-y-2">
           <Item to={`${base}/assistant/dashboard`} icon="dashboard">لوحة المساعد</Item>
-          {canGrade && <Item to={`${base}/assistant/grade/a1`} icon="assignment_turned_in">تصحيح الواجبات</Item>}
+          {canGrade && <Item to={`${base}/assistant/grade`} icon="assignment_turned_in">تصحيح الواجبات</Item>}
           {/* Requirement #15: assistants have identical upload permissions to teachers */}
           <Item to={`${base}/admin/courses`} icon="upload_file">رفع محتوى تعليمي</Item>
           <Item to={`${base}/assistant/messages`} icon="family_restroom">رسائل أولياء الأمور</Item>
@@ -238,7 +238,7 @@ export default function Sidebar() {
             <div className="text-xs font-medium text-white/50 px-3 mb-2">المساعِد</div>
             <div className="space-y-2">
               <Item to={`${base}/assistant/dashboard`} icon="dashboard">لوحة المساعد</Item>
-              {canGrade && <Item to={`${base}/assistant/grade/a1`} icon="assignment_turned_in">تصحيح الواجبات</Item>}
+              {canGrade && <Item to={`${base}/assistant/grade`} icon="assignment_turned_in">تصحيح الواجبات</Item>}
             </div>
           </div>
 
@@ -274,6 +274,7 @@ export default function Sidebar() {
         <Item to={`${base}/dashboard`} icon="dashboard">لوحة التحكم</Item>
         <Item to={`${base}/catalog`} icon="menu_book">الكورسات</Item>
         <Item to={`${base}/leaderboard`} icon="military_tech">لوحة الشرف</Item>
+        <Item to={`${base}/dashboard#parent-access-code`} icon="family_restroom">كود ربط ولي الأمر</Item>
       </nav>
 
       <InstructorsList />

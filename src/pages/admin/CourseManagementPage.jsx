@@ -7,22 +7,12 @@ export const route = {
   title: 'إدارة الدورات'
 };
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
-
-const MOCK_COURSES = [
-  { id: 'c1', title: 'المعادلات الخطية', stage: 'الصف الأول الثانوي', category: 'الشهر 1', price: 150, isPublished: true, studentsEnrolled: 214 },
-  { id: 'c2', title: 'الهندسة التحليلية', stage: 'الصف الثاني الثانوي', category: 'الشهر 2', price: 180, isPublished: true, studentsEnrolled: 176 },
-  { id: 'c3', title: 'التفاضل والتكامل', stage: 'الصف الثالث الثانوي', category: 'الشهر 1', price: 220, isPublished: false, studentsEnrolled: 0 },
-  { id: 'c4', title: 'المتتاليات والمتسلسلات', stage: 'الصف الثالث الثانوي', category: 'الشهر 3', price: 200, isPublished: true, studentsEnrolled: 98 },
-  { id: 'c5', title: 'حساب المثلثات', stage: 'الصف الأول الثانوي', category: 'الشهر 2', price: 150, isPublished: true, studentsEnrolled: 312 },
-  { id: 'c6', title: 'الإحصاء والاحتمالات', stage: 'الصف الثاني الثانوي', category: 'الشهر 1', price: 170, isPublished: false, studentsEnrolled: 0 },
-  { id: 'c7', title: 'الجبر المتجهي', stage: 'الصف الثالث الثانوي', category: 'الشهر 2', price: 220, isPublished: true, studentsEnrolled: 87 },
-  { id: 'c8', title: 'الأعداد المركبة', stage: 'الصف الثالث الثانوي', category: 'الشهر 4', price: 220, isPublished: true, studentsEnrolled: 54 }
-];
+import courseService from '../../services/courseService';
 
 function formatPrice(n) {
   return `${n.toLocaleString('ar-EG')} ج.م`;
@@ -32,25 +22,50 @@ export default function CourseManagementPage() {
   const { instructorId } = useParams();
   const navigate = useNavigate();
 
-  const [courses, setCourses] = useState(MOCK_COURSES);
+  const [courses, setCourses] = useState([]);
   const [search, setSearch] = useState('');
   const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const loadCourses = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const response = await courseService.list(instructorId);
+      setCourses(response.data.data || []);
+    } catch (requestError) {
+      setError(requestError.message || 'تعذر تحميل الدورات.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { loadCourses(); }, [instructorId]);
 
   const filteredCourses = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return courses;
-    return courses.filter((c) => c.title.toLowerCase().includes(q));
+    return courses.filter((c) => (c.title_ar || c.title_en || '').toLowerCase().includes(q));
   }, [courses, search]);
 
-  const handleTogglePublish = (id) => {
-    setCourses((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, isPublished: !c.isPublished } : c))
-    );
+  const handleTogglePublish = async (course) => {
+    try {
+      await courseService.update(instructorId, course._id, { isPublished: !course.isPublished });
+      await loadCourses();
+    } catch (requestError) {
+      setError(requestError.message || 'تعذر تحديث حالة النشر.');
+    }
   };
 
-  const handleDelete = (id) => {
-    setCourses((prev) => prev.filter((c) => c.id !== id));
-    setConfirmingDeleteId(null);
+  const handleDelete = async (id) => {
+    try {
+      await courseService.remove(instructorId, id);
+      setConfirmingDeleteId(null);
+      await loadCourses();
+    } catch (requestError) {
+      setError(requestError.message || 'تعذر حذف الدورة.');
+    }
   };
 
   return (
@@ -70,6 +85,7 @@ export default function CourseManagementPage() {
           دورة جديدة
         </Button>
       </div>
+      {error && <div role="alert" className="rounded-xl bg-danger-soft p-4 text-sm text-danger-DEFAULT">{error}</div>}
 
       {/* Toolbar: sort / filter / search */}
       <div className="bg-surface-default rounded-2xl shadow-card p-4 flex items-center gap-3 flex-wrap">
@@ -111,7 +127,6 @@ export default function CourseManagementPage() {
                 <th className="px-5 py-4 font-medium">المرحلة</th>
                 <th className="px-5 py-4 font-medium">التصنيف</th>
                 <th className="px-5 py-4 font-medium">السعر</th>
-                <th className="px-5 py-4 font-medium">عدد الطلاب</th>
                 <th className="px-5 py-4 font-medium">الحالة</th>
                 <th className="px-5 py-4 font-medium">إجراءات</th>
               </tr>
@@ -119,7 +134,7 @@ export default function CourseManagementPage() {
             <tbody>
               {filteredCourses.map((course) => (
                 <tr
-                  key={course.id}
+                  key={course._id}
                   className="border-t border-surface-border/70 transition-colors hover:bg-surface-muted/40"
                 >
                   <td className="px-5 py-4">
@@ -130,26 +145,23 @@ export default function CourseManagementPage() {
                           <path d="M8 9h8M8 13h5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
                         </svg>
                       </span>
-                      <span className="font-semibold text-ink-900">{course.title}</span>
+                      <span className="font-semibold text-ink-900">{course.title_ar || course.title_en}</span>
                     </div>
                   </td>
                   <td className="px-5 py-4 text-ink-700">{course.stage}</td>
                   <td className="px-5 py-4">
                     <span className="inline-flex rounded-full bg-surface-muted px-3 py-1 text-xs text-ink-600">
-                      {course.category}
+                      {course.categoryId?.name || '—'}
                     </span>
                   </td>
                   <td className="px-5 py-4">
                     <span className="font-bold text-ink-900">{formatPrice(course.price)}</span>
                   </td>
-                  <td className="px-5 py-4 text-ink-700 font-medium">
-                    {course.studentsEnrolled.toLocaleString('ar-EG')}
-                  </td>
                   <td className="px-5 py-4">
                     <div className="flex flex-col items-start gap-2">
                       <button
                         type="button"
-                        onClick={() => handleTogglePublish(course.id)}
+                        onClick={() => handleTogglePublish(course)}
                         role="switch"
                         aria-checked={course.isPublished}
                         className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
@@ -168,10 +180,10 @@ export default function CourseManagementPage() {
                     </div>
                   </td>
                   <td className="px-5 py-4">
-                    {confirmingDeleteId === course.id ? (
+                    {confirmingDeleteId === course._id ? (
                       <div className="flex items-center gap-2 rounded-xl bg-danger-DEFAULT/8 px-3 py-2">
                         <span className="text-xs font-medium text-danger-DEFAULT">تأكيد الحذف؟</span>
-                        <Button variant="primary" size="sm" onClick={() => handleDelete(course.id)}>
+                        <Button variant="primary" size="sm" onClick={() => handleDelete(course._id)}>
                           نعم
                         </Button>
                         <Button variant="ghost" size="sm" onClick={() => setConfirmingDeleteId(null)}>
@@ -184,7 +196,7 @@ export default function CourseManagementPage() {
                           variant="ghost"
                           size="sm"
                           aria-label="تعديل"
-                          onClick={() => navigate(`/${instructorId}/admin/courses/edit/${course.id}`)}
+                          onClick={() => navigate(`/${instructorId}/admin/courses/edit/${course._id}`)}
                         >
                           <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
                             <path d="M4 20h4l10-10-4-4L4 16v4z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
@@ -195,7 +207,7 @@ export default function CourseManagementPage() {
                           size="sm"
                           className="text-danger-DEFAULT"
                           aria-label="حذف"
-                          onClick={() => setConfirmingDeleteId(course.id)}
+                          onClick={() => setConfirmingDeleteId(course._id)}
                         >
                           <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
                             <path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
@@ -207,9 +219,9 @@ export default function CourseManagementPage() {
                 </tr>
               ))}
 
-              {filteredCourses.length === 0 && (
+              {!loading && filteredCourses.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-12 text-center text-ink-500">
+                    <td colSpan={6} className="px-4 py-12 text-center text-ink-500">
                     لا توجد دورات مطابقة للبحث
                   </td>
                 </tr>

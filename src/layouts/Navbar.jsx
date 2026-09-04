@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import ThemeToggle from '../components/ui/ThemeToggle';
 import Button from '../components/ui/Button';
 import Logo from '../components/common/Logo';
+import { dashboardPathFor } from '../utils/dashboardPath';
 
 const HamburgerIcon = () => <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>;
 const UserIcon = () => <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM6 20c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>;
@@ -16,7 +17,7 @@ export default function Navbar({ sidebarOpen = false, onToggleSidebar }) {
   const homeLink = instructorId ? `/${instructorId}` : '/';
   const loginLink = instructorId ? `/${instructorId}/login` : '/login';
   const registerLink = instructorId ? `/${instructorId}/register` : '/register';
-  const accountLink = instructorId ? `/${instructorId}/dashboard` : '/';
+  const accountLink = dashboardPathFor(user);
   const submitSearch = (event) => {
     event.preventDefault();
     if (instructorId) navigate(`/${instructorId}/catalog?search=${encodeURIComponent(search.trim())}`);

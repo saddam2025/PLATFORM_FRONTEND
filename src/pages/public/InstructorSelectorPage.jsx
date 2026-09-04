@@ -6,9 +6,8 @@ import { InstructorContext } from '../../contexts/InstructorContext';
 import Avatar from '../../components/ui/Avatar';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
-import CourseCard from '../../components/common/CourseCard';
 import Footer from '../../components/common/Footer';
-import { landingAssets, landingTeachers, landingFeatures, landingCourses } from '../../mocks/landingMockData';
+import { landingAssets, landingFeatures } from '../../mocks/landingMockData';
 import Navbar from '../../layouts/Navbar';
 
 const valuePoints = [
@@ -19,7 +18,7 @@ const valuePoints = [
 
 export default function InstructorSelectorPage() {
   const navigate = useNavigate();
-  const { selectInstructor = () => {} } = useContext(InstructorContext) || {};
+  const { instructors = [], loading, selectInstructor = () => {} } = useContext(InstructorContext) || {};
   const teachersRef = useRef(null);
   const scrollToTeachers = () => teachersRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
@@ -30,7 +29,7 @@ export default function InstructorSelectorPage() {
       console.error('Failed to select instructor:', error);
       return;
     }
-    navigate(`/${teacher.id}`);
+    navigate(`/${teacher.subdomain}`);
   };
 
   return (
@@ -121,34 +120,31 @@ export default function InstructorSelectorPage() {
               <p className="mt-4 leading-8 text-white/75">شوف المحتوى المتاح واختار البداية اللي تناسب مستواك.</p>
             </div>
             <div className="mt-9 grid gap-6 md:grid-cols-2">
-              {landingTeachers.map((teacher) => (
-                <article key={teacher.id} className="rounded-3xl bg-white p-6 text-[#102650] shadow-xl">
+              {loading && <p className="text-white/75">جارٍ تحميل المنصات المتاحة...</p>}
+              {!loading && instructors.length === 0 && <p className="text-white/75">لا توجد منصات متاحة حاليًا.</p>}
+              {instructors.map((teacher) => (
+                <article key={teacher.subdomain} className="overflow-hidden rounded-3xl bg-white text-[#102650] shadow-xl">
+                  <div className="h-52 bg-[#eaf5ff]">
+                    {teacher.logoUrl ? <img src={teacher.logoUrl} alt="" className="h-full w-full object-cover" /> : <div className="grid h-full place-items-center text-5xl">📚</div>}
+                  </div>
+                  <div className="p-6">
                   <div className="flex items-center gap-4">
-                    <Avatar name={teacher.name} size="lg" />
+                    <Avatar src={teacher.logoUrl} name={teacher.name} size="lg" />
                     <div className="min-w-0 text-right">
                       <h3 className="text-xl font-extrabold">{teacher.name}</h3>
-                      <p className="mt-1 text-sm text-[#607897]">{teacher.stage}</p>
+                      <p className="mt-1 text-sm text-[#607897]">{teacher.subdomain}</p>
                     </div>
                   </div>
                   <div className="mt-5 flex flex-wrap gap-2">
-                    <Badge variant="brand">{teacher.subject}</Badge>
-                    <span className="text-sm text-[#607897]">★ {teacher.rating} · {teacher.studentsCount} طالب</span>
+                    {teacher.subject && <Badge variant="brand">{teacher.subject}</Badge>}
+                    {teacher.location && <span className="text-sm text-[#607897]">{teacher.location}</span>}
                   </div>
-                  <p className="mt-4 leading-7 text-[#526b8d]">{teacher.bio}</p>
+                  {teacher.tagline && <p className="mt-4 leading-7 text-[#526b8d]">{teacher.tagline}</p>}
                   <Button className="mt-6 w-full" onClick={() => handleSelect(teacher)}>شوف المحتوى</Button>
+                  </div>
                 </article>
               ))}
             </div>
-          </div>
-        </section>
-
-        <section className="landing-light-section mx-auto max-w-7xl px-5 py-20 lg:px-8">
-          <div className="mb-7 flex items-center justify-between gap-4">
-            <div className="text-right"><span className="text-sm font-extrabold text-[#1081f5]">اختيارات سريعة</span><h2 className="mt-2 text-3xl font-extrabold">محاضرات موصى بها</h2></div>
-            <Button variant="ghost" onClick={() => navigate(`/${landingTeachers[0]?.id || 'teacher-1'}/catalog`)}>عرض الكل</Button>
-          </div>
-          <div className="flex gap-5 overflow-x-auto pb-3">
-            {landingCourses.map((course) => <div key={course.id} className="min-w-[280px] flex-1"><CourseCard course={course} onOpen={() => navigate(`/${course.instructorId}/courses/${course.id}`)} onEnroll={() => navigate(`/${course.instructorId}/checkout/${course.id}`)} /></div>)}
           </div>
         </section>
 

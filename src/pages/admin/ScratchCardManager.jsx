@@ -1,319 +1,90 @@
-// src/pages/admin/ScratchCardManager.jsx
-export const route = {
-  path: '/:instructorId/admin/scratchcards',
-  index: false,
-  auth: 'required',
-  roles: ['admin', 'assistant', 'teacher'],
-  title: 'أكواد التفعيل',
-};
+export const route = { path: '/:instructorId/admin/scratchcards', index: false, auth: 'required', roles: ['admin', 'assistant', 'teacher'], title: 'أكواد التفعيل' };
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
-
-const MOCK_LECTURES = [
-  { id: 'course-101', title: 'أساسيات الجبر' },
-  { id: 'course-102', title: 'الهندسة المستوية' },
-  { id: 'course-103', title: 'التفاضل والتكامل' },
-];
-
-function generateCode() {
-  return Array.from({ length: 4 }, () =>
-    Math.random().toString(36).substring(2, 6).toUpperCase()
-  ).join('-');
-}
-
-function maskCode(code) {
-  const parts = code.split('-');
-  return parts.map((p, idx) => (idx === parts.length - 1 ? p : '••••')).join('-');
-}
+import api from '../../services/api';
 
 export default function ScratchCardManager() {
   const { instructorId } = useParams();
-  const { user } = useAuth();
+  const { user } = useAuth() || {};
+  const canGenerate = user?.role === 'admin' || user?.permissions?.includes('can_generate_access_codes');
+  const [count, setCount] = useState(10);
+  const [batchId, setBatchId] = useState('');
+  const [value, setValue] = useState(50);
+  const [cards, setCards] = useState([]);
+  const [batches, setBatches] = useState([]);
+  const [status, setStatus] = useState('');
+  const [filterBatch, setFilterBatch] = useState('');
+  const [oneTimeCodes, setOneTimeCodes] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [courseId, setCourseId] = useState('');
+  const [lectureCount, setLectureCount] = useState(10);
+  const [lectureCodes, setLectureCodes] = useState([]);
+  const [activeTab, setActiveTab] = useState('scratchcard');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  const role = user?.role || null;
-  const permissions = Array.isArray(user?.permissions) ? user.permissions : [];
-  const canGenerate = role === 'admin' || permissions.includes('can_generate_access_codes');
-
-  const [activeTab, setActiveTab] = useState('scratchcard'); // 'scratchcard' | 'lectureCodes'
-
-  // --- Scratch cards state ---
-  const [scCount, setScCount] = useState(10);
-  const [scBatchId, setScBatchId] = useState('');
-  const [scValue, setScValue] = useState(50);
-  const [scInventory, setScInventory] = useState([
-    {
-      code: generateCode(),
-      value: 50,
-      isRedeemed: true,
-      redeemedBy: 'أحمد محمود',
-      redeemedAt: '2026-07-10T12:00:00Z',
-      batchId: 'BATCH-A',
-    },
-    {
-      code: generateCode(),
-      value: 100,
-      isRedeemed: false,
-      redeemedBy: null,
-      redeemedAt: null,
-      batchId: 'BATCH-A',
-    },
-  ]);
-  const [scSearch, setScSearch] = useState('');
-  const [revealedCodes, setRevealedCodes] = useState({});
-
-  const handleGenerateScratchCards = (e) => {
-    e.preventDefault();
-    const batch = scBatchId.trim() || `BATCH-${Date.now().toString().slice(-4)}`;
-    const newCards = Array.from({ length: Number(scCount) || 0 }, () => ({
-      code: generateCode(),
-      value: Number(scValue) || 0,
-      isRedeemed: false,
-      redeemedBy: null,
-      redeemedAt: null,
-      batchId: batch,
-    }));
-    setScInventory((prev) => [...newCards, ...prev]);
-    setScBatchId('');
+  const loadCards = async () => {
+    const params = new URLSearchParams();
+    if (filterBatch.trim()) params.set('batchId', filterBatch.trim());
+    if (status) params.set('status', status);
+    const response = await api.get(`/instructors/${instructorId}/scratchcards${params.toString() ? `?${params}` : ''}`);
+    setCards(response.data.data.cards || []);
+    setBatches(response.data.data.batches || []);
   };
 
-  const filteredInventory = scInventory.filter((c) =>
-    c.batchId.toLowerCase().includes(scSearch.trim().toLowerCase())
-  );
-
-  const toggleReveal = (code) => {
-    setRevealedCodes((prev) => ({ ...prev, [code]: !prev[code] }));
-  };
-
-  // --- Lecture access codes state ---
-  const [lcCount, setLcCount] = useState(10);
-  const [lcLectureId, setLcLectureId] = useState(MOCK_LECTURES[0]?.id || '');
-  const [lcGenerated, setLcGenerated] = useState([]);
-  const [lcCopied, setLcCopied] = useState(false);
-
-  const handleGenerateLectureCodes = (e) => {
-    e.preventDefault();
-    if (!canGenerate) return;
-    const codes = Array.from({ length: Number(lcCount) || 0 }, () => generateCode());
-    setLcGenerated(codes);
-  };
-
-  const handleCopyAllLectureCodes = async () => {
-    try {
-      await navigator.clipboard.writeText(lcGenerated.join('\n'));
-      setLcCopied(true);
-      setTimeout(() => setLcCopied(false), 2000);
-    } catch {
-      // clipboard API unavailable; fail silently
+  useEffect(() => {
+    let active = true;
+    async function load() {
+      setLoading(true);
+      setError('');
+      try {
+        const [cardsResponse, coursesResponse] = await Promise.all([api.get(`/instructors/${instructorId}/scratchcards`), api.get(`/instructors/${instructorId}/courses`)]);
+        if (!active) return;
+        setCards(cardsResponse.data.data.cards || []);
+        setBatches(cardsResponse.data.data.batches || []);
+        const loadedCourses = coursesResponse.data.data || [];
+        setCourses(loadedCourses);
+        setCourseId(loadedCourses[0]?._id || '');
+      } catch (err) {
+        if (active) setError(err?.message || 'تعذر تحميل البطاقات.');
+      } finally { if (active) setLoading(false); }
     }
+    load();
+    return () => { active = false; };
+  }, [instructorId]);
+
+  const handleGenerateScratchCards = async (event) => {
+    event.preventDefault();
+    setError('');
+    try {
+      const response = await api.post(`/instructors/${instructorId}/scratchcards/generate`, { count: Number(count), value: Number(value), ...(batchId.trim() ? { batchId: batchId.trim() } : {}) });
+      setOneTimeCodes(response.data.data.codes || []);
+      setBatchId('');
+      await loadCards();
+    } catch (err) { setError(err?.message || 'تعذر توليد بطاقات الشحن.'); }
   };
 
-  return (
-    <div dir="rtl" className="space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold text-ink-900">أكواد التفعيل</h1>
-        <p className="text-sm text-ink-500 mt-1">إدارة بطاقات الشحن وأكواد الوصول للمحاضرات</p>
-      </div>
+  const handleGenerateLectureCodes = async (event) => {
+    event.preventDefault();
+    if (!courseId) return;
+    setError('');
+    try {
+      const response = await api.post(`/instructors/${instructorId}/courses/${courseId}/access-codes/generate`, { count: Number(lectureCount) });
+      setLectureCodes(response.data.data.codes || []);
+    } catch (err) { setError(err?.message || 'تعذر توليد أكواد المحاضرة.'); }
+  };
 
-      {!canGenerate && (
-        <Badge variant="danger">
-          لا تملك صلاحية توليد الأكواد — تواصل مع المدرس لمنحك هذه الصلاحية
-        </Badge>
-      )}
-
-      {/* Tabs */}
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => setActiveTab('scratchcard')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            activeTab === 'scratchcard'
-              ? 'bg-brand-500 text-ink-900'
-              : 'bg-surface-default border border-surface-border text-ink-700'
-          }`}
-        >
-          بطاقات الشحن
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('lectureCodes')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            activeTab === 'lectureCodes'
-              ? 'bg-brand-500 text-ink-900'
-              : 'bg-surface-default border border-surface-border text-ink-700'
-          }`}
-        >
-          أكواد المحاضرات
-        </button>
-      </div>
-
-      {/* Tab 1: Scratch cards */}
-      {activeTab === 'scratchcard' && (
-        <div className="space-y-6">
-          <form
-            onSubmit={handleGenerateScratchCards}
-            className="bg-surface-default rounded-2xl shadow-card p-6 grid grid-cols-1 md:grid-cols-4 gap-4 items-end"
-          >
-            <div>
-              <label className="block text-sm font-medium text-ink-700 mb-1">عدد البطاقات</label>
-              <Input
-                type="number"
-                min={1}
-                value={scCount}
-                onChange={(e) => setScCount(e.target.value)}
-                disabled={!canGenerate}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-ink-700 mb-1">معرف الدفعة</label>
-              <Input
-                value={scBatchId}
-                onChange={(e) => setScBatchId(e.target.value)}
-                placeholder="مثال: BATCH-JUL26"
-                disabled={!canGenerate}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-ink-700 mb-1">القيمة</label>
-              <Input
-                type="number"
-                min={0}
-                value={scValue}
-                onChange={(e) => setScValue(e.target.value)}
-                disabled={!canGenerate}
-              />
-            </div>
-            <Button type="submit" variant="primary" disabled={!canGenerate}>
-              توليد
-            </Button>
-          </form>
-
-          <div className="bg-surface-default rounded-2xl shadow-card p-6 space-y-4">
-            <Input
-              placeholder="ابحث حسب معرف الدفعة..."
-              value={scSearch}
-              onChange={(e) => setScSearch(e.target.value)}
-            />
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-right">
-                <thead>
-                  <tr className="border-b border-surface-border text-ink-500">
-                    <th className="py-2 px-3 font-medium">الكود</th>
-                    <th className="py-2 px-3 font-medium">القيمة</th>
-                    <th className="py-2 px-3 font-medium">الحالة</th>
-                    <th className="py-2 px-3 font-medium">تم الاستخدام بواسطة</th>
-                    <th className="py-2 px-3 font-medium">تاريخ الاستخدام</th>
-                    <th className="py-2 px-3 font-medium">الدفعة</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredInventory.map((card) => (
-                    <tr key={card.code} className="border-b border-surface-border">
-                      <td className="py-2 px-3 font-mono">
-                        <div className="flex items-center gap-2">
-                          <span>{revealedCodes[card.code] ? card.code : maskCode(card.code)}</span>
-                          <button
-                            type="button"
-                            onClick={() => toggleReveal(card.code)}
-                            className="text-xs text-brand-700 underline"
-                          >
-                            {revealedCodes[card.code] ? 'إخفاء' : 'إظهار'}
-                          </button>
-                        </div>
-                      </td>
-                      <td className="py-2 px-3">{card.value} ج.م</td>
-                      <td className="py-2 px-3">
-                        <Badge variant={card.isRedeemed ? 'success' : 'neutral'}>
-                          {card.isRedeemed ? 'مستخدم' : 'متاح'}
-                        </Badge>
-                      </td>
-                      <td className="py-2 px-3">{card.redeemedBy || '—'}</td>
-                      <td className="py-2 px-3">
-                        {card.redeemedAt ? new Date(card.redeemedAt).toLocaleDateString('ar') : '—'}
-                      </td>
-                      <td className="py-2 px-3">{card.batchId}</td>
-                    </tr>
-                  ))}
-                  {filteredInventory.length === 0 && (
-                    <tr>
-                      <td colSpan={6} className="py-6 text-center text-ink-500">
-                        لا توجد بطاقات مطابقة
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Tab 2: Lecture access codes */}
-      {activeTab === 'lectureCodes' && (
-        <div className="space-y-6">
-          <form
-            onSubmit={handleGenerateLectureCodes}
-            className="bg-surface-default rounded-2xl shadow-card p-6 grid grid-cols-1 md:grid-cols-3 gap-4 items-end"
-          >
-            <div>
-              <label className="block text-sm font-medium text-ink-700 mb-1">عدد الأكواد</label>
-              <Input
-                type="number"
-                min={1}
-                value={lcCount}
-                onChange={(e) => setLcCount(e.target.value)}
-                disabled={!canGenerate}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-ink-700 mb-1">المحاضرة</label>
-              <select
-                value={lcLectureId}
-                onChange={(e) => setLcLectureId(e.target.value)}
-                disabled={!canGenerate}
-                className="input w-full"
-              >
-                {MOCK_LECTURES.map((l) => (
-                  <option key={l.id} value={l.id}>
-                    {l.title}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <Button type="submit" variant="primary" disabled={!canGenerate}>
-              توليد
-            </Button>
-          </form>
-
-          {lcGenerated.length > 0 && (
-            <div className="bg-surface-default rounded-2xl shadow-card p-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-ink-900">
-                  الأكواد المولدة ({lcGenerated.length})
-                </h2>
-                <Button variant="ghost" size="sm" onClick={handleCopyAllLectureCodes}>
-                  {lcCopied ? 'تم النسخ' : 'نسخ الكل'}
-                </Button>
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                {lcGenerated.map((code) => (
-                  <div
-                    key={code}
-                    className="px-3 py-2 rounded-lg bg-surface-muted font-mono text-sm text-center text-ink-800"
-                  >
-                    {code}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
+  if (loading) return <div dir="rtl" className="p-6 text-ink-600">جارٍ تحميل البطاقات...</div>;
+  return <div dir="rtl" className="space-y-6"><div><h1 className="text-xl font-semibold text-ink-900">أكواد التفعيل</h1><p className="text-sm text-ink-500 mt-1">الأكواد تظهر مرة واحدة عند التوليد فقط.</p></div>{error && <div className="rounded-md p-3 bg-danger-soft text-danger-DEFAULT">{error}</div>}{!canGenerate && <Badge variant="danger">لا تملك صلاحية توليد الأكواد.</Badge>}
+    <div className="flex gap-2"><Button variant={activeTab === 'scratchcard' ? 'primary' : 'ghost'} onClick={() => setActiveTab('scratchcard')}>بطاقات الشحن</Button><Button variant={activeTab === 'lectureCodes' ? 'primary' : 'ghost'} onClick={() => setActiveTab('lectureCodes')}>أكواد المحاضرات</Button></div>
+    {activeTab === 'scratchcard' && <div className="space-y-6"><form onSubmit={handleGenerateScratchCards} className="bg-surface-default rounded-2xl shadow-card p-6 grid grid-cols-1 md:grid-cols-4 gap-4 items-end"><div><label className="block text-sm mb-1">عدد البطاقات</label><Input type="number" min={1} value={count} onChange={(e) => setCount(e.target.value)} disabled={!canGenerate} /></div><div><label className="block text-sm mb-1">معرف الدفعة</label><Input value={batchId} onChange={(e) => setBatchId(e.target.value)} disabled={!canGenerate} /></div><div><label className="block text-sm mb-1">القيمة</label><Input type="number" min={1} value={value} onChange={(e) => setValue(e.target.value)} disabled={!canGenerate} /></div><Button type="submit" variant="primary" disabled={!canGenerate}>توليد</Button></form>
+      {oneTimeCodes.length > 0 && <section className="bg-success-soft rounded-2xl p-6"><h2 className="font-semibold mb-3">الأكواد الجديدة — انسخها الآن، لن يمكن عرضها لاحقاً</h2><div className="grid grid-cols-2 md:grid-cols-4 gap-2">{oneTimeCodes.map((code) => <code key={code} className="bg-surface-default rounded p-2 text-center">{code}</code>)}</div></section>}
+      <section className="bg-surface-default rounded-2xl shadow-card p-6 space-y-4"><div className="grid grid-cols-1 md:grid-cols-3 gap-3"><Input placeholder="معرف الدفعة" value={filterBatch} onChange={(e) => setFilterBatch(e.target.value)} /><select className="input" value={status} onChange={(e) => setStatus(e.target.value)}><option value="">كل الحالات</option><option value="available">متاح</option><option value="redeemed">مستخدم</option></select><Button variant="ghost" onClick={() => loadCards().catch((err) => setError(err?.message || 'تعذر التصفية.'))}>تطبيق الفلتر</Button></div><div className="text-xs text-ink-500">ملخص الدفعات: {batches.map((batch) => `${batch._id}: ${batch.redeemed}/${batch.total}`).join(' | ') || 'لا توجد دفعات'}</div><div className="overflow-x-auto"><table className="w-full text-sm text-right"><thead><tr className="border-b"><th className="p-2">معرف البطاقة</th><th>القيمة</th><th>الحالة</th><th>المستخدم</th><th>تاريخ الاستخدام</th><th>الدفعة</th></tr></thead><tbody>{cards.map((card) => <tr key={card._id} className="border-b"><td className="p-2 font-mono">{card._id}</td><td>{card.value} ج.م</td><td><Badge variant={card.isRedeemed ? 'success' : 'neutral'}>{card.isRedeemed ? 'مستخدم' : 'متاح'}</Badge></td><td>{card.redeemedBy?.name || '—'}</td><td>{card.redeemedAt ? new Date(card.redeemedAt).toLocaleDateString('ar') : '—'}</td><td>{card.batchId}</td></tr>)}{cards.length === 0 && <tr><td colSpan={6} className="p-6 text-center text-ink-500">لا توجد بطاقات مطابقة</td></tr>}</tbody></table></div></section></div>}
+    {activeTab === 'lectureCodes' && <div className="space-y-4"><form onSubmit={handleGenerateLectureCodes} className="bg-surface-default rounded-2xl shadow-card p-6 grid grid-cols-1 md:grid-cols-3 gap-4 items-end"><div><label className="block text-sm mb-1">عدد الأكواد</label><Input type="number" min={1} value={lectureCount} onChange={(e) => setLectureCount(e.target.value)} disabled={!canGenerate} /></div><div><label className="block text-sm mb-1">المحاضرة</label><select className="input w-full" value={courseId} onChange={(e) => setCourseId(e.target.value)} disabled={!canGenerate}>{courses.map((course) => <option key={course._id} value={course._id}>{course.title_ar || course.title_en}</option>)}</select></div><Button type="submit" variant="primary" disabled={!canGenerate || !courseId}>توليد</Button></form>{lectureCodes.length > 0 && <div className="bg-success-soft rounded-2xl p-6 grid grid-cols-2 md:grid-cols-4 gap-2">{lectureCodes.map((code) => <code key={code} className="bg-surface-default rounded p-2 text-center">{code}</code>)}</div>}</div>}
+  </div>;
 }

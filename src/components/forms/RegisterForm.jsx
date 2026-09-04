@@ -9,7 +9,7 @@ import api from '../../services/api';
 // the context itself lives in AuthProvider.jsx and is exposed via this hook).
 import { useAuth } from '../../hooks/useAuth';
 
-export default function RegisterForm({ instructorId: propInstructorId }) {
+export default function RegisterForm({ instructorId: propInstructorId, instructors = [], onInstructorChange }) {
   const auth = useAuth() || {};
   const loginFn = auth.login || null;
 
@@ -27,7 +27,7 @@ export default function RegisterForm({ instructorId: propInstructorId }) {
     schoolName: '',
     governorate: '',
     gender: '',
-    grade: '',
+    stage: '',
     department: '',
     photo: null
   });
@@ -57,9 +57,13 @@ export default function RegisterForm({ instructorId: propInstructorId }) {
     'دمياط', 'الشرقية', 'جنوب سيناء', 'كفر الشيخ', 'مطروح', 'الأقصر',
     'قنا', 'شمال سيناء', 'سوهاج'
   ];
-  const GRADES = [
-    'الأول الإعدادي', 'الثاني الإعدادي', 'الثالث الإعدادي',
-    'الأول الثانوي', 'الثاني الثانوي', 'الثالث الثانوي'
+  const STAGES = [
+    { value: 'grade-7', label: 'الأول الإعدادي' },
+    { value: 'grade-8', label: 'الثاني الإعدادي' },
+    { value: 'grade-9', label: 'الثالث الإعدادي' },
+    { value: 'grade-10', label: 'الأول الثانوي' },
+    { value: 'grade-11', label: 'الثاني الثانوي' },
+    { value: 'grade-12', label: 'الثالث الثانوي' }
   ];
   const DEPARTMENTS = ['علمي', 'أدبي'];
 
@@ -77,6 +81,7 @@ export default function RegisterForm({ instructorId: propInstructorId }) {
     if (form.password && form.confirmPassword && form.password !== form.confirmPassword) {
       e.confirmPassword = 'كلمتا المرور غير متطابقتين';
     }
+    if (!propInstructorId) e.instructorId = 'اختر المنصة أولاً';
     if (form.role === 'parent' && !form.parentAccessCode.trim()) {
       e.parentAccessCode = 'كود ربط الطالب مطلوب لولي الأمر';
     }
@@ -88,7 +93,7 @@ export default function RegisterForm({ instructorId: propInstructorId }) {
       if (!form.schoolName.trim()) e.schoolName = 'اسم المدرسة مطلوب';
       if (!form.governorate) e.governorate = 'المحافظة مطلوبة';
       if (!form.gender) e.gender = 'النوع مطلوب';
-      if (!form.grade) e.grade = 'الصف الدراسي مطلوب';
+      if (!form.stage) e.stage = 'الصف الدراسي مطلوب';
       if (!form.department) e.department = 'الشعبة مطلوبة';
     }
 
@@ -120,7 +125,7 @@ export default function RegisterForm({ instructorId: propInstructorId }) {
               schoolName: form.schoolName.trim(),
               governorate: form.governorate,
               gender: form.gender,
-              grade: form.grade,
+              stage: form.stage,
               department: form.department
             }
           : {})
@@ -211,6 +216,24 @@ export default function RegisterForm({ instructorId: propInstructorId }) {
       {/* Form fields */}
       <div className="grid grid-cols-1 gap-4">
         <div>
+          <label htmlFor="instructorId" className="block text-sm font-medium text-ink-700 mb-2">المنصة التعليمية</label>
+          <select
+            id="instructorId"
+            name="instructorId"
+            value={propInstructorId || ''}
+            onChange={(event) => onInstructorChange?.(event.target.value)}
+            required
+            className="w-full rounded-xl border border-surface-border bg-surface-muted text-ink-900 text-right p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+          >
+            <option value="" disabled>اختر المنصة التعليمية</option>
+            {instructors.map((instructor) => (
+              <option key={instructor.id} value={instructor.id}>{instructor.name}</option>
+            ))}
+          </select>
+          {errors.instructorId && <p className="text-xs text-danger-DEFAULT mt-1">{errors.instructorId}</p>}
+        </div>
+
+        <div>
           <label htmlFor="name" className="block text-sm font-medium text-ink-700 mb-2">الاسم الكامل</label>
           <Input id="name" name="name" placeholder="الاسم رباعي" value={form.name} onChange={onChange('name')} error={errors.name} required />
         </div>
@@ -279,21 +302,21 @@ export default function RegisterForm({ instructorId: propInstructorId }) {
               </div>
 
               <div>
-                <label htmlFor="grade" className="block text-sm font-medium text-ink-700 mb-2">الصف الدراسي</label>
+                <label htmlFor="stage" className="block text-sm font-medium text-ink-700 mb-2">الصف الدراسي</label>
                 <select
-                  id="grade"
-                  name="grade"
-                  value={form.grade}
-                  onChange={onChange('grade')}
+                  id="stage"
+                  name="stage"
+                  value={form.stage}
+                  onChange={onChange('stage')}
                   required
                   className="w-full rounded-xl border border-surface-border bg-surface-muted text-ink-900 text-right p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                 >
                   <option value="" disabled>اختر الصف</option>
-                  {GRADES.map((g) => (
-                    <option key={g} value={g}>{g}</option>
+                  {STAGES.map((stage) => (
+                    <option key={stage.value} value={stage.value}>{stage.label}</option>
                   ))}
                 </select>
-                {errors.grade && <p className="text-xs text-danger-DEFAULT mt-1">{errors.grade}</p>}
+                {errors.stage && <p className="text-xs text-danger-DEFAULT mt-1">{errors.stage}</p>}
               </div>
             </div>
 

@@ -6,7 +6,7 @@ export const route = {
   title: 'إعدادات المنصة'
 };
 
-import React, { useContext, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
@@ -22,16 +22,33 @@ import { ThemeContext } from '../../contexts/ThemeProvider';
 const fieldClasses =
   'w-full rounded-md border border-surface-border bg-surface-default px-3 py-2 text-sm text-ink-900 outline-none focus:ring-2 focus:ring-brand-500';
 
-// Mock course list for the lecture access code generator (section 4).
-// No backend endpoint yet — matches every other page built so far.
-const MOCK_COURSES = [
-  { id: 'c1', title: 'أساسيات الجبر' },
-  { id: 'c2', title: 'الهندسة' },
-  { id: 'c3', title: 'الإحصاء' }
-];
+const ASSISTANT_PERMISSION_KEYS = ['can_upload_video', 'can_grade_exams', 'can_generate_access_codes'];
 
-function generateCode() {
-  return Math.random().toString(36).slice(2, 10).toUpperCase();
+function normalizeAssistantPermissions(permissions) {
+  return ASSISTANT_PERMISSION_KEYS.reduce((result, key) => {
+    result[key] = Array.isArray(permissions) ? permissions.includes(key) : Boolean(permissions?.[key]);
+    return result;
+  }, {});
+}
+
+function normalizeAssistant(assistant) {
+  return {
+    ...assistant,
+    id: String(assistant?._id || assistant?.id || ''),
+    permissions: normalizeAssistantPermissions(assistant?.permissions)
+  };
+}
+
+function AssistantActionModal({ action, onCancel, onConfirm, working }) {
+  if (!action) return null;
+  const isDelete = action.type === 'delete';
+  const isSuspend = action.type === 'suspend';
+  const description = isDelete
+    ? `سيتم حذف ${action.assistant.name} حذفاً منطقياً ومنع دخوله نهائياً.`
+    : isSuspend
+      ? `سيتم تعليق ${action.assistant.name} ومنعه من الدخول حتى إعادة تفعيله.`
+      : `سيتم إعادة تفعيل ${action.assistant.name} والسماح له بالدخول.`;
+  return <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"><div className="w-full max-w-md rounded-2xl bg-surface-default p-6 shadow-panel"><h3 className="text-xl font-bold">تأكيد الإجراء</h3><p className="mt-3 text-ink-600">{description}</p><div className="mt-6 flex gap-3"><Button type="button" variant={isDelete || isSuspend ? 'primary' : 'primary'} onClick={onConfirm} disabled={working}>{working ? 'جارٍ التنفيذ...' : 'تأكيد'}</Button><Button type="button" variant="subtle" onClick={onCancel} disabled={working}>إلغاء</Button></div></div></div>;
 }
 
 export default function TenantSettingsPage() {
@@ -114,6 +131,72 @@ export default function TenantSettingsPage() {
   const [logoFile, setLogoFile] = useState(null);
   const [logoPreview, setLogoPreview] = useState(null);
   const [brandName, setBrandName] = useState('');
+  const [logoUrl, setLogoUrl] = useState('');
+  const [supportPhone, setSupportPhone] = useState('');
+  const [supportEmail, setSupportEmail] = useState('');
+  const [videoDelivery, setVideoDelivery] = useState({ provider: '', pullZone: '', maxViewsPerLesson: 10, accessWindowDays: 10 });
+  const [notificationPreferences, setNotificationPreferences] = useState({ smsEnabled: false, emailEnabled: true, whatsappEnabled: false });
+  const [settingsLoading, setSettingsLoading] = useState(true);
+  const [settingsSaving, setSettingsSaving] = useState(false);
+  const [settingsError, setSettingsError] = useState('');
+  const [settingsSuccess, setSettingsSuccess] = useState('');
+  const [courses, setCourses] = useState([]);
+
+  const applySettings = (payload) => {
+    const tenant = payload?.tenant || {};
+    const gateway = payload?.gateway || {};
+    setBrandName(tenant.name || '');
+    setLogoUrl(tenant.logoUrl || '');
+    setSupportPhone(tenant.supportPhone || '');
+    setSupportEmail(tenant.supportEmail || '');
+    setVideoDelivery({ provider: tenant.videoDelivery?.provider || '', pullZone: tenant.videoDelivery?.pullZone || '', maxViewsPerLesson: tenant.videoDelivery?.maxViewsPerLesson ?? 10, accessWindowDays: tenant.videoDelivery?.accessWindowDays ?? 10 });
+    setNotificationPreferences({ smsEnabled: !!tenant.notificationPreferences?.smsEnabled, emailEnabled: tenant.notificationPreferences?.emailEnabled !== false, whatsappEnabled: !!tenant.notificationPreferences?.whatsappEnabled });
+    setPaymobIntegrationId(gateway.paymobIntegrationId || '');
+  };
+
+  useEffect(() => {
+    let active = true;
+    async function load() {
+      try {
+        const [settingsResponse, coursesResponse, assistantsResponse] = await Promise.all([api.get(`/instructors/${instructorId}/settings`), api.get(`/instructors/${instructorId}/courses`), api.get(`/instructors/${instructorId}/assistants`)]);
+        if (!active) return;
+        applySettings(settingsResponse.data.data);
+        const loadedCourses = coursesResponse.data.data || [];
+        setCourses(loadedCourses);
+        setCodeCourseId(loadedCourses[0]?._id || '');
+        setAssistants((assistantsResponse.data.data || []).map(normalizeAssistant));
+      } catch (error) {
+        if (active) setSettingsError(error?.message || 'تعذر تحميل إعدادات المنصة.');
+      } finally {
+        if (active) setSettingsLoading(false);
+      }
+    }
+    load();
+    return () => { active = false; };
+  }, [instructorId]);
+
+  const saveSettings = async (overrides = {}) => {
+    setSettingsSaving(true);
+    setSettingsError('');
+    setSettingsSuccess('');
+    try {
+      const response = await api.patch(`/instructors/${instructorId}/settings`, {
+        name: brandName,
+        logoUrl: logoUrl || null,
+        supportPhone,
+        supportEmail,
+        videoDelivery: { ...videoDelivery, maxViewsPerLesson: Number(videoDelivery.maxViewsPerLesson), accessWindowDays: Number(videoDelivery.accessWindowDays) },
+        notificationPreferences,
+        ...overrides
+      });
+      applySettings(response.data.data);
+      setSettingsSuccess('تم حفظ إعدادات المنصة بنجاح.');
+    } catch (error) {
+      setSettingsError(error?.message || 'تعذر حفظ إعدادات المنصة.');
+    } finally {
+      setSettingsSaving(false);
+    }
+  };
 
   const handleLogoChange = (e) => {
     const f = e.target.files?.[0] ?? null;
@@ -138,11 +221,8 @@ export default function TenantSettingsPage() {
   const [showApiKey, setShowApiKey] = useState(false);
   const [paymentSaved, setPaymentSaved] = useState(false);
 
-  const handleSavePayment = () => {
-    // Mock save — no real API endpoint yet.
-    // In production: await api.post(`/instructors/${instructorId}/payment-settings`, { paymobApiKey, paymobIntegrationId })
-    // eslint-disable-next-line no-console
-    console.log('Payment settings:', { paymobApiKey, paymobIntegrationId });
+  const handleSavePayment = async () => {
+    await saveSettings({ paymobApiKey, paymobIntegrationId });
     setPaymentSaved(true);
     setTimeout(() => setPaymentSaved(false), 3000);
   };
@@ -150,22 +230,7 @@ export default function TenantSettingsPage() {
   // ============================================================
   // Section 3 — Assistant Manager
   // ============================================================
-  const [assistants, setAssistants] = useState([
-    {
-      id: 'a1',
-      name: 'مساعد أحمد',
-      email: 'ahmed@example.com',
-      inviteStatus: 'active',
-      permissions: { can_upload_video: true, can_grade_exams: true, can_generate_access_codes: false }
-    },
-    {
-      id: 'a2',
-      name: 'مساعدة سارة',
-      email: 'sara@example.com',
-      inviteStatus: 'pending',
-      permissions: { can_upload_video: false, can_grade_exams: true, can_generate_access_codes: true }
-    }
-  ]);
+  const [assistants, setAssistants] = useState([]);
 
   const [showForm, setShowForm] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -181,6 +246,9 @@ export default function TenantSettingsPage() {
   const [editingId, setEditingId] = useState(null);
   const [editingPermissions, setEditingPermissions] = useState({});
   const [editError, setEditError] = useState('');
+  const [assistantAction, setAssistantAction] = useState(null);
+  const [assistantActionError, setAssistantActionError] = useState('');
+  const [assistantActionWorking, setAssistantActionWorking] = useState(false);
 
   const resetForm = () => {
     setForm({
@@ -208,11 +276,7 @@ export default function TenantSettingsPage() {
       const payload = {
         name: form.name,
         email: form.email,
-        permissions: {
-          can_upload_video: !!form.can_upload_video,
-          can_grade_exams: !!form.can_grade_exams,
-          can_generate_access_codes: !!form.can_generate_access_codes
-        }
+        permissions: ASSISTANT_PERMISSION_KEYS.filter((key) => form[key])
       };
 
       // FIX: api.js's baseURL already includes /api/v1 — prefixing it again
@@ -220,13 +284,13 @@ export default function TenantSettingsPage() {
       const res = await api.post(`/instructors/${instructorId}/assistants`, payload);
 
       const data = res?.data || res;
-      const newAssistant = data.assistant || {
+      const newAssistant = normalizeAssistant(data.assistant || {
         id: `a-${Date.now()}`,
         name: payload.name,
         email: payload.email,
         inviteStatus: 'pending',
         permissions: payload.permissions
-      };
+      });
 
       setAssistants((s) => [newAssistant, ...s]);
       if (data.inviteLink) {
@@ -234,7 +298,14 @@ export default function TenantSettingsPage() {
       } else {
         setInviteLink(`${window.location.origin}/invite/${newAssistant.id}`);
       }
-      resetForm();
+      setForm({
+        name: '',
+        email: '',
+        can_upload_video: false,
+        can_grade_exams: false,
+        can_generate_access_codes: false
+      });
+      setFormError('');
       setShowForm(true); // keep the panel open so the invite link stays visible
     } catch (err) {
       // FIX: replaced alert() with an inline banner, consistent with the
@@ -277,10 +348,10 @@ export default function TenantSettingsPage() {
     const assistant = assistants.find((a) => a.id === assistantId);
     if (!assistant) return;
     try {
-      const payload = { permissions: editingPermissions };
+      const payload = { permissions: ASSISTANT_PERMISSION_KEYS.filter((key) => editingPermissions[key]) };
       // FIX: same double /api/v1 issue as the create call above.
       const res = await api.patch(`/instructors/${instructorId}/assistants/${assistantId}`, payload);
-      const updated = res?.data?.assistant || { ...assistant, permissions: editingPermissions };
+      const updated = normalizeAssistant(res?.data?.data || { ...assistant, permissions: editingPermissions });
       setAssistants((list) => list.map((a) => (a.id === assistantId ? updated : a)));
       setEditingId(null);
       setEditingPermissions({});
@@ -296,18 +367,45 @@ export default function TenantSettingsPage() {
     return key;
   };
 
+  const executeAssistantAction = async () => {
+    if (!assistantAction) return;
+    const { type, assistant } = assistantAction;
+    setAssistantActionWorking(true);
+    setAssistantActionError('');
+    try {
+      if (type === 'delete') {
+        await api.delete(`/instructors/${instructorId}/assistants/${assistant.id}`);
+        setAssistants((list) => list.filter((item) => item.id !== assistant.id));
+      } else {
+        const endpoint = type === 'suspend' ? 'suspend' : 'reactivate';
+        const response = await api.patch(`/instructors/${instructorId}/assistants/${assistant.id}/${endpoint}`);
+        const updated = normalizeAssistant(response.data.data);
+        setAssistants((list) => list.map((item) => (item.id === assistant.id ? updated : item)));
+      }
+      setAssistantAction(null);
+    } catch (error) {
+      setAssistantActionError(error?.message || 'تعذر تنفيذ الإجراء على المساعد.');
+    } finally {
+      setAssistantActionWorking(false);
+    }
+  };
+
   // ============================================================
   // Section 4 — Lecture Access Codes
   // ============================================================
   const [codeCount, setCodeCount] = useState(5);
-  const [codeCourseId, setCodeCourseId] = useState(MOCK_COURSES[0].id);
+  const [codeCourseId, setCodeCourseId] = useState('');
   const [generatedCodes, setGeneratedCodes] = useState([]);
   const [codesCopyFeedback, setCodesCopyFeedback] = useState('');
 
-  const handleGenerateCodes = () => {
-    const n = Math.max(1, Number(codeCount) || 1);
-    const codes = Array.from({ length: n }, () => generateCode());
-    setGeneratedCodes(codes);
+  const handleGenerateCodes = async () => {
+    if (!codeCourseId) return;
+    try {
+      const response = await api.post(`/instructors/${instructorId}/courses/${codeCourseId}/access-codes/generate`, { count: Math.max(1, Number(codeCount) || 1) });
+      setGeneratedCodes(response.data.data.codes || []);
+    } catch (error) {
+      setSettingsError(error?.message || 'تعذر توليد أكواد الوصول.');
+    }
   };
 
   const copyAllCodes = async () => {
@@ -330,6 +428,8 @@ export default function TenantSettingsPage() {
             {user?.name ? `مرحباً ${user.name} — ` : ''}إدارة الهوية البصرية والدفع والمساعدين وأكواد الوصول
           </p>
         </div>
+        {settingsError && <div role="alert" className="rounded-md p-3 bg-danger-soft text-danger-DEFAULT mb-4 text-sm">{settingsError}</div>}
+        {settingsSuccess && <div role="status" className="rounded-md p-3 bg-success-soft text-success-DEFAULT mb-4 text-sm">{settingsSuccess}</div>}
 
         {/* Separate personal profile from tenant-wide branding settings. */}
         <section className="rounded-2xl bg-surface-default shadow-card p-6 mb-4">
@@ -379,6 +479,7 @@ export default function TenantSettingsPage() {
               {logoPreview && (
                 <img src={logoPreview} alt="معاينة الشعار" className="mt-3 w-24 h-24 object-cover rounded-lg border border-surface-border" />
               )}
+              <Input value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="رابط الشعار الحالي (اختياري)" className="mt-2" />
             </div>
 
             <div>
@@ -400,6 +501,7 @@ export default function TenantSettingsPage() {
               </label>
             </div>
           </div>
+          <div className="mt-4"><Button type="button" variant="primary" onClick={() => saveSettings()} disabled={settingsSaving || settingsLoading}>{settingsSaving ? 'جارٍ الحفظ...' : 'حفظ إعدادات الهوية'}</Button></div>
         </section>
 
         {/* Section 2: Paymob Gateway Integration */}
@@ -444,6 +546,13 @@ export default function TenantSettingsPage() {
           <div className="mt-4">
             <Button type="button" variant="primary" onClick={handleSavePayment}>حفظ إعدادات الدفع</Button>
           </div>
+        </section>
+
+        <section className="rounded-2xl bg-surface-default shadow-card p-6 mb-4 space-y-4">
+          <h2 className="text-lg font-semibold text-ink-900">الدعم وقواعد الفيديو والإشعارات</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4"><Input value={supportPhone} onChange={(e) => setSupportPhone(e.target.value)} placeholder="هاتف الدعم" /><Input value={supportEmail} onChange={(e) => setSupportEmail(e.target.value)} placeholder="بريد الدعم" /><Input value={videoDelivery.provider} onChange={(e) => setVideoDelivery((v) => ({ ...v, provider: e.target.value }))} placeholder="مزود الفيديو" /><Input value={videoDelivery.pullZone} onChange={(e) => setVideoDelivery((v) => ({ ...v, pullZone: e.target.value }))} placeholder="Pull zone" /><Input type="number" min={1} value={videoDelivery.maxViewsPerLesson} onChange={(e) => setVideoDelivery((v) => ({ ...v, maxViewsPerLesson: e.target.value }))} placeholder="عدد المشاهدات" /><Input type="number" min={1} value={videoDelivery.accessWindowDays} onChange={(e) => setVideoDelivery((v) => ({ ...v, accessWindowDays: e.target.value }))} placeholder="أيام الوصول" /></div>
+          <div className="flex flex-wrap gap-4">{[['smsEnabled', 'رسائل SMS'], ['emailEnabled', 'البريد الإلكتروني'], ['whatsappEnabled', 'واتساب']].map(([key, label]) => <label key={key} className="inline-flex items-center gap-2 text-sm"><input type="checkbox" checked={notificationPreferences[key]} onChange={(e) => setNotificationPreferences((n) => ({ ...n, [key]: e.target.checked }))} />{label}</label>)}</div>
+          <Button type="button" variant="primary" onClick={() => saveSettings()} disabled={settingsSaving || settingsLoading}>{settingsSaving ? 'جارٍ الحفظ...' : 'حفظ هذه الإعدادات'}</Button>
         </section>
 
         {/* Section 3: Assistant Manager */}
@@ -523,6 +632,9 @@ export default function TenantSettingsPage() {
           {editError && (
             <div className="rounded-md p-3 bg-danger-soft text-danger-DEFAULT mb-3 text-sm">{editError}</div>
           )}
+          {assistantActionError && (
+            <div role="alert" className="rounded-md p-3 bg-danger-soft text-danger-DEFAULT mb-3 text-sm">{assistantActionError}</div>
+          )}
 
           <div className="overflow-x-auto">
             <table className="w-full text-right" dir="rtl">
@@ -541,13 +653,12 @@ export default function TenantSettingsPage() {
                     <td className="py-3 px-3 text-sm font-medium">{a.name}</td>
                     <td className="py-3 px-3 text-sm text-ink-700">{a.email}</td>
                     <td className="py-3 px-3">
-                      {a.inviteStatus === 'active' ? (
-                        <Badge variant="success">نشط</Badge>
-                      ) : (
-                        // FIX: variant="warning" doesn't exist in Badge.jsx
-                        // (only brand/info/success/danger/neutral). Spec calls
-                        // for pending=neutral explicitly.
+                      {a.inviteStatus === 'pending' ? (
                         <Badge variant="neutral">قيد الدعوة</Badge>
+                      ) : a.isActive === false ? (
+                        <Badge variant="danger">معلّق</Badge>
+                      ) : (
+                        <Badge variant="success">نشط</Badge>
                       )}
                     </td>
                     <td className="py-3 px-3">
@@ -581,7 +692,15 @@ export default function TenantSettingsPage() {
                           <Button size="sm" variant="ghost" onClick={cancelEdit}>إلغاء</Button>
                         </div>
                       ) : (
-                        <Button size="sm" variant="ghost" onClick={() => startEdit(a)}>تعديل الصلاحيات</Button>
+                        <div className="flex flex-wrap gap-2">
+                          <Button size="sm" variant="ghost" onClick={() => startEdit(a)}>تعديل الصلاحيات</Button>
+                          {a.inviteStatus !== 'pending' && (a.isActive === false ? (
+                            <Button size="sm" variant="primary" onClick={() => setAssistantAction({ type: 'reactivate', assistant: a })}>إعادة تفعيل</Button>
+                          ) : (
+                            <Button size="sm" variant="ghost" onClick={() => setAssistantAction({ type: 'suspend', assistant: a })}>تعليق</Button>
+                          ))}
+                          <Button size="sm" variant="subtle" className="text-danger-DEFAULT" onClick={() => setAssistantAction({ type: 'delete', assistant: a })}>حذف</Button>
+                        </div>
                       )}
                     </td>
                   </tr>
@@ -594,6 +713,7 @@ export default function TenantSettingsPage() {
               </tbody>
             </table>
           </div>
+          <AssistantActionModal action={assistantAction} onCancel={() => setAssistantAction(null)} onConfirm={executeAssistantAction} working={assistantActionWorking} />
         </section>
 
         {/* Section 4: Lecture Access Codes */}
@@ -608,8 +728,8 @@ export default function TenantSettingsPage() {
             <div>
               <label htmlFor="codeCourse" className="block text-sm font-medium text-ink-700 mb-1">المحاضرة</label>
               <select id="codeCourse" value={codeCourseId} onChange={(e) => setCodeCourseId(e.target.value)} className={fieldClasses}>
-                {MOCK_COURSES.map((c) => (
-                  <option key={c.id} value={c.id}>{c.title}</option>
+                {courses.map((c) => (
+                  <option key={c._id} value={c._id}>{c.title_ar || c.title_en}</option>
                 ))}
               </select>
             </div>

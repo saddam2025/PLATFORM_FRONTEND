@@ -13,24 +13,6 @@ import ProfileLink from '../../components/ui/ProfileLink';
 import { useAuth } from '../../hooks/useAuth';
 import leaderboardService from '../../services/leaderboardService';
 
-const MOCK_STUDENTS = [
-  { id: 's1', name: 'أحمد علي', avatar: null, stage: 'الصف السابع', homeworkAvg: 92, examAvg: 88, totalScore: 90 },
-  { id: 's2', name: 'سارة محمد', avatar: null, stage: 'الصف الثامن', homeworkAvg: 95, examAvg: 91, totalScore: 93 },
-  { id: 's3', name: 'محمود حسن', avatar: null, stage: 'الصف التاسع', homeworkAvg: 88, examAvg: 85, totalScore: 86.5 },
-  { id: 's4', name: 'ليلى إبراهيم', avatar: null, stage: 'الصف العاشر', homeworkAvg: 90, examAvg: 94, totalScore: 92 },
-  { id: 's5', name: 'يوسف سمير', avatar: null, stage: 'الصف الحادي عشر', homeworkAvg: 84, examAvg: 80, totalScore: 82 },
-  { id: 's6', name: 'نور خالد', avatar: null, stage: 'الصف الثاني عشر', homeworkAvg: 89, examAvg: 87, totalScore: 88 },
-  { id: 's7', name: 'هند محمود', avatar: null, stage: 'الصف السابع', homeworkAvg: 78, examAvg: 82, totalScore: 80 },
-  { id: 's8', name: 'علي سمير', avatar: null, stage: 'الصف الثامن', homeworkAvg: 85, examAvg: 86, totalScore: 85.5 },
-  { id: 's9', name: 'منى أحمد', avatar: null, stage: 'الصف التاسع', homeworkAvg: 93, examAvg: 95, totalScore: 94 },
-  { id: 's10', name: 'رامي فؤاد', avatar: null, stage: 'الصف العاشر', homeworkAvg: 76, examAvg: 70, totalScore: 73 },
-  { id: 's11', name: 'دينا سمير', avatar: null, stage: 'الصف الحادي عشر', homeworkAvg: 91, examAvg: 89, totalScore: 90 },
-  { id: 's12', name: 'كريم نبيل', avatar: null, stage: 'الصف الثاني عشر', homeworkAvg: 82, examAvg: 84, totalScore: 83 },
-  { id: 's13', name: 'هالة رامي', avatar: null, stage: 'الصف السابع', homeworkAvg: 87, examAvg: 90, totalScore: 88.5 },
-  { id: 's14', name: 'زياد عادل', avatar: null, stage: 'الصف الثامن', homeworkAvg: 80, examAvg: 78, totalScore: 79 },
-  { id: 's15', name: 'سلمى ياسر', avatar: null, stage: 'الصف التاسع', homeworkAvg: 96, examAvg: 94, totalScore: 95 }
-];
-
 const STAGES = [
   { value: 'grade-7', label: 'الصف السابع' },
   { value: 'grade-8', label: 'الصف الثامن' },
@@ -135,7 +117,7 @@ export default function LeaderboardPage() {
   const { user } = useAuth();
   const [stageFilter, setStageFilter] = useState('all');
   const [visibleRestCount, setVisibleRestCount] = useState(VISIBLE_REST_STEP);
-  const [students, setStudents] = useState(MOCK_STUDENTS);
+  const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
 
@@ -210,6 +192,11 @@ export default function LeaderboardPage() {
       <main className="container mx-auto px-4 py-8 space-y-6">
         {loading && <div className="rounded-xl bg-surface-default p-4 text-center text-sm text-ink-500">جارٍ تحميل لوحة الشرف...</div>}
         {loadError && <div role="alert" className="rounded-xl bg-danger-soft p-4 text-center text-sm text-danger-DEFAULT">{loadError}</div>}
+        {!loading && !loadError && students.length === 0 && (
+          <div className="rounded-xl bg-surface-default p-4 text-center text-sm text-ink-500">
+            لا توجد نتائج لعرضها حالياً.
+          </div>
+        )}
         {/* Top 3 podium */}
         <section className="grid grid-cols-1 sm:grid-cols-3 gap-6 items-end">
           {PODIUM_ORDER.map((rank) => {
