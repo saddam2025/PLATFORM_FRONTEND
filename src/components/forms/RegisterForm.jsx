@@ -10,6 +10,9 @@ import api from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
 import { STAGES as stageDefinitions } from '../../constants/stages';
 
+const TRACK_STAGE_IDS = new Set(['grade-10', 'baccalaureate-1', 'baccalaureate-2', 'grade-11', 'grade-12']);
+const TRACKS = ['علمي علوم', 'علمي رياضة', 'أدبي'];
+
 export default function RegisterForm({ instructorId: propInstructorId, instructors = [], onInstructorChange }) {
   const auth = useAuth() || {};
   const loginFn = auth.login || null;
@@ -29,7 +32,7 @@ export default function RegisterForm({ instructorId: propInstructorId, instructo
     governorate: '',
     gender: '',
     stage: '',
-    department: '',
+    track: '',
     photo: null
   });
 
@@ -59,7 +62,6 @@ export default function RegisterForm({ instructorId: propInstructorId, instructo
     'قنا', 'شمال سيناء', 'سوهاج'
   ];
   const stages = stageDefinitions.map(({ id, label }) => ({ value: id, label }));
-  const DEPARTMENTS = ['علمي', 'أدبي'];
 
   const validateEmail = (email) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -88,7 +90,7 @@ export default function RegisterForm({ instructorId: propInstructorId, instructo
       if (!form.governorate) e.governorate = 'المحافظة مطلوبة';
       if (!form.gender) e.gender = 'النوع مطلوب';
       if (!form.stage) e.stage = 'الصف الدراسي مطلوب';
-      if (!form.department) e.department = 'الشعبة مطلوبة';
+      if (TRACK_STAGE_IDS.has(form.stage) && !form.track) e.track = 'الشعبة مطلوبة';
     }
 
     setErrors(e);
@@ -120,7 +122,7 @@ export default function RegisterForm({ instructorId: propInstructorId, instructo
               governorate: form.governorate,
               gender: form.gender,
               stage: form.stage,
-              department: form.department
+              track: TRACK_STAGE_IDS.has(form.stage) ? form.track : null
             }
           : {})
       };
@@ -314,25 +316,25 @@ export default function RegisterForm({ instructorId: propInstructorId, instructo
               </div>
             </div>
 
-            {/* Department / email */}
+            {/* Track / email */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="department" className="block text-sm font-medium text-ink-700 mb-2">اختر الشعبة</label>
+              {TRACK_STAGE_IDS.has(form.stage) && <div>
+                <label htmlFor="track" className="block text-sm font-medium text-ink-700 mb-2">اختر الشعبة</label>
                 <select
-                  id="department"
-                  name="department"
-                  value={form.department}
-                  onChange={onChange('department')}
+                  id="track"
+                  name="track"
+                  value={form.track}
+                  onChange={onChange('track')}
                   required
                   className="w-full rounded-xl border border-surface-border bg-surface-muted text-ink-900 text-right p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                 >
                   <option value="" disabled>اختر الشعبة</option>
-                  {DEPARTMENTS.map((d) => (
-                    <option key={d} value={d}>{d}</option>
+                  {TRACKS.map((track) => (
+                    <option key={track} value={track}>{track}</option>
                   ))}
                 </select>
-                {errors.department && <p className="text-xs text-danger-DEFAULT mt-1">{errors.department}</p>}
-              </div>
+                {errors.track && <p className="text-xs text-danger-DEFAULT mt-1">{errors.track}</p>}
+              </div>}
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-ink-700 mb-2">البريد الإلكتروني</label>
                 <Input id="email" name="email" type="email" value={form.email} onChange={onChange('email')} error={errors.email} required />

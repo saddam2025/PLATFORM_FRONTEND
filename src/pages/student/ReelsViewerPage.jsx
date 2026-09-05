@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom';
 import Button from '../../components/ui/Button';
 import { resolveApiAssetUrl } from '../../services/api';
 import reelService from '../../services/reelService';
+import { stageLabel } from '../../constants/stages';
 
 const PAGE_SIZE = 10;
 
@@ -84,7 +85,7 @@ export default function ReelsViewerPage() {
             </video>
             <div className="p-4 text-white">
               {reel.caption && <p className="leading-6">{reel.caption}</p>}
-              {reel.stage && <p className="mt-2 text-xs text-white/65">{reel.stage}</p>}
+              {reel.stage && <p className="mt-2 text-xs text-white/65">{stageLabel(reel.stage)}</p>}
               {videoErrors[reel._id] && <p role="alert" className="mt-3 text-sm text-danger-DEFAULT">تعذر تشغيل هذا الفيديو.</p>}
             </div>
           </article>

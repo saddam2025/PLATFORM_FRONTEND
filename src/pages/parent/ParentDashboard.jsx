@@ -10,6 +10,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Avatar from '../../components/ui/Avatar';
 import Badge from '../../components/ui/Badge';
+import { stageLabel } from '../../constants/stages';
 import Button from '../../components/ui/Button';
 import api from '../../services/api';
 
@@ -81,7 +82,7 @@ export default function ParentDashboard() {
           <Avatar src={child.avatarUrl} name={child.name} size="lg" />
           <div>
             <div className="text-xl font-semibold text-ink-900">{child.name}</div>
-            <Badge className="bg-surface-muted text-ink-700">{child.stage}</Badge>
+            <Badge className="bg-surface-muted text-ink-700">{stageLabel(child.stage)}</Badge>
           </div>
         </div>
         <div className="flex items-center gap-3">

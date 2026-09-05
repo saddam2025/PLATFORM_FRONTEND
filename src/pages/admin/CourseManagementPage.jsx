@@ -13,6 +13,7 @@ import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
 import courseService from '../../services/courseService';
+import { stageLabel } from '../../constants/stages';
 
 function formatPrice(n) {
   return `${n.toLocaleString('ar-EG')} ج.م`;
@@ -148,7 +149,7 @@ export default function CourseManagementPage() {
                       <span className="font-semibold text-ink-900">{course.title_ar || course.title_en}</span>
                     </div>
                   </td>
-                  <td className="px-5 py-4 text-ink-700">{course.stage}</td>
+                  <td className="px-5 py-4 text-ink-700">{stageLabel(course.stage)}</td>
                   <td className="px-5 py-4">
                     <span className="inline-flex rounded-full bg-surface-muted px-3 py-1 text-xs text-ink-600">
                       {course.categoryId?.name || '—'}
