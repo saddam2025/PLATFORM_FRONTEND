@@ -137,6 +137,15 @@ body {
   animation: fadeIn .25s cubic-bezier(.4,0,.2,1) both;
 }
 
+/* Keep sidebar content scrollable without showing a browser-specific track. */
+.sidebar-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.sidebar-scroll::-webkit-scrollbar {
+  display: none;
+}
+
 /* Landing page: its marketing sections use image-oriented light surfaces in
    light mode, so explicitly map those surfaces back to the shared tokens
    when the global theme switches to dark. */

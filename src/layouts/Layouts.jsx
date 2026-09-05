@@ -30,7 +30,7 @@ export default function Layouts() {
             aria-label="إغلاق القائمة"
           />
           <aside className="absolute inset-y-0 right-0 w-full max-w-[320px] border-l border-surface-border bg-surface-default shadow-panel animate-fadeIn">
-            <div className="h-full overflow-y-auto p-4">
+            <div className="sidebar-scroll h-full overflow-y-auto p-4">
               <Sidebar />
             </div>
           </aside>
