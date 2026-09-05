@@ -8,6 +8,7 @@ import api from '../../services/api';
 // FIX: real hook file is src/hooks/useAuth.js (there is no src/contexts/AuthContext.jsx —
 // the context itself lives in AuthProvider.jsx and is exposed via this hook).
 import { useAuth } from '../../hooks/useAuth';
+import { STAGES as stageDefinitions } from '../../constants/stages';
 
 export default function RegisterForm({ instructorId: propInstructorId, instructors = [], onInstructorChange }) {
   const auth = useAuth() || {};
@@ -57,14 +58,7 @@ export default function RegisterForm({ instructorId: propInstructorId, instructo
     'دمياط', 'الشرقية', 'جنوب سيناء', 'كفر الشيخ', 'مطروح', 'الأقصر',
     'قنا', 'شمال سيناء', 'سوهاج'
   ];
-  const STAGES = [
-    { value: 'grade-7', label: 'الأول الإعدادي' },
-    { value: 'grade-8', label: 'الثاني الإعدادي' },
-    { value: 'grade-9', label: 'الثالث الإعدادي' },
-    { value: 'grade-10', label: 'الأول الثانوي' },
-    { value: 'grade-11', label: 'الثاني الثانوي' },
-    { value: 'grade-12', label: 'الثالث الثانوي' }
-  ];
+  const stages = stageDefinitions.map(({ id, label }) => ({ value: id, label }));
   const DEPARTMENTS = ['علمي', 'أدبي'];
 
   const validateEmail = (email) => {
@@ -312,7 +306,7 @@ export default function RegisterForm({ instructorId: propInstructorId, instructo
                   className="w-full rounded-xl border border-surface-border bg-surface-muted text-ink-900 text-right p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                 >
                   <option value="" disabled>اختر الصف</option>
-                  {STAGES.map((stage) => (
+                  {stages.map((stage) => (
                     <option key={stage.value} value={stage.value}>{stage.label}</option>
                   ))}
                 </select>

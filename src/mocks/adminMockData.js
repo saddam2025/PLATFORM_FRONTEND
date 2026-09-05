@@ -30,10 +30,10 @@ export const revenueSeries = [
 ];
 
 export const recentSignups = [
-  { id: 'stu-201', name: 'مريم سالم', grade: 'الصف الثامن', joinedAt: '2026-08-14T09:10:00Z' },
-  { id: 'stu-202', name: 'عبدالله ناصر', grade: 'الصف العاشر', joinedAt: '2026-08-13T18:40:00Z' },
-  { id: 'stu-203', name: 'جنى فتحي', grade: 'الصف السابع', joinedAt: '2026-08-13T11:05:00Z' },
-  { id: 'stu-204', name: 'حمزة وليد', grade: 'الصف الحادي عشر', joinedAt: '2026-08-12T20:15:00Z' }
+  { id: 'stu-201', name: 'مريم سالم', grade: 'تانية اعدادي', joinedAt: '2026-08-14T09:10:00Z' },
+  { id: 'stu-202', name: 'عبدالله ناصر', grade: 'اولى ثانوي', joinedAt: '2026-08-13T18:40:00Z' },
+  { id: 'stu-203', name: 'جنى فتحي', grade: 'اولى اعدادي', joinedAt: '2026-08-13T11:05:00Z' },
+  { id: 'stu-204', name: 'حمزة وليد', grade: 'تانية ثانوي', joinedAt: '2026-08-12T20:15:00Z' }
 ];
 
 // Full course catalog as seen from the admin/course-management screen —
@@ -257,7 +257,7 @@ export const adminStudents = [
   {
     id: 'stu-101',
     name: 'يوسف الكعبي',
-    grade: 'الصف السابع',
+    grade: 'اولى اعدادي',
     email: 'youssef.k@example.com',
     subscriptionStatus: 'active',
     averageScore: 88,
@@ -266,7 +266,7 @@ export const adminStudents = [
   {
     id: 'stu-102',
     name: 'سارة العتيبي',
-    grade: 'الصف الخامس',
+    grade: 'اولى اعدادي',
     email: 'sara.otaibi@example.com',
     subscriptionStatus: 'active',
     averageScore: 86,
@@ -275,7 +275,7 @@ export const adminStudents = [
   {
     id: 'stu-103',
     name: 'مريم سالم',
-    grade: 'الصف الثامن',
+    grade: 'تانية اعدادي',
     email: 'mariam.salem@example.com',
     subscriptionStatus: 'pending-exam',
     averageScore: 74,
@@ -284,7 +284,7 @@ export const adminStudents = [
   {
     id: 'stu-104',
     name: 'عبدالله ناصر',
-    grade: 'الصف العاشر',
+    grade: 'اولى ثانوي',
     email: 'abdullah.nasser@example.com',
     subscriptionStatus: 'expired',
     averageScore: 65,

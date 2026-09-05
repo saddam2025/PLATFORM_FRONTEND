@@ -11,6 +11,7 @@ import { SelectedChildProvider } from './contexts/SelectedChildContext';
 import { ThemeProvider } from './contexts/ThemeProvider';
 import useAuth from './hooks/useAuth';
 import { dashboardPathFor } from './utils/dashboardPath';
+import ScrollToTop from './components/common/ScrollToTop';
 
 function RouteGuard({ route, children }) {
   const { user, loading } = useAuth();
@@ -80,6 +81,7 @@ export default function App() {
     // BrowserRouter must wrap AuthProvider — AuthProvider.jsx calls
     // useNavigate(), which throws outside Router context.
     <BrowserRouter>
+      <ScrollToTop />
       <AuthProvider>
         <InstructorProvider>
           <SelectedChildProvider>

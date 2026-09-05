@@ -48,6 +48,10 @@ module.exports = {
           700: 'var(--navy-700)',
           900: 'var(--navy-900)'
         },
+        teal: {
+          DEFAULT: 'var(--teal-DEFAULT)',
+          soft: 'var(--teal-soft)'
+        },
         success: {
           soft: 'var(--success-soft)',
           DEFAULT: 'var(--success-DEFAULT)',

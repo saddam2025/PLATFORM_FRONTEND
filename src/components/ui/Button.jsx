@@ -12,8 +12,8 @@ const sizes = {
 }
 
 const variants = {
-  primary: 'bg-[#43e7ad] text-navy-900 shadow-pop hover:-translate-y-0.5 hover:shadow-glow',
-  ghost: 'bg-[#d9f1ff] text-[#0759a8] border border-transparent hover:bg-white',
+  primary: 'bg-teal text-navy-900 shadow-pop hover:-translate-y-0.5 hover:shadow-glow',
+  ghost: 'bg-brand-100 text-brand-700 border border-transparent hover:bg-brand-50',
   subtle: 'bg-surface-muted text-ink-700 hover:bg-surface-border',
 }
 

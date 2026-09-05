@@ -7,7 +7,7 @@ export const route = {
   title: 'لوحة المساعد'
 };
 
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 // FIX: real hook file is src/hooks/useAuth.js — there is no src/contexts/AuthContext.jsx.
 // The context itself is defined/exported inside AuthProvider.jsx.
@@ -15,14 +15,13 @@ import { useAuth } from '../../hooks/useAuth';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import Avatar from '../../components/ui/Avatar';
+import api from '../../services/api';
 
-const assignmentsMock = [
-  { id: 'a1', studentName: 'محمد علي', courseTitle: 'أساسيات الجبر', submittedAt: '2026-07-16T10:00:00Z', status: 'pending' },
-  { id: 'a2', studentName: 'سارة أحمد', courseTitle: 'الهندسة', submittedAt: '2026-07-15T14:00:00Z', status: 'graded', grade: 88 },
-  { id: 'a3', studentName: 'علي محمود', courseTitle: 'التفاضل والتكامل', submittedAt: '2026-07-14T09:30:00Z', status: 'resubmit' },
-  { id: 'a4', studentName: 'هند سمير', courseTitle: 'الفيزياء', submittedAt: '2026-07-16T12:45:00Z', status: 'pending' },
-  { id: 'a5', studentName: 'رامي فؤاد', courseTitle: 'الكيمياء', submittedAt: '2026-07-13T16:20:00Z', status: 'graded', grade: 75 },
-  { id: 'a6', studentName: 'دينا يوسف', courseTitle: 'الإحصاء', submittedAt: '2026-07-12T11:10:00Z', status: 'pending' }
+const filters = [
+  { id: 'all', label: 'عرض الكل' },
+  { id: 'pending', label: 'بانتظار التصحيح' },
+  { id: 'graded', label: 'تم التصحيح' },
+  { id: 'resubmit', label: 'إعادة تسليم' },
 ];
 
 function formatDate(iso) {
@@ -42,13 +41,30 @@ export default function AssistantDashboard() {
   const role = user?.role || null;
   const permissions = Array.isArray(user?.permissions) ? user.permissions : [];
   const canGrade = role === 'admin' || permissions.includes('can_grade_exams');
+  const [assignments, setAssignments] = useState([]);
+  const [activeFilter, setActiveFilter] = useState('all');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!canGrade) return undefined;
+    let active = true;
+    setLoading(true);
+    setError('');
+    api.get(`/instructors/${instructorId}/assignments`)
+      .then((response) => { if (active) setAssignments(response?.data?.data || []); })
+      .catch((requestError) => { if (active) setError(requestError?.message || 'تعذر تحميل واجبات الطلاب.'); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [canGrade, instructorId]);
 
   const stats = useMemo(() => {
-    const pending = assignmentsMock.filter((a) => a.status === 'pending').length;
-    const graded = assignmentsMock.filter((a) => a.status === 'graded').length;
-    const resubmit = assignmentsMock.filter((a) => a.status === 'resubmit').length;
+    const pending = assignments.filter((a) => a.status === 'pending').length;
+    const graded = assignments.filter((a) => a.status === 'graded').length;
+    const resubmit = assignments.filter((a) => a.status === 'resubmit').length;
     return { pending, graded, resubmit };
-  }, []);
+  }, [assignments]);
+  const visibleAssignments = activeFilter === 'all' ? assignments : assignments.filter((item) => item.status === activeFilter);
 
   return (
     <div className="min-h-screen bg-surface-canvas text-ink-900" dir="rtl">
@@ -100,14 +116,19 @@ export default function AssistantDashboard() {
             {/* Assignments list */}
             <section>
               <h2 className="mb-4 text-lg font-semibold text-ink-900">قائمة الواجبات</h2>
-
+              <div className="mb-4 flex flex-wrap gap-2" role="tablist" aria-label="تصفية الواجبات">
+                {filters.map((filter) => <Button key={filter.id} type="button" size="sm" variant={activeFilter === filter.id ? 'ghost' : 'subtle'} onClick={() => setActiveFilter(filter.id)} aria-pressed={activeFilter === filter.id}>{filter.label}</Button>)}
+              </div>
+              {error && <div role="alert" className="mb-4 rounded-xl bg-danger-soft p-3 text-sm text-danger-DEFAULT">{error}</div>}
+              {loading && <p className="text-sm text-ink-500">جارٍ تحميل الواجبات...</p>}
               <div className="space-y-3">
-                {assignmentsMock.map((a) => (
-                  <div key={a.id} className="rounded-2xl bg-surface-default shadow-card p-4 flex items-center justify-between gap-4">
+                {!loading && !error && visibleAssignments.length === 0 && <div className="rounded-2xl bg-surface-default p-6 text-sm text-ink-500 shadow-card">لا توجد واجبات مطابقة لهذا العرض.</div>}
+                {visibleAssignments.map((a) => (
+                  <div key={a._id} className="rounded-2xl bg-surface-default shadow-card p-4 flex items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
                       <div className="flex flex-col">
-                        <div className="text-sm font-medium text-ink-900">{a.studentName}</div>
-                        <div className="text-xs text-ink-500">{a.courseTitle}</div>
+                        <div className="text-sm font-medium text-ink-900">{a.studentId?.name || 'طالب'}</div>
+                        <div className="text-xs text-ink-500">{a.courseId?.title_ar || a.courseId?.title_en || 'واجب المحاضرة'}</div>
                         <div className="text-xs text-ink-500 mt-1">{formatDate(a.submittedAt)}</div>
                       </div>
                     </div>
@@ -124,7 +145,7 @@ export default function AssistantDashboard() {
                       )}
 
                       {a.status === 'pending' ? (
-                        <Link to={`/${instructorId}/assistant/grade/${a.id}`}>
+                        <Link to={`/${instructorId}/assistant/grade/${a._id}`}>
                           <Button variant="primary" size="sm">تصحيح</Button>
                         </Link>
                       ) : (

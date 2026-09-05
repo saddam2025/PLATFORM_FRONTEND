@@ -5,14 +5,14 @@ export const children = [
   {
     id: 'child-1',
     name: 'سارة العتيبي',
-    grade: 'الصف الخامس',
+    grade: 'اولى اعدادي',
     avatar: '/images/avatars/girl1.png',
     enrolledCourses: 3,
   },
   {
     id: 'child-2',
     name: 'يوسف الكعبي',
-    grade: 'الصف السابع',
+    grade: 'اولى اعدادي',
     avatar: '/images/avatars/boy1.png',
     enrolledCourses: 4,
   },

@@ -98,7 +98,7 @@ export default function ParentActivityPage() {
           <div className="text-sm text-ink-500">{messages.length} رسالة</div>
         </div>
 
-        <div ref={messagesRef} className="flex-1 overflow-auto space-y-3 p-2 border border-surface-border rounded-md bg-white" style={{ maxHeight: 320 }}>
+        <div ref={messagesRef} className="flex-1 overflow-auto space-y-3 p-2 border border-surface-border rounded-md bg-surface-default" style={{ maxHeight: 320 }}>
           {messages.length === 0 ? <div className="text-center text-ink-600 py-6">لا توجد رسائل بعد</div> : messages.map((message) => {
             const isMine = String(message.fromUserId) === String(user?._id || user?.id);
             return <div key={message._id} className={`max-w-full ${isMine ? 'ml-auto text-right' : 'mr-auto text-left'}`}><div className={`inline-block rounded-lg p-3 ${isMine ? 'bg-brand-50 text-ink-900' : 'bg-surface-muted text-ink-900'}`}><div className="text-sm">{message.body}</div><div className="text-xs text-ink-500 mt-2">{formatDateTime(message.createdAt)}</div></div></div>;

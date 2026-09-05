@@ -11,15 +11,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { InstructorContext } from '../../contexts/InstructorContext';
 import Avatar from '../../components/ui/Avatar';
 import Button from '../../components/ui/Button';
-
-const stages = [
-  { id: 'grade-7', label: 'الصف السابع' },
-  { id: 'grade-8', label: 'الصف الثامن' },
-  { id: 'grade-9', label: 'الصف التاسع' },
-  { id: 'grade-10', label: 'الصف العاشر' },
-  { id: 'grade-11', label: 'الصف الحادي عشر' },
-  { id: 'grade-12', label: 'الصف الثاني عشر' }
-];
+import { STAGES as stages } from '../../constants/stages';
 
 export default function StageSelectorPage() {
   const { instructorId } = useParams();
@@ -55,7 +47,7 @@ export default function StageSelectorPage() {
       <main className="container mx-auto px-4 py-8">
         <div className="mb-6 text-right">
           <h1 className="text-xl font-semibold text-ink-900">اختر المرحلة الدراسية</h1>
-          <p className="text-sm text-ink-600 mt-1">اختر الصف المناسب لعرض المسارات والدورات المتاحة</p>
+          <p className="text-sm text-ink-600 mt-1">اختر المرحلة المناسبة لعرض المسارات والدورات المتاحة</p>
         </div>
 
         <div className={gridCols}>

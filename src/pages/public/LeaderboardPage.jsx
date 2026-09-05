@@ -12,15 +12,7 @@ import Avatar from '../../components/ui/Avatar';
 import ProfileLink from '../../components/ui/ProfileLink';
 import { useAuth } from '../../hooks/useAuth';
 import leaderboardService from '../../services/leaderboardService';
-
-const STAGES = [
-  { value: 'grade-7', label: 'الصف السابع' },
-  { value: 'grade-8', label: 'الصف الثامن' },
-  { value: 'grade-9', label: 'الصف التاسع' },
-  { value: 'grade-10', label: 'الصف العاشر' },
-  { value: 'grade-11', label: 'الصف الحادي عشر' },
-  { value: 'grade-12', label: 'الصف الثاني عشر' }
-];
+import { STAGES, stageLabel } from '../../constants/stages';
 
 const VISIBLE_REST_STEP = 3;
 
@@ -91,10 +83,6 @@ const RANK_STYLES = {
 // Right-to-left DOM order so, under dir="rtl", 2nd place renders on the
 // right, 1st place is centered and raised, and 3rd place renders on the left.
 const PODIUM_ORDER = [2, 1, 3];
-
-function stageLabel(stage) {
-  return STAGES.find((item) => item.value === stage)?.label || stage || 'غير محدد';
-}
 
 function StudentIdentity({ student, size, className, canViewProfile }) {
   const content = (

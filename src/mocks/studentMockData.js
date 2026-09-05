@@ -8,7 +8,7 @@ export const studentProfile = {
   email: 'youssef.k@example.com',
   avatar: '/images/avatars/boy1.png',
   role: 'student',
-  grade: 'الصف السابع',
+  grade: 'اولى اعدادي',
   stage: 'grade-7',
   password: 'password123',
   instructorId: 'ins-1',

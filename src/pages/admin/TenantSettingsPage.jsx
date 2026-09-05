@@ -135,6 +135,7 @@ export default function TenantSettingsPage() {
   const [supportPhone, setSupportPhone] = useState('');
   const [supportEmail, setSupportEmail] = useState('');
   const [videoDelivery, setVideoDelivery] = useState({ provider: '', pullZone: '', maxViewsPerLesson: 10, accessWindowDays: 10 });
+  const [documentDelivery, setDocumentDelivery] = useState({ provider: '', publicBaseUrl: '' });
   const [notificationPreferences, setNotificationPreferences] = useState({ smsEnabled: false, emailEnabled: true, whatsappEnabled: false });
   const [settingsLoading, setSettingsLoading] = useState(true);
   const [settingsSaving, setSettingsSaving] = useState(false);
@@ -150,6 +151,7 @@ export default function TenantSettingsPage() {
     setSupportPhone(tenant.supportPhone || '');
     setSupportEmail(tenant.supportEmail || '');
     setVideoDelivery({ provider: tenant.videoDelivery?.provider || '', pullZone: tenant.videoDelivery?.pullZone || '', maxViewsPerLesson: tenant.videoDelivery?.maxViewsPerLesson ?? 10, accessWindowDays: tenant.videoDelivery?.accessWindowDays ?? 10 });
+    setDocumentDelivery({ provider: tenant.documentDelivery?.provider || '', publicBaseUrl: tenant.documentDelivery?.publicBaseUrl || '' });
     setNotificationPreferences({ smsEnabled: !!tenant.notificationPreferences?.smsEnabled, emailEnabled: tenant.notificationPreferences?.emailEnabled !== false, whatsappEnabled: !!tenant.notificationPreferences?.whatsappEnabled });
     setPaymobIntegrationId(gateway.paymobIntegrationId || '');
   };
@@ -186,6 +188,7 @@ export default function TenantSettingsPage() {
         supportPhone,
         supportEmail,
         videoDelivery: { ...videoDelivery, maxViewsPerLesson: Number(videoDelivery.maxViewsPerLesson), accessWindowDays: Number(videoDelivery.accessWindowDays) },
+        documentDelivery,
         notificationPreferences,
         ...overrides
       });
@@ -550,7 +553,8 @@ export default function TenantSettingsPage() {
 
         <section className="rounded-2xl bg-surface-default shadow-card p-6 mb-4 space-y-4">
           <h2 className="text-lg font-semibold text-ink-900">الدعم وقواعد الفيديو والإشعارات</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4"><Input value={supportPhone} onChange={(e) => setSupportPhone(e.target.value)} placeholder="هاتف الدعم" /><Input value={supportEmail} onChange={(e) => setSupportEmail(e.target.value)} placeholder="بريد الدعم" /><Input value={videoDelivery.provider} onChange={(e) => setVideoDelivery((v) => ({ ...v, provider: e.target.value }))} placeholder="مزود الفيديو" /><Input value={videoDelivery.pullZone} onChange={(e) => setVideoDelivery((v) => ({ ...v, pullZone: e.target.value }))} placeholder="Pull zone" /><Input type="number" min={1} value={videoDelivery.maxViewsPerLesson} onChange={(e) => setVideoDelivery((v) => ({ ...v, maxViewsPerLesson: e.target.value }))} placeholder="عدد المشاهدات" /><Input type="number" min={1} value={videoDelivery.accessWindowDays} onChange={(e) => setVideoDelivery((v) => ({ ...v, accessWindowDays: e.target.value }))} placeholder="أيام الوصول" /></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4"><Input value={supportPhone} onChange={(e) => setSupportPhone(e.target.value)} placeholder="هاتف الدعم" /><Input value={supportEmail} onChange={(e) => setSupportEmail(e.target.value)} placeholder="بريد الدعم" /><select value={videoDelivery.provider} onChange={(e) => setVideoDelivery((v) => ({ ...v, provider: e.target.value }))} className={fieldClasses}><option value="">رفع محلي</option><option value="bunny">Bunny Stream/CDN</option><option value="cloudflare_stream">Cloudflare Stream</option><option value="external">رابط فيديو خارجي</option></select><Input value={videoDelivery.pullZone} onChange={(e) => setVideoDelivery((v) => ({ ...v, pullZone: e.target.value }))} placeholder="Bunny Pull Zone أو نطاق الفيديو" /><Input type="number" min={1} value={videoDelivery.maxViewsPerLesson} onChange={(e) => setVideoDelivery((v) => ({ ...v, maxViewsPerLesson: e.target.value }))} placeholder="عدد المشاهدات" /><Input type="number" min={1} value={videoDelivery.accessWindowDays} onChange={(e) => setVideoDelivery((v) => ({ ...v, accessWindowDays: e.target.value }))} placeholder="أيام الوصول" /><select value={documentDelivery.provider} onChange={(e) => setDocumentDelivery((d) => ({ ...d, provider: e.target.value }))} className={fieldClasses}><option value="">مرفقات محلية</option><option value="cloudflare_r2">Cloudflare R2</option><option value="external">رابط مستند خارجي</option></select><Input value={documentDelivery.publicBaseUrl} onChange={(e) => setDocumentDelivery((d) => ({ ...d, publicBaseUrl: e.target.value }))} placeholder="رابط نطاق R2 العام أو custom domain" /></div>
+          <p className="text-xs text-ink-500">المفاتيح السرية لا تُكتب هنا. استخدم روابط Bunny أو Cloudflare Stream للفيديو وروابط R2 العامة أو الموقعة لملفات PDF داخل محرر الكورس.</p>
           <div className="flex flex-wrap gap-4">{[['smsEnabled', 'رسائل SMS'], ['emailEnabled', 'البريد الإلكتروني'], ['whatsappEnabled', 'واتساب']].map(([key, label]) => <label key={key} className="inline-flex items-center gap-2 text-sm"><input type="checkbox" checked={notificationPreferences[key]} onChange={(e) => setNotificationPreferences((n) => ({ ...n, [key]: e.target.checked }))} />{label}</label>)}</div>
           <Button type="button" variant="primary" onClick={() => saveSettings()} disabled={settingsSaving || settingsLoading}>{settingsSaving ? 'جارٍ الحفظ...' : 'حفظ هذه الإعدادات'}</Button>
         </section>

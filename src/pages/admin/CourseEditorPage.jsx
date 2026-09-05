@@ -22,16 +22,7 @@ import Badge from '../../components/ui/Badge';
 // FIX: real hook file is src/hooks/useAuth.js — there is no src/contexts/AuthContext.jsx.
 import { useAuth } from '../../hooks/useAuth';
 import courseService from '../../services/courseService';
-
-// Same 6 grades used in StageSelectorPage, kept in sync intentionally.
-const STAGES = [
-  { id: 'grade-7', label: 'الصف السابع' },
-  { id: 'grade-8', label: 'الصف الثامن' },
-  { id: 'grade-9', label: 'الصف التاسع' },
-  { id: 'grade-10', label: 'الصف العاشر' },
-  { id: 'grade-11', label: 'الصف الحادي عشر' },
-  { id: 'grade-12', label: 'الصف الثاني عشر' }
-];
+import { STAGES } from '../../constants/stages';
 
 // Tailwind classes matching Input.jsx's `.input` look, reused for the native
 // <select> and <textarea> elements that Input doesn't cover.
@@ -97,6 +88,7 @@ export default function CourseEditorPage() {
 
   // ---- Video (single file per course, matches Course schema's videoUrl_encrypted field) ----
   const [videoFile, setVideoFile] = useState(null);
+  const [externalVideoUrl, setExternalVideoUrl] = useState('');
   const videoInputRef = useRef(null);
 
   const handleVideoChange = (e) => {
@@ -107,6 +99,7 @@ export default function CourseEditorPage() {
 
   // ---- Homework attachment ----
   const [homeworkFile, setHomeworkFile] = useState(null);
+  const [externalHomeworkUrl, setExternalHomeworkUrl] = useState('');
 
   // ---- Exam / questions (answer key + explanations, feature #16) ----
   const [questions, setQuestions] = useState([]);
@@ -168,6 +161,8 @@ export default function CourseEditorPage() {
         setAccessPeriodDays(course.accessPeriodDays ?? 10);
         setMaxViews(course.maxViews ?? 10);
         setIsPublished(Boolean(course.isPublished));
+        setExternalVideoUrl(course.videoUrl?.startsWith('http') ? course.videoUrl : '');
+        setExternalHomeworkUrl(course.homeworkUrl?.startsWith('http') ? course.homeworkUrl : '');
       })
       .catch((requestError) => { if (active) setLoadError(requestError.message || 'تعذر تحميل الدورة.'); });
     return () => { active = false; };
@@ -188,7 +183,9 @@ export default function CourseEditorPage() {
       questions,
       accessPeriodDays: Number(accessPeriodDays) || 0,
       maxViews: Number(maxViews) || 0,
-      isPublished
+      isPublished,
+      ...(externalVideoUrl.trim() ? { externalVideoUrl: externalVideoUrl.trim() } : {}),
+      ...(externalHomeworkUrl.trim() ? { externalHomeworkUrl: externalHomeworkUrl.trim() } : {})
     };
 
     try {
@@ -344,6 +341,7 @@ export default function CourseEditorPage() {
                     <div className="text-xs text-ink-500 mt-1">سيتم رفع الملف عند حفظ الدورة.</div>
                   </div>
                 )}
+                <Input value={externalVideoUrl} onChange={(e) => setExternalVideoUrl(e.target.value)} placeholder="أو رابط Bunny / Cloudflare Stream الخارجي" className="mt-3" />
               </div>
             </div>
           </section>
@@ -358,6 +356,7 @@ export default function CourseEditorPage() {
               className="w-full text-sm"
             />
             {homeworkFile && <div className="text-xs text-ink-500 mt-2">{homeworkFile.name}</div>}
+            <Input value={externalHomeworkUrl} onChange={(e) => setExternalHomeworkUrl(e.target.value)} placeholder="أو رابط PDF من Cloudflare R2" className="mt-3" />
           </section>
 
           {/* 5. Exam builder — questions, answer key, explanations */}

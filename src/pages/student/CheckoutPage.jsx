@@ -13,18 +13,7 @@ import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
 import api from '../../services/api';
 import courseService from '../../services/courseService';
-
-function stageLabel(stageId) {
-  const stages = {
-    'grade-7': 'الصف السابع',
-    'grade-8': 'الصف الثامن',
-    'grade-9': 'الصف التاسع',
-    'grade-10': 'الصف العاشر',
-    'grade-11': 'الصف الحادي عشر',
-    'grade-12': 'الصف الثاني عشر'
-  };
-  return stages[stageId] || stageId;
-}
+import { stageLabel } from '../../constants/stages';
 
 export default function CheckoutPage() {
   const { instructorId, courseId } = useParams();

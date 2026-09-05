@@ -110,7 +110,7 @@ function SidebarIcon({ name }) {
   }
 }
 
-export const sidebarActiveItemClass = 'flex items-center gap-4 justify-start flex-row-reverse rounded-l-full bg-white text-[var(--sidebar-bg)] font-semibold px-6 py-3 transition duration-200';
+export const sidebarActiveItemClass = 'flex items-center gap-4 justify-start flex-row-reverse rounded-l-full bg-surface-default text-ink-900 font-semibold px-6 py-3 transition duration-200';
 
 function Item({ to, icon, children, activeWhen }) {
   const location = useLocation();
