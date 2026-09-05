@@ -21,7 +21,7 @@
 // out at all.
 
 import React, { useContext } from 'react';
-import { NavLink, useParams } from 'react-router-dom';
+import { NavLink, useLocation, useParams } from 'react-router-dom';
 import { InstructorContext } from '../contexts/InstructorContext';
 import Avatar from '../components/ui/Avatar';
 import { useAuth } from '../hooks/useAuth';
@@ -112,13 +112,16 @@ function SidebarIcon({ name }) {
 
 export const sidebarActiveItemClass = 'flex items-center gap-4 justify-start flex-row-reverse rounded-l-full bg-white text-[var(--sidebar-bg)] font-semibold px-6 py-3 transition duration-200';
 
-function Item({ to, icon, children }) {
+function Item({ to, icon, children, activeWhen }) {
+  const location = useLocation();
+  const explicitActive = activeWhen ? activeWhen(location) : null;
+
   return (
     <NavLink to={to} className="group block">
       {({ isActive }) => (
         <span
           className={
-            isActive
+            (explicitActive ?? isActive)
               ? sidebarActiveItemClass
               : 'flex items-center gap-4 justify-start flex-row-reverse text-white/70 hover:text-white hover:bg-white/5 rounded-xl px-6 py-3 transition-colors duration-200'
           }
@@ -271,10 +274,12 @@ export default function Sidebar() {
       <Header avatarSrc={user?.avatarUrl || user?.avatar || selected?.avatar} name={user?.name || 'طالب'} subtitle={selected?.name || 'منصة تعليمية'} />
 
       <nav className="flex-1 space-y-2">
-        <Item to={`${base}/dashboard`} icon="dashboard">لوحة التحكم</Item>
+        <Item to={`${base}/dashboard`} icon="dashboard" activeWhen={({ pathname, hash }) => pathname === `${base}/dashboard` && hash !== '#parent-access-code' && hash !== '#current-courses'}>لوحة التحكم</Item>
         <Item to={`${base}/catalog`} icon="menu_book">الكورسات</Item>
+        <Item to={`${base}/dashboard#current-courses`} icon="menu_book" activeWhen={({ pathname, hash }) => pathname === `${base}/dashboard` && hash === '#current-courses'}>الكورسات الحالية</Item>
+        <Item to={`${base}/reels`} icon="menu_book">الريلز</Item>
         <Item to={`${base}/leaderboard`} icon="military_tech">لوحة الشرف</Item>
-        <Item to={`${base}/dashboard#parent-access-code`} icon="family_restroom">كود ربط ولي الأمر</Item>
+        <Item to={`${base}/dashboard#parent-access-code`} icon="family_restroom" activeWhen={({ pathname, hash }) => pathname === `${base}/dashboard` && hash === '#parent-access-code'}>كود ربط ولي الأمر</Item>
       </nav>
 
       <InstructorsList />
