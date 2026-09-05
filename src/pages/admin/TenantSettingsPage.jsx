@@ -12,6 +12,7 @@ import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
 import Avatar from '../../components/ui/Avatar';
+import ConfirmModal from '../../components/ui/ConfirmModal';
 import api from '../../services/api';
 import authService from '../../services/authService';
 // FIX: real hook file is src/hooks/useAuth.js — there is no src/contexts/AuthContext.jsx.
@@ -48,7 +49,7 @@ function AssistantActionModal({ action, onCancel, onConfirm, working }) {
     : isSuspend
       ? `سيتم تعليق ${action.assistant.name} ومنعه من الدخول حتى إعادة تفعيله.`
       : `سيتم إعادة تفعيل ${action.assistant.name} والسماح له بالدخول.`;
-  return <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"><div className="w-full max-w-md rounded-2xl bg-surface-default p-6 shadow-panel"><h3 className="text-xl font-bold">تأكيد الإجراء</h3><p className="mt-3 text-ink-600">{description}</p><div className="mt-6 flex gap-3"><Button type="button" variant={isDelete || isSuspend ? 'primary' : 'primary'} onClick={onConfirm} disabled={working}>{working ? 'جارٍ التنفيذ...' : 'تأكيد'}</Button><Button type="button" variant="subtle" onClick={onCancel} disabled={working}>إلغاء</Button></div></div></div>;
+  return <ConfirmModal description={description} busy={working} onConfirm={onConfirm} onCancel={onCancel} />;
 }
 
 export default function TenantSettingsPage() {

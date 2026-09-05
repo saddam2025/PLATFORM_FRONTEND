@@ -59,6 +59,7 @@ export default function CourseEditorPage() {
   const [descriptionEn, setDescriptionEn] = useState('');
   const [descriptionAr, setDescriptionAr] = useState('');
   const [price, setPrice] = useState('');
+  const [isFree, setIsFree] = useState(false);
 
   // ---- Stage & category ----
   const [stage, setStage] = useState(STAGES[0].id);
@@ -154,6 +155,7 @@ export default function CourseEditorPage() {
         setDescriptionEn(course.description_en || '');
         setDescriptionAr(course.description_ar || '');
         setPrice(course.price ?? '');
+        setIsFree(Number(course.price) === 0);
         setStage(course.stage || STAGES[0].id);
         const courseCategory = course.categoryId?.name || categories[0];
         setCategories((previous) => previous.includes(courseCategory) ? previous : [...previous, courseCategory]);
@@ -177,7 +179,7 @@ export default function CourseEditorPage() {
       title_ar: titleAr,
       description_en: descriptionEn,
       description_ar: descriptionAr,
-      price: Number(price) || 0,
+      price: isFree ? 0 : Number(price) || 0,
       stage,
       category,
       questions,
@@ -259,7 +261,19 @@ export default function CourseEditorPage() {
               </div>
               <div>
                 <label htmlFor="price" className="block text-sm font-medium text-ink-700 mb-1">السعر</label>
-                <Input id="price" type="number" min={0} value={price} onChange={(e) => setPrice(e.target.value)} />
+                <Input id="price" type="number" min={0} value={price} disabled={isFree} onChange={(e) => setPrice(e.target.value)} />
+                <label className="mt-3 inline-flex items-center gap-2 text-sm text-ink-700">
+                  <input
+                    type="checkbox"
+                    checked={isFree}
+                    onChange={(e) => {
+                      setIsFree(e.target.checked);
+                      if (e.target.checked) setPrice(0);
+                    }}
+                    className="h-4 w-4 accent-brand-500"
+                  />
+                  كورس مجاني — يَشترك الطالب فورًا من دون وسيلة دفع
+                </label>
               </div>
             </div>
           </section>

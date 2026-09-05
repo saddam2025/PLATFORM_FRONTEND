@@ -14,9 +14,11 @@ import Badge from '../../components/ui/Badge';
 import api from '../../services/api';
 import courseService from '../../services/courseService';
 import { stageLabel } from '../../constants/stages';
+import { useAuth } from '../../hooks/useAuth';
 
 export default function CheckoutPage() {
   const { instructorId, courseId } = useParams();
+  const { user } = useAuth() || {};
   const [searchParams] = useSearchParams();
   const [course, setCourse] = useState(null);
   const [loadingOrder, setLoadingOrder] = useState(true);
@@ -24,6 +26,11 @@ export default function CheckoutPage() {
   const [paymobLoading, setPaymobLoading] = useState(false);
   const [paymobError, setPaymobError] = useState('');
   const [iframeUrl, setIframeUrl] = useState('');
+  const [walletLoading, setWalletLoading] = useState(false);
+  const [walletMessage, setWalletMessage] = useState('');
+  const [showScratchCard, setShowScratchCard] = useState(false);
+  const [scratchCode, setScratchCode] = useState('');
+  const [scratchLoading, setScratchLoading] = useState(false);
 
   const isSubscription = courseId === 'subscription';
   const stageId = searchParams.get('stageId');
@@ -72,8 +79,52 @@ export default function CheckoutPage() {
     }
   };
 
+  const enrollFreeCourse = async () => {
+    setWalletLoading(true);
+    setWalletMessage('');
+    try {
+      await api.post(`/courses/${courseId}/checkout/free`);
+      setWalletMessage('تم الاشتراك في الدورة المجانية بنجاح.');
+    } catch (error) {
+      setWalletMessage(error?.message || 'تعذر إتمام الاشتراك المجاني.');
+    } finally {
+      setWalletLoading(false);
+    }
+  };
+
+  const payWithWallet = async () => {
+    setWalletLoading(true);
+    setWalletMessage('');
+    try {
+      const response = await api.post(`/courses/${courseId}/checkout/wallet`);
+      setWalletMessage(`تم الاشتراك بنجاح. رصيدك المتبقي: ${response?.data?.data?.walletBalance ?? ''} ج.م`);
+    } catch (error) {
+      setWalletMessage(error?.message || 'تعذر إتمام الدفع من المحفظة.');
+    } finally {
+      setWalletLoading(false);
+    }
+  };
+
+  const redeemScratchCard = async (event) => {
+    event.preventDefault();
+    if (!scratchCode.trim()) return;
+    setScratchLoading(true);
+    setWalletMessage('');
+    try {
+      const response = await api.post('/scratchcards/redeem', { code: scratchCode.trim() });
+      setScratchCode('');
+      setShowScratchCard(false);
+      setWalletMessage(`تم شحن المحفظة بنجاح. الرصيد الحالي: ${response?.data?.data?.walletBalance ?? ''} ج.م. يمكنك الآن الدفع بالمحفظة.`);
+    } catch (error) {
+      setWalletMessage(error?.message || 'تعذر شحن البطاقة.');
+    } finally {
+      setScratchLoading(false);
+    }
+  };
+
   const orderTitle = isSubscription ? 'اشتراك شهري' : (course?.title_ar || course?.title_en);
   const orderPrice = isSubscription ? null : course?.price;
+  const isFreeCourse = !isSubscription && Number(orderPrice) === 0;
 
   return (
     <div dir="rtl" className="max-w-4xl mx-auto space-y-6">
@@ -91,7 +142,13 @@ export default function CheckoutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-4">
             <section className="bg-surface-default rounded-2xl shadow-card p-6">
-              <h2 className="text-lg font-semibold text-ink-900">الدفع الإلكتروني</h2>
+              <h2 className="text-lg font-semibold text-ink-900">{isFreeCourse ? 'اشتراك مجاني' : 'خيارات الدفع'}</h2>
+              {isFreeCourse ? (
+                <>
+                  <p className="mt-2 text-sm text-ink-600">هذه الدورة مجانية ولا تتطلب أي وسيلة دفع.</p>
+                  <Button className="mt-5" variant="primary" onClick={enrollFreeCourse} disabled={walletLoading}>{walletLoading ? 'جارٍ الاشتراك...' : 'اشتراك'}</Button>
+                </>
+              ) : <>
               <p className="mt-2 text-sm text-ink-600">
                 سيتم فتح بوابة Paymob الآمنة لإتمام الدفع عند توفرها للخطة المختارة.
               </p>
@@ -112,6 +169,19 @@ export default function CheckoutPage() {
                   allow="payment"
                 />
               )}
+              {!isSubscription && (
+                <div className="mt-6 border-t border-surface-border pt-5">
+                  <h3 className="font-medium text-ink-900">الدفع من المحفظة</h3>
+                  <p className="mt-1 text-sm text-ink-600">رصيدك الحالي: {user?.walletBalance ?? 0} ج.م. يمكنك شحنه بكارت Scratch ثم الدفع هنا.</p>
+                  <div className="mt-3 flex flex-wrap gap-3">
+                    <Button variant="subtle" onClick={payWithWallet} disabled={walletLoading}>{walletLoading ? 'جارٍ التنفيذ...' : 'الدفع بالمحفظة'}</Button>
+                    <Button variant="ghost" onClick={() => setShowScratchCard((shown) => !shown)}>شحن كارت Scratch</Button>
+                  </div>
+                  {showScratchCard && <form onSubmit={redeemScratchCard} className="mt-4 flex flex-wrap gap-2"><input value={scratchCode} onChange={(event) => setScratchCode(event.target.value)} placeholder="أدخل كود الكارت" className="rounded-xl border border-surface-border bg-surface-canvas px-3 py-2 text-sm text-ink-900 outline-none" /><Button type="submit" variant="primary" disabled={scratchLoading}>{scratchLoading ? 'جارٍ الشحن...' : 'شحن الرصيد'}</Button></form>}
+                </div>
+              )}
+              {walletMessage && <div className="mt-4 rounded-xl bg-success-soft p-3 text-sm text-success-DEFAULT">{walletMessage}</div>}
+              </>}
             </section>
           </div>
 
@@ -124,7 +194,7 @@ export default function CheckoutPage() {
             <div className="border-t border-surface-border pt-4 flex items-center justify-between">
               <span className="font-semibold text-ink-900">المجموع</span>
               <span className="font-semibold text-ink-900">
-                {typeof orderPrice === 'number' ? `${orderPrice} ج.م` : 'يُحدده الخادم عند تفعيل الاشتراك'}
+                {isFreeCourse ? 'مجاني' : (typeof orderPrice === 'number' ? `${orderPrice} ج.م` : 'يُحدده الخادم عند تفعيل الاشتراك')}
               </span>
             </div>
           </aside>

@@ -124,7 +124,7 @@ export default function InstructorSelectorPage() {
               {!loading && instructors.length === 0 && <p className="text-white/75">لا توجد منصات متاحة حاليًا.</p>}
               {instructors.map((teacher) => (
                 <article key={teacher.subdomain} className="overflow-hidden rounded-3xl bg-white text-[#102650] shadow-xl">
-                  <div className="h-52 bg-[#eaf5ff]">
+                  <div className="h-72 bg-[#eaf5ff] sm:h-80">
                     {teacher.logoUrl ? <img src={teacher.logoUrl} alt="" className="h-full w-full object-cover" /> : <div className="grid h-full place-items-center text-5xl">📚</div>}
                   </div>
                   <div className="p-6">

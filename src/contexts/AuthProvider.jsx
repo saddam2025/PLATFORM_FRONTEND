@@ -11,6 +11,7 @@ export const AuthContext = createContext({
   token: null,
   loading: true,
   login: async () => {},
+  acceptInvite: async () => {},
   logout: () => {},
   refreshUser: async () => {},
   updateUser: () => {},
@@ -83,6 +84,24 @@ export function AuthProvider({ children }) {
     [navigate, saveSession]
   );
 
+  const acceptInvite = useCallback(async (inviteToken, password) => {
+    setLoading(true);
+    try {
+      const res = await authService.acceptInvite(inviteToken, password);
+      const payload = res?.data || {};
+      const tkn = payload.token || payload.data?.token;
+      const userObj = payload.user || payload.data?.user;
+      if (!tkn || !userObj) return { ok: false, error: 'استجابة غير مكتملة من الخادم' };
+      saveSession(tkn, userObj);
+      navigate(dashboardPathFor(userObj), { replace: true });
+      return { ok: true, data: userObj };
+    } catch (err) {
+      return { ok: false, error: err?.message || 'تعذر قبول الدعوة' };
+    } finally {
+      setLoading(false);
+    }
+  }, [navigate, saveSession]);
+
   const logout = useCallback(() => {
     try {
       authService.logout().catch(() => {});
@@ -151,6 +170,7 @@ export function AuthProvider({ children }) {
         token,
         loading,
         login,
+        acceptInvite,
         logout,
         refreshUser,
         updateUser,

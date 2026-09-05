@@ -22,6 +22,8 @@ const authService = {
     return api.get('/auth/me');
   },
 
+  acceptInvite: async (token, password) => api.post(`/auth/accept-invite/${encodeURIComponent(token)}`, { password }),
+
   uploadAvatar: async (file) => {
     const formData = new FormData();
     // This field name is part of the backend contract (uploadAvatar middleware).
