@@ -13,6 +13,8 @@ const CourseCatalogPage = lazy(() => import('./pages/student/CourseCatalogPage.j
 const CourseDetailPage = lazy(() => import('./pages/student/CourseDetailPage.jsx'));
 const CheckoutPage = lazy(() => import('./pages/student/CheckoutPage.jsx'));
 const StudentDashboard = lazy(() => import('./pages/student/StudentDashboard.jsx'));
+const ExamGradesPage = lazy(() => import('./pages/student/ExamGradesPage.jsx'));
+const AssignmentGradesPage = lazy(() => import('./pages/student/AssignmentGradesPage.jsx')); 
 const CoursePlayerPage = lazy(() => import('./pages/student/CoursePlayerPage.jsx'));
 const AssignmentSubmissionPage = lazy(() =>
   import('./pages/student/AssignmentSubmissionPage.jsx')
@@ -61,6 +63,8 @@ const scopedRoutes = [
   { path: 'courses/:courseId', element: CourseDetailPage },
   { path: 'checkout/:courseId', element: CheckoutPage },
   { path: 'dashboard', element: StudentDashboard },
+  { path: 'exam-grades', element: ExamGradesPage },
+  { path: 'assignment-grades', element: AssignmentGradesPage },
   { path: 'courses/:courseId/lectures/:lectureId/learn', element: CoursePlayerPage },
   { path: 'courses/:courseId/lectures/:lectureId/assignments', element: AssignmentSubmissionPage },
   { path: 'courses/:courseId/quizzes/:quizId', element: QuizTakingPage },
@@ -75,6 +79,7 @@ const scopedRoutes = [
   { path: 'admin/courses', element: CourseManagementPage },
   { path: 'admin/courses/editor/:courseId', element: CourseEditorPage },
   { path: 'admin/quiz-builder', element: QuizBuilderPage },
+  { path: 'admin/courses/:courseId/lectures/:lectureId/quizzes/manage', element: QuizBuilderPage },
   { path: 'admin/scratchcards', element: ScratchCardManager },
   { path: 'admin/settings', element: TenantSettingsPage },
 

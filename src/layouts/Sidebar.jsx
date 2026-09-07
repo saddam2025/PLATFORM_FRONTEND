@@ -280,6 +280,8 @@ export default function Sidebar() {
         <Item to={`${base}/wallet`} icon="vpn_key">محفظتي</Item>
         <Item to={`${base}/reels`} icon="menu_book">الريلز</Item>
         <Item to={`${base}/leaderboard`} icon="military_tech">لوحة الشرف</Item>
+        <Item to={`${base}/exam-grades`} icon="assignment_turned_in">درجات الاختبارات</Item>
+        <Item to={`${base}/assignment-grades`} icon="assignment_turned_in">درجات الواجبات</Item>
         <Item to={`${base}/dashboard#parent-access-code`} icon="family_restroom" activeWhen={({ pathname, hash }) => pathname === `${base}/dashboard` && hash === '#parent-access-code'}>كود ربط ولي الأمر</Item>
       </nav>
 

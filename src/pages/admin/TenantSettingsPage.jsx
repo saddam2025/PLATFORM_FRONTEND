@@ -401,6 +401,7 @@ export default function TenantSettingsPage() {
   const [codeCourseId, setCodeCourseId] = useState('');
   const [generatedCodes, setGeneratedCodes] = useState([]);
   const [codesCopyFeedback, setCodesCopyFeedback] = useState('');
+  const [copiedGeneratedCode, setCopiedGeneratedCode] = useState('');
 
   const handleGenerateCodes = async () => {
     if (!codeCourseId) return;
@@ -411,6 +412,8 @@ export default function TenantSettingsPage() {
       setSettingsError(error?.message || 'تعذر توليد أكواد الوصول.');
     }
   };
+
+  const copyGeneratedCode = async (code) => { try { await navigator.clipboard.writeText(code); setCopiedGeneratedCode(code); setTimeout(() => setCopiedGeneratedCode(''), 1500); } catch { setCodesCopyFeedback('تعذر نسخ الكود'); } };
 
   const copyAllCodes = async () => {
     if (generatedCodes.length === 0) return;
@@ -750,8 +753,8 @@ export default function TenantSettingsPage() {
               {codesCopyFeedback && <p className="text-xs text-ink-500 mb-2">{codesCopyFeedback}</p>}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                 {generatedCodes.map((code) => (
-                  <div key={code} className="rounded-md bg-surface-muted px-3 py-2 text-center text-sm font-mono text-ink-900">
-                    {code}
+                  <div key={code} className="flex items-center justify-between rounded-md bg-surface-muted px-3 py-2 text-sm font-mono text-ink-900">
+                    <code>{code}</code><Button type="button" size="sm" variant="ghost" onClick={() => copyGeneratedCode(code)} aria-label="نسخ الكود">{copiedGeneratedCode === code ? '✓' : 'نسخ'}</Button>
                   </div>
                 ))}
               </div>

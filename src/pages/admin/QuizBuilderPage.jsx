@@ -1,18 +1,23 @@
 // src/pages/admin/QuizBuilderPage.jsx
 export const route = {
-  path: '/:instructorId/admin/courses/:courseId/lectures/:lectureId/quizzes/manage',
+  path: [
+    '/:instructorId/admin/quiz-builder',
+    '/:instructorId/admin/courses/:courseId/lectures/:lectureId/quizzes/manage'
+  ],
   index: false,
   auth: 'required',
-  roles: ['admin', 'assistant', 'teacher'],
+  roles: ['admin', 'assistant'],
   title: 'منشئ الاختبارات'
 };
 
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import { useAuth } from '../../hooks/useAuth';
 import api from '../../services/api';
+import courseService from '../../services/courseService';
+import lectureService from '../../services/lectureService';
 
 function makeEmptyQuestion() {
   return {
@@ -27,11 +32,18 @@ function makeEmptyQuestion() {
 
 export default function QuizBuilderPage() {
   const { instructorId, courseId, lectureId } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth() || {};
   const lacksPermission = user?.role === 'assistant' && !user?.permissions?.includes('can_grade_exams');
 
   const [quizId, setQuizId] = useState(null);
+  const [courses, setCourses] = useState([]);
+  const [lectures, setLectures] = useState([]);
+  const [selectedCourseId, setSelectedCourseId] = useState(courseId || searchParams.get('courseId') || '');
+  const [selectedLectureId, setSelectedLectureId] = useState(lectureId || searchParams.get('lectureId') || '');
+  const [loadingCourses, setLoadingCourses] = useState(true);
+  const [loadingLectures, setLoadingLectures] = useState(false);
   const [title, setTitle] = useState('');
   const [passingScore, setPassingScore] = useState(50);
   const [timeLimitMinutes, setTimeLimitMinutes] = useState(15);
@@ -47,42 +59,55 @@ export default function QuizBuilderPage() {
       navigate(`/${instructorId}/assistant/dashboard`, { replace: true });
       return undefined;
     }
-    if (!courseId || !lectureId) {
-      setLoadError('اختر محاضرة أولاً لإنشاء أو تعديل اختبارها.');
-      setLoading(false);
-      return undefined;
-    }
     let active = true;
-    async function loadQuiz() {
+    async function loadCourses() {
       setLoading(true);
       setLoadError(null);
       try {
-        const response = await api.get(`/instructors/${instructorId}/courses/${courseId}/lectures/${lectureId}/quiz`);
+        const response = await courseService.list(instructorId);
         if (!active) return;
-        const quiz = response.data.data;
-        if (quiz) {
-          setQuizId(quiz._id);
-          setTitle(quiz.title || '');
-          setPassingScore(quiz.passingScore ?? 50);
-          setTimeLimitMinutes(quiz.timeLimitMinutes ?? 15);
-          setQuestions(quiz.questions.map((question) => ({
-            id: question._id || `q-${Date.now()}`,
-            text: question.text,
-            options: question.options,
-            correctOptionIndex: question.correctOptionIndex,
-            points: question.points,
-            explanation: question.explanation || ''
-          })));
-        }
+        setCourses(response.data.data || []);
       } catch (err) {
-        if (active) setLoadError(err?.message || 'تعذر تحميل الاختبار.');
+        if (active) setLoadError(err?.message || 'تعذر تحميل الكورسات.');
       } finally {
-        if (active) setLoading(false);
+        if (active) { setLoading(false); setLoadingCourses(false); }
       }
     }
-    loadQuiz();
+    loadCourses();
     return () => { active = false; };
-  }, [courseId, instructorId, lectureId, lacksPermission, navigate]);
+  }, [instructorId, lacksPermission, navigate]);
+
+  useEffect(() => {
+    if (!selectedCourseId) { setLectures([]); setSelectedLectureId(''); return undefined; }
+    let active = true;
+    setLoadingLectures(true);
+    lectureService.list(instructorId, selectedCourseId)
+      .then((response) => { if (active) setLectures(response.data.data || []); })
+      .catch((err) => { if (active) setLoadError(err?.message || 'تعذر تحميل محاضرات الكورس.'); })
+      .finally(() => { if (active) setLoadingLectures(false); });
+    return () => { active = false; };
+  }, [instructorId, selectedCourseId]);
+
+  useEffect(() => {
+    if (!selectedCourseId || !selectedLectureId) { setQuizId(null); return undefined; }
+    let active = true;
+    setLoading(true);
+    setLoadError(null);
+    api.get(`/instructors/${instructorId}/courses/${selectedCourseId}/lectures/${selectedLectureId}/quiz`)
+      .then((response) => {
+        if (!active) return;
+        const quiz = response.data.data;
+        if (!quiz) { setQuizId(null); setTitle(''); setPassingScore(50); setTimeLimitMinutes(15); setQuestions([makeEmptyQuestion()]); return; }
+        setQuizId(quiz._id);
+        setTitle(quiz.title || '');
+        setPassingScore(quiz.passingScore ?? 50);
+        setTimeLimitMinutes(quiz.timeLimitMinutes ?? 15);
+        setQuestions(quiz.questions.map((question) => ({ id: question._id || `q-${Date.now()}`, text: question.text, options: question.options, correctOptionIndex: question.correctOptionIndex, points: question.points, explanation: question.explanation || '' })));
+      })
+      .catch((err) => { if (active) setLoadError(err?.message || 'تعذر تحميل الاختبار.'); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [instructorId, selectedCourseId, selectedLectureId]);
 
   const updateQuestion = (qIndex, patch) => {
     setQuestions((prev) =>
@@ -111,6 +136,8 @@ export default function QuizBuilderPage() {
 
   const validate = () => {
     const nextErrors = {};
+    if (!selectedCourseId) nextErrors.course = 'اختر الكورس أولاً';
+    if (!selectedLectureId) nextErrors.lecture = 'اختر المحاضرة أولاً';
     if (!title.trim()) nextErrors.title = 'عنوان الاختبار مطلوب';
     if (!passingScore || passingScore < 1 || passingScore > 100) {
       nextErrors.passingScore = 'يجب أن تكون النسبة بين 1 و 100';
@@ -155,7 +182,7 @@ export default function QuizBuilderPage() {
     try {
       const response = quizId
         ? await api.patch(`/quizzes/${quizId}`, payload)
-        : await api.post(`/instructors/${instructorId}/courses/${courseId}/lectures/${lectureId}/quiz`, payload);
+        : await api.post(`/instructors/${instructorId}/courses/${selectedCourseId}/lectures/${selectedLectureId}/quiz`, payload);
       setQuizId(response.data.data._id);
       setShowSuccess(true);
       setTimeout(() => {
@@ -168,7 +195,7 @@ export default function QuizBuilderPage() {
     }
   };
 
-  if (lacksPermission || loading) return <div dir="rtl" className="max-w-3xl mx-auto p-6 text-ink-600">جارٍ تحميل منشئ الاختبارات...</div>;
+  if (lacksPermission || loadingCourses) return <div dir="rtl" className="max-w-3xl mx-auto p-6 text-ink-600">جارٍ تحميل منشئ الاختبارات...</div>;
 
   return (
     <div dir="rtl" className="max-w-3xl mx-auto space-y-6">
@@ -183,6 +210,27 @@ export default function QuizBuilderPage() {
         </div>
       )}
       {loadError && <div role="alert" className="rounded-2xl bg-danger-soft p-4 text-danger-DEFAULT text-sm">{loadError}</div>}
+
+      <div className="bg-surface-default rounded-2xl shadow-card p-6 space-y-4">
+        <h2 className="text-lg font-medium text-ink-900">ربط الاختبار</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <label className="text-sm text-ink-700">الكورس
+            <select className="input mt-1 w-full" value={selectedCourseId} disabled={Boolean(quizId)} onChange={(event) => { setSelectedCourseId(event.target.value); setSelectedLectureId(''); }}>
+              <option value="">اختر الكورس</option>
+              {courses.map((course) => <option key={course._id} value={course._id}>{course.title_ar || course.title_en}</option>)}
+            </select>
+            {errors.course && <p className="mt-1 text-xs text-danger-DEFAULT">{errors.course}</p>}
+          </label>
+          <label className="text-sm text-ink-700">المحاضرة
+            <select className="input mt-1 w-full" value={selectedLectureId} disabled={!selectedCourseId || loadingLectures || Boolean(quizId)} onChange={(event) => setSelectedLectureId(event.target.value)}>
+              <option value="">{loadingLectures ? 'جارٍ تحميل المحاضرات...' : 'اختر المحاضرة'}</option>
+              {lectures.map((lecture) => <option key={lecture._id} value={lecture._id}>{lecture.order}. {lecture.title_ar || lecture.title_en}</option>)}
+            </select>
+            {errors.lecture && <p className="mt-1 text-xs text-danger-DEFAULT">{errors.lecture}</p>}
+          </label>
+        </div>
+        {quizId && <p className="text-xs text-ink-500">لا يمكن تغيير ربط اختبار موجود؛ أنشئ اختبارًا جديدًا لمحاضرة أخرى.</p>}
+      </div>
 
       {/* Basic settings */}
       <div className="bg-surface-default rounded-2xl shadow-card p-6 space-y-4">
@@ -308,7 +356,7 @@ export default function QuizBuilderPage() {
       </div>
 
       <div className="flex justify-end">
-        <Button variant="primary" onClick={handleSave} disabled={saving || !courseId}>
+        <Button variant="primary" onClick={handleSave} disabled={saving || !selectedCourseId || !selectedLectureId}>
           {saving ? 'جارٍ الحفظ...' : 'حفظ الاختبار'}
         </Button>
       </div>

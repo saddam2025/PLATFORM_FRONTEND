@@ -49,7 +49,6 @@ export default function CourseDetailPage() {
   }, [instructorId, courseId]);
 
   const loadLectures = async () => {
-    if (user?.role !== 'student') return;
     try {
       const response = await api.get(`/courses/${courseId}/lectures`);
       setLectures(response.data.data || []);
@@ -175,18 +174,19 @@ export default function CourseDetailPage() {
         </section>
       </div>
 
-      {user?.role === 'student' && <section className="rounded-2xl bg-surface-default p-6 shadow-card space-y-3">
+      <section className="rounded-2xl bg-surface-default p-6 shadow-card space-y-3">
         <div><h2 className="text-lg font-bold text-ink-900">محاضرات الدورة</h2><p className="mt-1 text-sm text-ink-500">سعر المحاضرة المعروض للتوضيح؛ يتم تأكيد السعر من الخادم عند الشراء.</p></div>
         {purchaseError && <p role="alert" className="rounded-lg bg-danger-soft p-3 text-sm text-danger-DEFAULT">{purchaseError}</p>}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">{lectures.map((lecture) => {
+          const isStudent = user?.role === 'student';
           const state = lectureStatus(lecture);
-          const canOpen = lecture.status === 'free' || lecture.status === 'purchased';
-          const canBuy = lecture.status === 'not_purchased';
-          return <CourseCard key={lecture._id} course={{ title: `${lecture.order}. ${lecture.title_ar || lecture.title_en}`, subtitle: lecture.description_ar || lecture.description_en || 'محاضرة من هذه الدورة', image: resolveApiAssetUrl(lecture.thumbnailUrl), price: Number(lecture.price) }} price={Number(lecture.price)} showInstructor={false} meta={canOpen ? 'المحاضرة متاحة للمشاهدة' : lecture.status === 'pending_previous' ? 'أكمل المتطلبات أولاً' : 'متاحة للشراء بشكل منفصل'} status={state} openLabel={canOpen ? 'فتح المحاضرة' : 'الدفع الإلكتروني'} enrollLabel={canBuy ? (busyLectureId === lecture._id ? 'جارٍ التنفيذ...' : 'شراء بالمحفظة') : 'غير متاحة'} openDisabled={!canOpen && !canBuy} enrollDisabled={!canBuy || busyLectureId === lecture._id} onOpen={() => canOpen ? navigate(`/${instructorId}/courses/${courseId}/lectures/${lecture._id}/learn`) : canBuy && unlockLecture(lecture, 'paymob')} onEnroll={() => canBuy && unlockLecture(lecture, 'wallet')} />;
+          const canOpen = isStudent && (lecture.status === 'free' || lecture.status === 'purchased');
+          const canBuy = isStudent && lecture.status === 'not_purchased';
+          const previewMeta = !user ? 'سجّل الدخول لشراء أو مشاهدة المحاضرة' : 'معاينة للمحتوى المنشور';
+          return <CourseCard key={lecture._id} course={{ title: `${lecture.order}. ${lecture.title_ar || lecture.title_en}`, subtitle: lecture.description_ar || lecture.description_en || 'محاضرة من هذه الدورة', image: resolveApiAssetUrl(lecture.thumbnailUrl), price: Number(lecture.price) }} price={Number(lecture.price)} showInstructor={false} meta={isStudent ? (canOpen ? 'المحاضرة متاحة للمشاهدة' : lecture.status === 'pending_previous' ? 'أكمل المتطلبات أولاً' : 'متاحة للشراء بشكل منفصل') : previewMeta} status={state} openLabel={isStudent ? (canOpen ? 'فتح المحاضرة' : 'الدفع الإلكتروني') : (!user ? 'تسجيل الدخول' : 'معاينة')} enrollLabel={canBuy ? (busyLectureId === lecture._id ? 'جارٍ التنفيذ...' : 'شراء بالمحفظة') : 'غير متاحة'} openDisabled={isStudent ? !canOpen && !canBuy : Boolean(user)} enrollDisabled={!canBuy || busyLectureId === lecture._id} onOpen={() => { if (canOpen) navigate(`/${instructorId}/courses/${courseId}/lectures/${lecture._id}/learn`); else if (canBuy) unlockLecture(lecture, 'paymob'); else if (!user) navigate(`/${instructorId}/login`); }} onEnroll={() => canBuy && unlockLecture(lecture, 'wallet')} />;
         })}</div>
         {lectures.length === 0 && <p className="text-sm text-ink-500">لا توجد محاضرات منشورة حاليًا.</p>}
-      </section>}
-
+      </section>
 
       {/* Sticky CTA */}
       <div className="fixed bottom-0 inset-x-0 z-10 border-t border-surface-border bg-surface-default/95 p-4 backdrop-blur">

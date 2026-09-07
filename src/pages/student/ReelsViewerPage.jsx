@@ -61,7 +61,7 @@ export default function ReelsViewerPage() {
 
   if (loading) return <div dir="rtl" className="rounded-[var(--radius-xl)] bg-surface-default p-8 text-center text-ink-500 shadow-card">جارٍ تحميل المقاطع...</div>;
   if (error) return <div dir="rtl" role="alert" className="rounded-[var(--radius-xl)] bg-danger-soft p-6 text-center text-danger-DEFAULT"><p>{error}</p><Button variant="subtle" size="sm" className="mt-4" onClick={() => load()}>إعادة المحاولة</Button></div>;
-  if (reels.length === 0) return <div dir="rtl" className="rounded-[var(--radius-xl)] bg-surface-default p-10 text-center text-ink-500 shadow-card">لا توجد مقاطع سريعة متاحة حالياً.</div>;
+  if (reels.length === 0) return <div dir="rtl" className="rounded-[var(--radius-xl)] bg-surface-default p-10 text-center text-ink-500 shadow-card">لا توجد ريلز متاحة حاليًا</div>;
 
   const hasMore = pagination && pagination.page < pagination.totalPages;
   return (
