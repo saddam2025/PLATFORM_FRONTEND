@@ -34,7 +34,9 @@ function mapCourse(course) {
     accessPeriodDays: course.accessPeriodDays,
     maxViews: course.maxViews,
     isPublished: course.isPublished,
-    locked: course.locked
+    locked: course.locked,
+    partialLectureCount: course.partialLectureCount || 0,
+    hasPartialLectureAccess: Boolean(course.hasPartialLectureAccess)
   };
 }
 

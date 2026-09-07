@@ -97,6 +97,7 @@ export default function CourseCatalogPage() {
           openLabel="عرض التفاصيل"
           onOpen={() => navigate(`/${instructorId}/courses/${course.id}`)}
           onEnroll={() => navigate(`/${instructorId}/checkout/${course.id}`)}
+          status={course.hasPartialLectureAccess ? { label: `لديك وصول إلى ${course.partialLectureCount} محاضرة`, variant: 'info' } : null}
         />
           ))}
         </div>

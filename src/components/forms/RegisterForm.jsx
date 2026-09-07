@@ -61,7 +61,9 @@ export default function RegisterForm({ instructorId: propInstructorId, instructo
     'دمياط', 'الشرقية', 'جنوب سيناء', 'كفر الشيخ', 'مطروح', 'الأقصر',
     'قنا', 'شمال سيناء', 'سوهاج'
   ];
-  const stages = stageDefinitions.map(({ id, label }) => ({ value: id, label }));
+  // Keep the canonical `{ id, label }` shape. `id` is what the API stores
+  // and validates; `label` is Arabic display text only.
+  const stages = stageDefinitions;
 
   const validateEmail = (email) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -309,7 +311,7 @@ export default function RegisterForm({ instructorId: propInstructorId, instructo
                 >
                   <option value="" disabled>اختر الصف</option>
                   {stages.map((stage) => (
-                    <option key={stage.value} value={stage.value}>{stage.label}</option>
+                    <option key={stage.id} value={stage.id}>{stage.label}</option>
                   ))}
                 </select>
                 {errors.stage && <p className="text-xs text-danger-DEFAULT mt-1">{errors.stage}</p>}

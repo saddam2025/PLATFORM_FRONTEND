@@ -1,8 +1,8 @@
 export const STAGES = [
-  { id: 'grade-7', label: 'اولى اعدادي' },
-  { id: 'grade-8', label: 'تانية اعدادي' },
-  { id: 'grade-9', label: 'تالتة اعدادي' },
-  { id: 'grade-10', label: 'اولى ثانوي' },
+  { id: 'grade-7', label: 'أولى إعدادي' },
+  { id: 'grade-8', label: 'تانية إعدادي' },
+  { id: 'grade-9', label: 'تالتة إعدادي' },
+  { id: 'grade-10', label: 'أولى ثانوي' },
   { id: 'baccalaureate-1', label: 'أولى بكالوريا' },
   { id: 'baccalaureate-2', label: 'تانية بكالوريا' },
   { id: 'grade-11', label: 'تانية ثانوي' },

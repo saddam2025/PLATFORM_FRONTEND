@@ -10,6 +10,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
+import CourseCard from '../../components/common/CourseCard';
 import instructorService from '../../services/instructorService';
 import { useAuth } from '../../hooks/useAuth';
 import api, { resolveApiAssetUrl } from '../../services/api';
@@ -31,7 +32,7 @@ function LockIcon() {
 export default function CourseDetailPage() {
   const { instructorId, courseId } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth() || {};
+  const { user, updateUser } = useAuth() || {};
   const [course, setCourse] = useState(null);
   const [lectures, setLectures] = useState([]);
   const [error, setError] = useState('');
@@ -64,8 +65,15 @@ export default function CourseDetailPage() {
     setBusyLectureId(lecture._id);
     try {
       const response = await api.post(`/courses/${courseId}/lectures/${lecture._id}/checkout/${method}`);
-      if (method === 'paymob') setIframeUrl(response.data.data?.iframeUrl || '');
-      else await loadLectures();
+      if (method === 'paymob') {
+        setIframeUrl(response.data.data?.iframeUrl || '');
+      } else {
+        const newBalance = response.data.data?.walletBalance;
+        if (method === 'wallet' && typeof newBalance === 'number') {
+          updateUser({ walletBalance: newBalance });
+        }
+        await loadLectures();
+      }
     } catch (requestError) {
       setPurchaseError(requestError?.message || 'تعذر إتمام العملية.');
     } finally { setBusyLectureId(''); }
@@ -73,7 +81,7 @@ export default function CourseDetailPage() {
 
   const lectureStatus = (lecture) => ({
     free: { label: 'مجانية', variant: 'success' },
-    purchased: { label: 'مُشتراة', variant: 'brand' },
+    purchased: { label: 'أنت مشترك في هذه المحاضرة', variant: 'brand' },
     not_purchased: { label: 'مقفلة - لم يُشترى', variant: 'danger' },
     pending_previous: { label: 'مقفلة - بانتظار إتمام السابقة', variant: 'neutral' }
   }[lecture.status] || { label: 'مقفلة', variant: 'neutral' });
@@ -170,10 +178,12 @@ export default function CourseDetailPage() {
       {user?.role === 'student' && <section className="rounded-2xl bg-surface-default p-6 shadow-card space-y-3">
         <div><h2 className="text-lg font-bold text-ink-900">محاضرات الدورة</h2><p className="mt-1 text-sm text-ink-500">سعر المحاضرة المعروض للتوضيح؛ يتم تأكيد السعر من الخادم عند الشراء.</p></div>
         {purchaseError && <p role="alert" className="rounded-lg bg-danger-soft p-3 text-sm text-danger-DEFAULT">{purchaseError}</p>}
-        {lectures.map((lecture) => <article key={lecture._id} className="flex flex-wrap items-center justify-between gap-3 border-t border-surface-border pt-3">
-          <div className="flex min-w-0 items-center gap-3">{lecture.thumbnailUrl ? <img src={resolveApiAssetUrl(lecture.thumbnailUrl)} alt="" onError={(event) => { event.currentTarget.style.display = 'none'; }} className="h-12 w-16 rounded-lg object-cover" /> : <div className="grid h-12 w-16 shrink-0 place-items-center rounded-lg bg-surface-muted text-lg" aria-hidden="true">📚</div>}<div><h3 className="font-semibold text-ink-900">{lecture.order}. {lecture.title_ar || lecture.title_en}</h3><p className="text-sm text-ink-500">{Number(lecture.price) === 0 ? 'مجانية' : `${lecture.price} ج.م`}</p></div></div>
-          <div className="flex flex-wrap items-center gap-2"><Badge variant={lectureStatus(lecture).variant}>{lectureStatus(lecture).label}</Badge>{lecture.status === 'not_purchased' && <div className="flex flex-wrap gap-2"><Button size="sm" onClick={() => unlockLecture(lecture, 'wallet')} disabled={busyLectureId === lecture._id}>شراء بالمحفظة</Button><Button size="sm" variant="ghost" onClick={() => unlockLecture(lecture, 'paymob')} disabled={busyLectureId === lecture._id}>الدفع الإلكتروني</Button></div>}{(lecture.status === 'free' || lecture.status === 'purchased') && <Button size="sm" variant="ghost" onClick={() => navigate(`/${instructorId}/courses/${courseId}/lectures/${lecture._id}/learn`)}>فتح المحاضرة</Button>}</div>
-        </article>)}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">{lectures.map((lecture) => {
+          const state = lectureStatus(lecture);
+          const canOpen = lecture.status === 'free' || lecture.status === 'purchased';
+          const canBuy = lecture.status === 'not_purchased';
+          return <CourseCard key={lecture._id} course={{ title: `${lecture.order}. ${lecture.title_ar || lecture.title_en}`, subtitle: lecture.description_ar || lecture.description_en || 'محاضرة من هذه الدورة', image: resolveApiAssetUrl(lecture.thumbnailUrl), price: Number(lecture.price) }} price={Number(lecture.price)} showInstructor={false} meta={canOpen ? 'المحاضرة متاحة للمشاهدة' : lecture.status === 'pending_previous' ? 'أكمل المتطلبات أولاً' : 'متاحة للشراء بشكل منفصل'} status={state} openLabel={canOpen ? 'فتح المحاضرة' : 'الدفع الإلكتروني'} enrollLabel={canBuy ? (busyLectureId === lecture._id ? 'جارٍ التنفيذ...' : 'شراء بالمحفظة') : 'غير متاحة'} openDisabled={!canOpen && !canBuy} enrollDisabled={!canBuy || busyLectureId === lecture._id} onOpen={() => canOpen ? navigate(`/${instructorId}/courses/${courseId}/lectures/${lecture._id}/learn`) : canBuy && unlockLecture(lecture, 'paymob')} onEnroll={() => canBuy && unlockLecture(lecture, 'wallet')} />;
+        })}</div>
         {lectures.length === 0 && <p className="text-sm text-ink-500">لا توجد محاضرات منشورة حاليًا.</p>}
       </section>}
 
@@ -190,7 +200,7 @@ export default function CourseDetailPage() {
               <circle cx="9" cy="20" r="1.4" fill="currentColor" />
               <circle cx="18" cy="20" r="1.4" fill="currentColor" />
             </svg>
-            {courseOwned ? 'الذهاب إلى الكورسات الحالية' : 'شراء الدورة'}
+            {courseOwned ? 'الذهاب إلى كورساتي' : 'شراء الدورة'}
           </Button>
         </div>
       </div>
