@@ -1,28 +1,28 @@
 // src/pages/student/CoursePlayerPage.jsx
 export const route = {
-  path: '/:instructorId/courses/:courseId/learn',
+  path: '/:instructorId/courses/:courseId/lectures/:lectureId/learn',
   index: false,
   auth: 'student',
   title: 'مشغل الدورة'
 };
 
 import React, { useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Avatar from '../../components/ui/Avatar';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import { useAuth } from '../../hooks/useAuth';
 import api, { resolveApiAssetUrl } from '../../services/api';
-import courseService from '../../services/courseService';
 
 export default function CoursePlayerPage() {
-  const { instructorId, courseId } = useParams();
+  const { instructorId, courseId, lectureId } = useParams();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const videoRef = useRef(null);
   const sessionSecondsRef = useRef(0);
   const lastPlayedAtRef = useRef(null);
   const lastSavedAtRef = useRef(0);
-  const [course, setCourse] = useState(null);
+  const [lecture, setLecture] = useState(null);
   const [access, setAccess] = useState(null);
   const [resumeSeconds, setResumeSeconds] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -35,7 +35,7 @@ export default function CoursePlayerPage() {
     setLoading(true);
     setLoadError('');
     setProgressError('');
-    setCourse(null);
+    setLecture(null);
     setAccess(null);
     setResumeSeconds(0);
     sessionSecondsRef.current = 0;
@@ -46,15 +46,12 @@ export default function CoursePlayerPage() {
       try {
         // start-view is the authoritative access gate. Do not fetch/render a
         // playable source until it has granted this viewing session.
-        const accessResponse = await api.post(`/courses/${courseId}/start-view`);
-        const [courseResponse, progressResponse] = await Promise.all([
-          courseService.get(instructorId, courseId),
-          api.get(`/courses/${courseId}/watch-progress`)
-        ]);
+        const accessResponse = await api.post(`/courses/${courseId}/lectures/${lectureId}/start-view`);
+        const progressResponse = await api.get(`/courses/${courseId}/lectures/${lectureId}/watch-progress`);
 
         if (!active) return;
         setAccess(accessResponse?.data?.data || null);
-        setCourse(courseResponse?.data?.data || null);
+        setLecture(accessResponse?.data?.data?.lecture || null);
         setResumeSeconds(Number(progressResponse?.data?.data?.watchedSeconds) || 0);
       } catch (error) {
         if (active) setLoadError(error?.message || 'تعذر التحقق من صلاحية مشاهدة هذه المحاضرة.');
@@ -65,7 +62,7 @@ export default function CoursePlayerPage() {
 
     loadPlayer();
     return () => { active = false; };
-  }, [courseId, instructorId]);
+  }, [courseId, lectureId]);
 
   useEffect(() => {
     const moveWatermark = () => {
@@ -87,7 +84,7 @@ export default function CoursePlayerPage() {
       : 0);
 
     try {
-      await api.patch(`/courses/${courseId}/watch-progress`, {
+      await api.patch(`/courses/${courseId}/lectures/${lectureId}/watch-progress`, {
         watchedSeconds: video.currentTime,
         sessionSeconds: Math.max(0, Math.round(activeSessionSeconds)),
         totalDurationSeconds: Number.isFinite(video.duration) ? video.duration : 0
@@ -122,20 +119,20 @@ export default function CoursePlayerPage() {
     if (video && video.currentTime - lastSavedAtRef.current >= 15) void saveProgress();
   };
 
-  const videoUrl = resolveApiAssetUrl(course?.videoUrl || access?.videoUrl);
-  const title = course?.title_ar || course?.title_en || 'المحاضرة';
+  const videoUrl = resolveApiAssetUrl(lecture?.videoUrl || access?.videoUrl);
+  const title = lecture?.title_ar || lecture?.title_en || 'المحاضرة';
   const watermark = access?.watermark || { name: user?.name || 'طالب', studentId: user?.id || '---' };
 
   if (loading) {
     return <div dir="rtl" className="container mx-auto px-4 py-8 text-center text-sm text-ink-500">جارٍ التحقق من صلاحية المشاهدة...</div>;
   }
 
-  if (loadError || !access || !videoUrl) {
+  if (loadError || !access) {
     return (
       <div dir="rtl" className="container mx-auto max-w-2xl px-4 py-8">
         <section role="alert" className="rounded-2xl bg-danger-soft p-6 text-center">
           <h1 className="text-xl font-semibold text-danger-DEFAULT">تعذر تشغيل المحاضرة</h1>
-          <p className="mt-2 text-sm text-danger-DEFAULT">{loadError || 'لا يتوفر ملف فيديو لهذه المحاضرة.'}</p>
+          <p className="mt-2 text-sm text-danger-DEFAULT">{loadError || 'تعذر التحقق من صلاحية المحاضرة.'}</p>
         </section>
       </div>
     );
@@ -154,12 +151,12 @@ export default function CoursePlayerPage() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant="info" className="text-xs">المشاهدات المتبقية: {access.viewsRemaining}</Badge>
-              <Badge variant="info" className="text-xs">الأيام المتبقية: {access.daysRemaining}</Badge>
+              {access.viewsRemaining != null && <Badge variant="info" className="text-xs">المشاهدات المتبقية: {access.viewsRemaining}</Badge>}
+              {access.daysRemaining != null && <Badge variant="info" className="text-xs">الأيام المتبقية: {access.daysRemaining}</Badge>}
             </div>
           </div>
 
-          <div className="relative w-full overflow-hidden rounded-2xl bg-black ring-1 ring-black/40">
+          {videoUrl ? <div className="relative w-full overflow-hidden rounded-2xl bg-black ring-1 ring-black/40">
             <video
               ref={videoRef}
               className="w-full h-auto max-h-[60vh] bg-black"
@@ -179,13 +176,18 @@ export default function CoursePlayerPage() {
               {`${watermark.name} - ${watermark.studentId}`}
             </div>
           </div>
+          : <div className="rounded-2xl bg-surface-muted p-6 text-center text-sm text-ink-600">لا يوجد فيديو لهذه المحاضرة. أكمل متطلباتها المتاحة أدناه.</div>}
 
           {progressError && <p role="alert" className="mt-3 text-sm text-danger-DEFAULT">{progressError}</p>}
         </section>
 
         <section className="rounded-3xl bg-surface-default shadow-card p-6 text-right">
           <h2 className="font-display text-2xl font-bold text-ink-900">{title}</h2>
-          {course?.description_ar && <p className="mt-2 text-sm leading-relaxed text-ink-600">{course.description_ar}</p>}
+          {lecture?.description_ar && <p className="mt-2 text-sm leading-relaxed text-ink-600">{lecture.description_ar}</p>}
+          <div className="mt-5 flex flex-wrap gap-2">
+            {lecture?.homeworkUrl && <Button variant="primary" onClick={() => navigate(`/${instructorId}/courses/${courseId}/lectures/${lectureId}/assignments`)}>تسليم الواجب</Button>}
+            {lecture?.quizId && <Button variant="ghost" onClick={() => navigate(`/${instructorId}/courses/${courseId}/quizzes/${lecture.quizId}`)}>بدء الاختبار</Button>}
+          </div>
           <div className="mt-5">
             <Button variant="ghost" onClick={() => { window.location.href = 'mailto:support@riyadiaty.example.com'; }}>
               تواصل مع الدعم

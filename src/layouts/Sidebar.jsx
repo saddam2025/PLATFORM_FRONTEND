@@ -277,6 +277,7 @@ export default function Sidebar() {
         <Item to={`${base}/dashboard`} icon="dashboard" activeWhen={({ pathname, hash }) => pathname === `${base}/dashboard` && hash !== '#parent-access-code' && hash !== '#current-courses'}>لوحة التحكم</Item>
         <Item to={`${base}/catalog`} icon="menu_book">الكورسات</Item>
         <Item to={`${base}/dashboard#current-courses`} icon="menu_book" activeWhen={({ pathname, hash }) => pathname === `${base}/dashboard` && hash === '#current-courses'}>الكورسات الحالية</Item>
+        <Item to={`${base}/wallet`} icon="vpn_key">محفظتي</Item>
         <Item to={`${base}/reels`} icon="menu_book">الريلز</Item>
         <Item to={`${base}/leaderboard`} icon="military_tech">لوحة الشرف</Item>
         <Item to={`${base}/dashboard#parent-access-code`} icon="family_restroom" activeWhen={({ pathname, hash }) => pathname === `${base}/dashboard` && hash === '#parent-access-code'}>كود ربط ولي الأمر</Item>

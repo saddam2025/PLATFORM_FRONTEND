@@ -1,6 +1,6 @@
 // src/pages/admin/QuizBuilderPage.jsx
 export const route = {
-  path: ['/:instructorId/admin/quiz-builder', '/:instructorId/admin/courses/:courseId/quizzes/manage'],
+  path: '/:instructorId/admin/courses/:courseId/lectures/:lectureId/quizzes/manage',
   index: false,
   auth: 'required',
   roles: ['admin', 'assistant', 'teacher'],
@@ -26,7 +26,7 @@ function makeEmptyQuestion() {
 }
 
 export default function QuizBuilderPage() {
-  const { instructorId, courseId } = useParams();
+  const { instructorId, courseId, lectureId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth() || {};
   const lacksPermission = user?.role === 'assistant' && !user?.permissions?.includes('can_grade_exams');
@@ -47,8 +47,8 @@ export default function QuizBuilderPage() {
       navigate(`/${instructorId}/assistant/dashboard`, { replace: true });
       return undefined;
     }
-    if (!courseId) {
-      setLoadError('اختر دورة أولاً لإنشاء أو تعديل اختبارها.');
+    if (!courseId || !lectureId) {
+      setLoadError('اختر محاضرة أولاً لإنشاء أو تعديل اختبارها.');
       setLoading(false);
       return undefined;
     }
@@ -57,7 +57,7 @@ export default function QuizBuilderPage() {
       setLoading(true);
       setLoadError(null);
       try {
-        const response = await api.get(`/instructors/${instructorId}/courses/${courseId}/quiz`);
+        const response = await api.get(`/instructors/${instructorId}/courses/${courseId}/lectures/${lectureId}/quiz`);
         if (!active) return;
         const quiz = response.data.data;
         if (quiz) {
@@ -82,7 +82,7 @@ export default function QuizBuilderPage() {
     }
     loadQuiz();
     return () => { active = false; };
-  }, [courseId, instructorId, lacksPermission, navigate]);
+  }, [courseId, instructorId, lectureId, lacksPermission, navigate]);
 
   const updateQuestion = (qIndex, patch) => {
     setQuestions((prev) =>
@@ -155,7 +155,7 @@ export default function QuizBuilderPage() {
     try {
       const response = quizId
         ? await api.patch(`/quizzes/${quizId}`, payload)
-        : await api.post(`/instructors/${instructorId}/courses/${courseId}/quiz`, payload);
+        : await api.post(`/instructors/${instructorId}/courses/${courseId}/lectures/${lectureId}/quiz`, payload);
       setQuizId(response.data.data._id);
       setShowSuccess(true);
       setTimeout(() => {
@@ -174,7 +174,7 @@ export default function QuizBuilderPage() {
     <div dir="rtl" className="max-w-3xl mx-auto space-y-6">
       <div>
         <h1 className="text-xl font-semibold text-ink-900">منشئ الاختبارات</h1>
-        <p className="text-sm text-ink-500 mt-1">إنشاء اختبار جديد للدورة</p>
+        <p className="text-sm text-ink-500 mt-1">إنشاء اختبار جديد للمحاضرة</p>
       </div>
 
       {showSuccess && (

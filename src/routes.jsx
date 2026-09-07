@@ -61,9 +61,9 @@ const scopedRoutes = [
   { path: 'courses/:courseId', element: CourseDetailPage },
   { path: 'checkout/:courseId', element: CheckoutPage },
   { path: 'dashboard', element: StudentDashboard },
-  { path: 'player/:courseId', element: CoursePlayerPage },
-  { path: 'courses/:courseId/assignments/:assignmentId?', element: AssignmentSubmissionPage },
-  { path: 'quiz/take/:quizId', element: QuizTakingPage },
+  { path: 'courses/:courseId/lectures/:lectureId/learn', element: CoursePlayerPage },
+  { path: 'courses/:courseId/lectures/:lectureId/assignments', element: AssignmentSubmissionPage },
+  { path: 'courses/:courseId/quizzes/:quizId', element: QuizTakingPage },
   { path: 'quiz/results/:submissionId', element: QuizResultsPage },
 
   // assistant

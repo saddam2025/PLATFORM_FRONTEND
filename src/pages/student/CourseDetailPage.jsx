@@ -11,6 +11,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import instructorService from '../../services/instructorService';
+import { useAuth } from '../../hooks/useAuth';
+import api, { resolveApiAssetUrl } from '../../services/api';
 
 function LockIcon() {
   return (
@@ -29,8 +31,13 @@ function LockIcon() {
 export default function CourseDetailPage() {
   const { instructorId, courseId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth() || {};
   const [course, setCourse] = useState(null);
+  const [lectures, setLectures] = useState([]);
   const [error, setError] = useState('');
+  const [purchaseError, setPurchaseError] = useState('');
+  const [busyLectureId, setBusyLectureId] = useState('');
+  const [iframeUrl, setIframeUrl] = useState('');
 
   useEffect(() => {
     let active = true;
@@ -39,6 +46,38 @@ export default function CourseDetailPage() {
       .catch((requestError) => { if (active) setError(requestError.message || 'تعذر تحميل الدورة.'); });
     return () => { active = false; };
   }, [instructorId, courseId]);
+
+  const loadLectures = async () => {
+    if (user?.role !== 'student') return;
+    try {
+      const response = await api.get(`/courses/${courseId}/lectures`);
+      setLectures(response.data.data || []);
+    } catch (requestError) {
+      setPurchaseError(requestError?.message || 'تعذر تحميل محاضرات الدورة.');
+    }
+  };
+
+  useEffect(() => { void loadLectures(); }, [courseId, user?.role]);
+
+  const unlockLecture = async (lecture, method) => {
+    setPurchaseError('');
+    setBusyLectureId(lecture._id);
+    try {
+      const response = await api.post(`/courses/${courseId}/lectures/${lecture._id}/checkout/${method}`);
+      if (method === 'paymob') setIframeUrl(response.data.data?.iframeUrl || '');
+      else await loadLectures();
+    } catch (requestError) {
+      setPurchaseError(requestError?.message || 'تعذر إتمام العملية.');
+    } finally { setBusyLectureId(''); }
+  };
+
+  const lectureStatus = (lecture) => ({
+    free: { label: 'مجانية', variant: 'success' },
+    purchased: { label: 'مُشتراة', variant: 'brand' },
+    not_purchased: { label: 'مقفلة - لم يُشترى', variant: 'danger' },
+    pending_previous: { label: 'مقفلة - بانتظار إتمام السابقة', variant: 'neutral' }
+  }[lecture.status] || { label: 'مقفلة', variant: 'neutral' });
+  const courseOwned = user?.role === 'student' && lectures.length > 0 && lectures.every((lecture) => lecture.status === 'free' || lecture.status === 'purchased');
 
   if (error) return <div dir="rtl" className="rounded-2xl bg-danger-soft p-6 text-center text-danger-DEFAULT">{error}</div>;
   if (!course) return <div dir="rtl" className="rounded-2xl bg-surface-muted p-6 text-center text-ink-500">جارٍ تحميل الدورة...</div>;
@@ -62,6 +101,7 @@ export default function CourseDetailPage() {
           <img
             src={course.image || '/src/assets/vite.svg'}
             alt={course.title}
+            onError={(event) => { event.currentTarget.style.display = 'none'; }}
             className="h-full w-full object-cover"
           />
         </div>
@@ -127,6 +167,16 @@ export default function CourseDetailPage() {
         </section>
       </div>
 
+      {user?.role === 'student' && <section className="rounded-2xl bg-surface-default p-6 shadow-card space-y-3">
+        <div><h2 className="text-lg font-bold text-ink-900">محاضرات الدورة</h2><p className="mt-1 text-sm text-ink-500">سعر المحاضرة المعروض للتوضيح؛ يتم تأكيد السعر من الخادم عند الشراء.</p></div>
+        {purchaseError && <p role="alert" className="rounded-lg bg-danger-soft p-3 text-sm text-danger-DEFAULT">{purchaseError}</p>}
+        {lectures.map((lecture) => <article key={lecture._id} className="flex flex-wrap items-center justify-between gap-3 border-t border-surface-border pt-3">
+          <div className="flex min-w-0 items-center gap-3">{lecture.thumbnailUrl ? <img src={resolveApiAssetUrl(lecture.thumbnailUrl)} alt="" onError={(event) => { event.currentTarget.style.display = 'none'; }} className="h-12 w-16 rounded-lg object-cover" /> : <div className="grid h-12 w-16 shrink-0 place-items-center rounded-lg bg-surface-muted text-lg" aria-hidden="true">📚</div>}<div><h3 className="font-semibold text-ink-900">{lecture.order}. {lecture.title_ar || lecture.title_en}</h3><p className="text-sm text-ink-500">{Number(lecture.price) === 0 ? 'مجانية' : `${lecture.price} ج.م`}</p></div></div>
+          <div className="flex flex-wrap items-center gap-2"><Badge variant={lectureStatus(lecture).variant}>{lectureStatus(lecture).label}</Badge>{lecture.status === 'not_purchased' && <div className="flex flex-wrap gap-2"><Button size="sm" onClick={() => unlockLecture(lecture, 'wallet')} disabled={busyLectureId === lecture._id}>شراء بالمحفظة</Button><Button size="sm" variant="ghost" onClick={() => unlockLecture(lecture, 'paymob')} disabled={busyLectureId === lecture._id}>الدفع الإلكتروني</Button></div>}{(lecture.status === 'free' || lecture.status === 'purchased') && <Button size="sm" variant="ghost" onClick={() => navigate(`/${instructorId}/courses/${courseId}/lectures/${lecture._id}/learn`)}>فتح المحاضرة</Button>}</div>
+        </article>)}
+        {lectures.length === 0 && <p className="text-sm text-ink-500">لا توجد محاضرات منشورة حاليًا.</p>}
+      </section>}
+
 
       {/* Sticky CTA */}
       <div className="fixed bottom-0 inset-x-0 z-10 border-t border-surface-border bg-surface-default/95 p-4 backdrop-blur">
@@ -134,20 +184,17 @@ export default function CourseDetailPage() {
           <div className="text-sm text-ink-500">
             إجمالي السعر: <span className="text-lg font-bold text-ink-900">{course.price} ج.م</span>
           </div>
-          <Button
-            variant="primary"
-            size="md"
-            onClick={() => navigate(`/${instructorId}/checkout/${courseId}`)}
-          >
+          <Button variant="primary" size="md" onClick={() => navigate(courseOwned ? `/${instructorId}/dashboard` : `/${instructorId}/checkout/${courseId}`)}>
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
               <path d="M6 6h15l-1.5 9h-12z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
               <circle cx="9" cy="20" r="1.4" fill="currentColor" />
               <circle cx="18" cy="20" r="1.4" fill="currentColor" />
             </svg>
-            شراء الدورة
+            {courseOwned ? 'الذهاب إلى الكورسات الحالية' : 'شراء الدورة'}
           </Button>
         </div>
       </div>
+      {iframeUrl && <div className="fixed inset-0 z-20 flex items-center justify-center bg-black/60 p-4"><section className="h-[90vh] w-full max-w-3xl overflow-hidden rounded-2xl bg-surface-default shadow-card"><div className="flex items-center justify-between p-3"><h2 className="font-semibold">إتمام دفع المحاضرة</h2><Button size="sm" variant="ghost" onClick={() => setIframeUrl('')}>إغلاق</Button></div><iframe title="Paymob lecture payment" src={iframeUrl} className="h-[calc(100%-56px)] w-full border-0" /></section></div>}
     </div>
   );
 }

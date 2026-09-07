@@ -8,7 +8,7 @@ export const route = {
 };
 
 import React, { useEffect, useState } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
 import api from '../../services/api';
@@ -18,7 +18,8 @@ import { useAuth } from '../../hooks/useAuth';
 
 export default function CheckoutPage() {
   const { instructorId, courseId } = useParams();
-  const { user } = useAuth() || {};
+  const navigate = useNavigate();
+  const { user, updateUser } = useAuth() || {};
   const [searchParams] = useSearchParams();
   const [course, setCourse] = useState(null);
   const [loadingOrder, setLoadingOrder] = useState(true);
@@ -85,6 +86,7 @@ export default function CheckoutPage() {
     try {
       await api.post(`/courses/${courseId}/checkout/free`);
       setWalletMessage('تم الاشتراك في الدورة المجانية بنجاح.');
+      navigate(`/${instructorId}/dashboard`, { replace: true });
     } catch (error) {
       setWalletMessage(error?.message || 'تعذر إتمام الاشتراك المجاني.');
     } finally {
@@ -97,7 +99,9 @@ export default function CheckoutPage() {
     setWalletMessage('');
     try {
       const response = await api.post(`/courses/${courseId}/checkout/wallet`);
+      updateUser?.({ walletBalance: response?.data?.data?.walletBalance });
       setWalletMessage(`تم الاشتراك بنجاح. رصيدك المتبقي: ${response?.data?.data?.walletBalance ?? ''} ج.م`);
+      navigate(`/${instructorId}/dashboard`, { replace: true });
     } catch (error) {
       setWalletMessage(error?.message || 'تعذر إتمام الدفع من المحفظة.');
     } finally {
@@ -112,6 +116,7 @@ export default function CheckoutPage() {
     setWalletMessage('');
     try {
       const response = await api.post('/scratchcards/redeem', { code: scratchCode.trim() });
+      updateUser?.({ walletBalance: response?.data?.data?.walletBalance });
       setScratchCode('');
       setShowScratchCard(false);
       setWalletMessage(`تم شحن المحفظة بنجاح. الرصيد الحالي: ${response?.data?.data?.walletBalance ?? ''} ج.م. يمكنك الآن الدفع بالمحفظة.`);

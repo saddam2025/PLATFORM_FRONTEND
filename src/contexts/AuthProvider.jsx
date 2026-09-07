@@ -134,7 +134,11 @@ export function AuthProvider({ children }) {
     try {
       setApiAuthToken(stored);
       const res = await authService.me();
-      const payload = res?.data || null;
+      // api.get() preserves the backend envelope.  /auth/me responds with
+      // { data: user }, so storing res.data directly made the authenticated
+      // user look like { data: { ...user } }.  Consumers such as the wallet
+      // correctly read user.walletBalance and therefore fell back to 0.
+      const payload = res?.data?.data || res?.data || null;
       setUser(payload);
       try {
         localStorage.setItem('mp_user', JSON.stringify(payload));

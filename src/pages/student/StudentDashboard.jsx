@@ -7,23 +7,32 @@ export const route = {
   title: 'لوحة الطالب',
 };
 
-import React, { useContext, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { ThemeContext } from '../../contexts/ThemeProvider';
 import Avatar from '../../components/ui/Avatar';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
+import api from '../../services/api';
 
 export default function StudentDashboard() {
   const { instructorId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { theme, toggleTheme } = useContext(ThemeContext);
   const [copied, setCopied] = useState(false);
+  const [enrolledCourses, setEnrolledCourses] = useState([]);
+  const [coursesLoading, setCoursesLoading] = useState(true);
 
   const walletBalance = user?.walletBalance ?? 0;
   const parentAccessCode = user?.parentAccessCode || null;
+
+  useEffect(() => {
+    let active = true;
+    api.get('/courses/enrolled')
+      .then((response) => { if (active) setEnrolledCourses(response?.data?.data || []); })
+      .finally(() => { if (active) setCoursesLoading(false); });
+    return () => { active = false; };
+  }, []);
 
   const handleCopyCode = async () => {
     if (!parentAccessCode) return;
@@ -51,19 +60,14 @@ export default function StudentDashboard() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Badge variant="brand">المحفظة: {walletBalance} ج.م</Badge>
-          <Button variant="ghost" size="sm" onClick={toggleTheme} aria-label="Toggle theme">
-            {theme === 'dark' ? 'وضع فاتح' : 'وضع داكن'}
-          </Button>
+          <Button variant="subtle" size="sm" onClick={() => navigate(`/${instructorId}/wallet`)}>محفظتي: {walletBalance} ج.م</Button>
         </div>
       </div>
 
       {/* Enrolled courses */}
       <section id="current-courses" className="scroll-mt-24 rounded-[var(--radius-xl)] border border-surface-border bg-surface-default p-5 shadow-card sm:p-6">
         <div className="mb-5 flex items-end justify-between gap-4"><div><p className="text-sm font-semibold text-brand-600">تابع تقدّمك</p><h2 className="mt-1 text-xl font-extrabold text-ink-900">دوراتي الحالية</h2></div><Button variant="subtle" size="sm" onClick={() => navigate(`/${instructorId}/catalog`)}>استكشف الكورسات</Button></div>
-        <div className="rounded-2xl bg-surface-muted p-6 text-center text-sm text-ink-500">
-          ستظهر دوراتك المسجّل بها هنا عند إتاحة بياناتها من الخادم.
-        </div>
+        {coursesLoading ? <div className="rounded-2xl bg-surface-muted p-6 text-center text-sm text-ink-500">جارٍ تحميل دوراتك...</div> : enrolledCourses.length === 0 ? <div className="rounded-2xl bg-surface-muted p-6 text-center text-sm text-ink-500">لا توجد دورات مسجّل بها حتى الآن.</div> : <div className="grid gap-3 sm:grid-cols-2">{enrolledCourses.map(({ course, expiresAt, viewsRemaining, includedWithCourse }) => <button type="button" key={course._id} onClick={() => navigate(`/${instructorId}/courses/${course._id}`)} className="rounded-2xl border border-surface-border bg-surface-canvas p-4 text-right transition hover:border-brand-400"><p className="font-bold text-ink-900">{course.title_ar || course.title_en}</p><p className="mt-1 text-sm text-ink-500">{course.lectureCount || 0} محاضرة · {course.price ?? 0} ج.م</p><p className="mt-1 text-xs text-ink-500">{includedWithCourse ? 'يشمل كل المحاضرات' : `المشاهدات المتبقية: ${viewsRemaining}`} · متاح حتى {new Date(expiresAt).toLocaleDateString('ar-EG')}</p></button>)}</div>}
       </section>
 
       {/* Parent access code */}

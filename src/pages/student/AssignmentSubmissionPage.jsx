@@ -1,5 +1,5 @@
 export const route = {
-  path: '/:instructorId/courses/:courseId/assignments/:assignmentId?',
+  path: '/:instructorId/courses/:courseId/lectures/:lectureId/assignments',
   index: false,
   auth: 'required',
   roles: ['student'],
@@ -13,7 +13,7 @@ import Button from '../../components/ui/Button';
 import api, { resolveApiAssetUrl } from '../../services/api';
 
 export default function AssignmentSubmissionPage() {
-  const { instructorId, courseId } = useParams();
+  const { instructorId, courseId, lectureId } = useParams();
   const [assignment, setAssignment] = useState(null);
   const [course, setCourse] = useState(null);
   const [file, setFile] = useState(null);
@@ -31,14 +31,14 @@ export default function AssignmentSubmissionPage() {
       setError(null);
       try {
         const [mineResponse, courseResponse] = await Promise.all([
-          api.get(`/courses/${courseId}/assignments/mine`),
-          api.get(`/instructors/${instructorId}/courses/${courseId}`),
+          api.get(`/courses/${courseId}/lectures/${lectureId}/assignments/mine`),
+          api.post(`/courses/${courseId}/lectures/${lectureId}/start-view`),
         ]);
         if (!active) return;
         const mine = mineResponse.data.data;
         setAssignment(mine);
         setSubmissionNote(mine?.submissionNote || '');
-        setCourse(courseResponse.data.data);
+        setCourse(courseResponse.data.data.lecture);
       } catch (err) {
         if (active) setError(err?.message || 'تعذر تحميل بيانات الواجب.');
       } finally {
@@ -47,7 +47,7 @@ export default function AssignmentSubmissionPage() {
     }
     load();
     return () => { active = false; };
-  }, [courseId, instructorId]);
+  }, [courseId, instructorId, lectureId]);
 
   const selectFile = (nextFile) => {
     if (!nextFile) return;
@@ -73,7 +73,7 @@ export default function AssignmentSubmissionPage() {
     formData.append('submissionNote', submissionNote);
     setSubmitting(true);
     try {
-      const response = await api.post(`/courses/${courseId}/assignments/submit`, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      const response = await api.post(`/courses/${courseId}/lectures/${lectureId}/assignments/submit`, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
       setAssignment(response.data.data);
       setFile(null);
       setSuccess('تم تسليم الواجب بنجاح وهو الآن بانتظار المراجعة.');

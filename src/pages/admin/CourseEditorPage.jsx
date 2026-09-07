@@ -22,6 +22,7 @@ import Badge from '../../components/ui/Badge';
 // FIX: real hook file is src/hooks/useAuth.js — there is no src/contexts/AuthContext.jsx.
 import { useAuth } from '../../hooks/useAuth';
 import courseService from '../../services/courseService';
+import LectureManager from '../../components/admin/LectureManager';
 import { STAGES } from '../../constants/stages';
 
 // Tailwind classes matching Input.jsx's `.input` look, reused for the native
@@ -163,8 +164,6 @@ export default function CourseEditorPage() {
         setAccessPeriodDays(course.accessPeriodDays ?? 10);
         setMaxViews(course.maxViews ?? 10);
         setIsPublished(Boolean(course.isPublished));
-        setExternalVideoUrl(course.videoUrl?.startsWith('http') ? course.videoUrl : '');
-        setExternalHomeworkUrl(course.homeworkUrl?.startsWith('http') ? course.homeworkUrl : '');
       })
       .catch((requestError) => { if (active) setLoadError(requestError.message || 'تعذر تحميل الدورة.'); });
     return () => { active = false; };
@@ -186,18 +185,16 @@ export default function CourseEditorPage() {
       accessPeriodDays: Number(accessPeriodDays) || 0,
       maxViews: Number(maxViews) || 0,
       isPublished,
-      ...(externalVideoUrl.trim() ? { externalVideoUrl: externalVideoUrl.trim() } : {}),
-      ...(externalHomeworkUrl.trim() ? { externalHomeworkUrl: externalHomeworkUrl.trim() } : {})
     };
 
     try {
-      if (isNew) await courseService.create(instructorId, payload, { thumbnail: thumbnailFile, video: videoFile, homework: homeworkFile });
+      if (isNew) await courseService.create(instructorId, payload, { thumbnail: thumbnailFile });
       else {
         // The current PATCH controller does not accept or return quiz questions;
         // do not imply that question edits have been persisted.
         const { questions: ignoredQuestions, ...courseFields } = payload;
         void ignoredQuestions;
-        await courseService.update(instructorId, courseId, courseFields, { thumbnail: thumbnailFile, video: videoFile, homework: homeworkFile });
+        await courseService.update(instructorId, courseId, courseFields, { thumbnail: thumbnailFile });
       }
       setSuccessMessage('تم حفظ الدورة بنجاح');
       navigate(`/${instructorId}/admin/courses`);
@@ -464,6 +461,9 @@ export default function CourseEditorPage() {
               <span className="text-sm text-ink-900">نشر الدورة الآن</span>
             </label>
           </section>
+
+          {!isNew && <LectureManager instructorId={instructorId} courseId={courseId} />}
+          {isNew && <section className="rounded-2xl bg-surface-muted p-6 text-sm text-ink-600">احفظ الدورة أولاً، ثم افتحها مرة أخرى لإضافة عدد غير محدود من المحاضرات وإدارة ترتيبها.</section>}
 
           <div className="flex items-center gap-3">
             <Button type="submit" variant="primary" disabled={saving}>

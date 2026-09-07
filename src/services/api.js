@@ -37,11 +37,15 @@ export function setAuthToken(token) {
 // those backend-owned paths against the API origin when frontend and backend
 // run on different development ports.
 export function resolveApiAssetUrl(url) {
-  if (!url || !url.startsWith('/uploads/')) return url;
+  if (!url || typeof url !== 'string') return url;
+  // Old records may have `uploads/...`, `/uploads/...`, or Windows-style
+  // separators. Always turn backend-owned upload paths into an API-origin URL.
+  const normalized = url.trim().replace(/\\/g, '/').replace(/^\/?(?:src\/)?uploads\//, '/uploads/');
+  if (!normalized.startsWith('/uploads/')) return url;
   try {
-    return new URL(url, instance.defaults.baseURL).toString();
+    return new URL(normalized, instance.defaults.baseURL).toString();
   } catch {
-    return url;
+    return normalized;
   }
 }
 
