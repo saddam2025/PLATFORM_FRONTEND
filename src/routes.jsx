@@ -37,11 +37,16 @@ const ScratchCardManager = lazy(() => import('./pages/admin/ScratchCardManager.j
 const TenantSettingsPage = lazy(() => import('./pages/admin/TenantSettingsPage.jsx'));
 const StudentProfilePage = lazy(() => import('./pages/shared/StudentProfilePage.jsx'));
 const AssistantProfilePage = lazy(() => import('./pages/shared/AssistantProfilePage.jsx'));
+const StudentsListPage = lazy(() => import('./pages/shared/StudentsListPage.jsx'));
+const StudentDetailPage = lazy(() => import('./pages/shared/StudentDetailPage.jsx'));
 
 /* Parent pages */
 const ParentDashboard = lazy(() => import('./pages/parent/ParentDashboard.jsx'));
 const ChildReportsPage = lazy(() => import('./pages/parent/ChildReportsPage.jsx'));
 const ParentActivityPage = lazy(() => import('./pages/parent/ParentActivityPage.jsx'));
+const ChildCoursesPage = lazy(() => import('./pages/parent/ChildCoursesPage.jsx'));
+const ChildExamGradesPage = lazy(() => import('./pages/parent/ChildExamGradesPage.jsx'));
+const ChildAssignmentGradesPage = lazy(() => import('./pages/parent/ChildAssignmentGradesPage.jsx'));
 
 /* Super-admin pages (mounted by App.jsx's explicit non-tenant route group). */
 const SuperAdminDashboard = lazy(() => import('./pages/super-admin/SuperAdminDashboard.jsx'));
@@ -86,13 +91,18 @@ const scopedRoutes = [
   // Shared protected profiles. Runtime routing reads page route exports via
   // routes.auto.js; these entries keep this legacy route collection aligned.
   { path: 'profiles/students/:studentId', element: StudentProfilePage, allowedRoles: ['admin', 'assistant'] },
+  { path: 'students', element: StudentsListPage, allowedRoles: ['admin', 'assistant'] },
+  { path: 'students/:studentId', element: StudentDetailPage, allowedRoles: ['admin', 'assistant'] },
   { path: 'profiles/assistants/:assistantId', element: AssistantProfilePage, allowedRoles: ['admin', 'parent'] },
   { path: 'parent/profiles/assistants/:assistantId', element: AssistantProfilePage, allowedRoles: ['admin', 'parent'] },
 
   // parent
   { path: 'parent', element: ParentDashboard },
-  { path: 'parent/reports/:childId', element: ChildReportsPage },
-  { path: 'parent/activity/:childId', element: ParentActivityPage },
+  { path: 'parent/reports', element: ChildReportsPage },
+  { path: 'parent/courses', element: ChildCoursesPage },
+  { path: 'parent/exam-grades', element: ChildExamGradesPage },
+  { path: 'parent/assignment-grades', element: ChildAssignmentGradesPage },
+  { path: 'parent/activity', element: ParentActivityPage },
 ];
 
 const superAdminRoutes = [

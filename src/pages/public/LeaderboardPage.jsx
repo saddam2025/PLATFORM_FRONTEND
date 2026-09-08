@@ -2,14 +2,14 @@
 export const route = {
   path: ['/:instructorId/leaderboard', '/:instructorId/parent/leaderboard'],
   index: false,
-  auth: null,
+  auth: 'required',
+  roles: ['student', 'parent', 'admin', 'assistant'],
   title: 'لوحة الشرف'
 };
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import Avatar from '../../components/ui/Avatar';
-import ProfileLink from '../../components/ui/ProfileLink';
 import { useAuth } from '../../hooks/useAuth';
 import leaderboardService from '../../services/leaderboardService';
 import { STAGES, stageLabel } from '../../constants/stages';
@@ -84,7 +84,7 @@ const RANK_STYLES = {
 // right, 1st place is centered and raised, and 3rd place renders on the left.
 const PODIUM_ORDER = [2, 1, 3];
 
-function StudentIdentity({ student, size, className, canViewProfile }) {
+function StudentIdentity({ student, size, className, canViewProfile, instructorId }) {
   const content = (
     <div className={className}>
       <Avatar src={student.avatarUrl || student.avatar} name={student.name} size={size} />
@@ -94,14 +94,15 @@ function StudentIdentity({ student, size, className, canViewProfile }) {
 
   if (!canViewProfile || !student.studentId) return content;
   return (
-    <ProfileLink userId={String(student.studentId)} profileType="student" ariaLabel={`عرض ملف الطالب ${student.name}`} className="rounded-xl">
+    <Link to={`/${instructorId}/students/${student.studentId}`} aria-label={`عرض ملف الطالب ${student.name}`} className="rounded-xl">
       {content}
-    </ProfileLink>
+    </Link>
   );
 }
 
 export default function LeaderboardPage() {
   const { instructorId } = useParams();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [stageFilter, setStageFilter] = useState('all');
   const [visibleRestCount, setVisibleRestCount] = useState(VISIBLE_REST_STEP);
@@ -191,26 +192,27 @@ export default function LeaderboardPage() {
             const student = byRank[rank];
             if (!student) return <div key={rank} />;
             const style = RANK_STYLES[rank];
+            const canOpenStudent = canViewStudentProfiles && student.studentId;
 
             return (
               <div
                 key={student.id}
                 className={`group relative rounded-2xl border bg-surface-default p-6 pt-10 flex flex-col items-center text-center
-                  transition-all duration-200 ease-out cursor-default
+                  transition-all duration-200 ease-out ${canOpenStudent ? 'cursor-pointer' : 'cursor-default'}
                   hover:-translate-y-1.5 hover:shadow-lg
                   ${style.cardBorder}
                   ${style.elevated ? 'sm:-mt-4' : ''}`}
+                onClick={canOpenStudent ? () => navigate(`/${instructorId}/students/${student.studentId}`) : undefined}
+                onKeyDown={canOpenStudent ? (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); navigate(`/${instructorId}/students/${student.studentId}`); } } : undefined}
+                role={canOpenStudent ? 'link' : undefined}
+                tabIndex={canOpenStudent ? 0 : undefined}
               >
                 {style.elevated && (
                   <CrownIcon className="w-6 h-6 text-yellow-400 dark:text-yellow-300 mb-1 transition-transform duration-200 group-hover:-translate-y-0.5" />
                 )}
 
                 <div className="relative">
-                  {canViewStudentProfiles && student.studentId ? (
-                    <ProfileLink userId={String(student.studentId)} profileType="student" ariaLabel={`عرض ملف الطالب ${student.name}`}>
-                      <Avatar src={student.avatarUrl || student.avatar} name={student.name} size="lg" className={`rounded-full ${style.ring}`} />
-                    </ProfileLink>
-                  ) : <Avatar src={student.avatarUrl || student.avatar} name={student.name} size="lg" className={`rounded-full ${style.ring}`} />}
+                  <Avatar src={student.avatarUrl || student.avatar} name={student.name} size="lg" className={`rounded-full ${style.ring}`} />
                   <span
                     className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold ${style.badge}`}
                   >
@@ -254,7 +256,11 @@ export default function LeaderboardPage() {
                   return (
                     <tr
                       key={s.id}
-                      className="border-t border-surface-border transition-colors hover:bg-surface-muted cursor-default"
+                      className={`border-t border-surface-border transition-colors hover:bg-surface-muted ${canViewStudentProfiles && s.studentId ? 'cursor-pointer' : 'cursor-default'}`}
+                      onClick={canViewStudentProfiles && s.studentId ? () => navigate(`/${instructorId}/students/${s.studentId}`) : undefined}
+                      onKeyDown={canViewStudentProfiles && s.studentId ? (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); navigate(`/${instructorId}/students/${s.studentId}`); } } : undefined}
+                      role={canViewStudentProfiles && s.studentId ? 'link' : undefined}
+                      tabIndex={canViewStudentProfiles && s.studentId ? 0 : undefined}
                     >
                       <td className="py-4 px-3">
                         <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-surface-muted text-sm font-semibold text-ink-700">
@@ -262,7 +268,7 @@ export default function LeaderboardPage() {
                         </span>
                       </td>
                       <td className="py-4 px-3">
-                        <StudentIdentity student={s} size="sm" className="flex items-center gap-3" canViewProfile={canViewStudentProfiles} />
+                        <StudentIdentity student={s} size="sm" className="flex items-center gap-3" canViewProfile={canViewStudentProfiles} instructorId={instructorId} />
                       </td>
                       <td className="py-4 px-3 text-sm text-ink-700">{stageLabel(s.stage)}</td>
                       <td className="py-4 px-3 text-sm text-ink-700">{s.homeworkAvg}%</td>

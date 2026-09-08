@@ -25,6 +25,7 @@ export default function RegisterForm({ instructorId: propInstructorId, instructo
     role: 'student',
     parentAccessCode: '',
     // Student-only fields (match the student sign-up design)
+    phone: '',
     fatherPhone: '',
     motherPhone: '',
     guardianJob: '',
@@ -85,6 +86,7 @@ export default function RegisterForm({ instructorId: propInstructorId, instructo
     }
 
     if (form.role === 'student') {
+      if (!form.phone.trim()) e.phone = 'رقم هاتف الطالب مطلوب';
       if (!form.fatherPhone.trim()) e.fatherPhone = 'رقم هاتف الأب مطلوب';
       if (!form.motherPhone.trim()) e.motherPhone = 'رقم هاتف الأم مطلوب';
       if (!form.guardianJob.trim()) e.guardianJob = 'مهنة ولي الأمر مطلوبة';
@@ -117,6 +119,7 @@ export default function RegisterForm({ instructorId: propInstructorId, instructo
         ...(form.role === 'parent' ? { parentAccessCode: form.parentAccessCode.trim() } : {}),
         ...(form.role === 'student'
           ? {
+              phone: form.phone.trim(),
               fatherPhone: form.fatherPhone.trim(),
               motherPhone: form.motherPhone.trim(),
               guardianJob: form.guardianJob.trim(),
@@ -238,8 +241,12 @@ export default function RegisterForm({ instructorId: propInstructorId, instructo
 
         {form.role === 'student' && (
           <>
-            {/* Father / mother phone */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Student / parent phones */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label htmlFor="phone" className="block text-sm font-medium text-ink-700 mb-2">رقم هاتف الطالب</label>
+                <Input id="phone" name="phone" type="tel" value={form.phone} onChange={onChange('phone')} error={errors.phone} required />
+              </div>
               <div>
                 <label htmlFor="fatherPhone" className="block text-sm font-medium text-ink-700 mb-2">رقم هاتف الأب</label>
                 <Input id="fatherPhone" name="fatherPhone" type="tel" value={form.fatherPhone} onChange={onChange('fatherPhone')} error={errors.fatherPhone} required />

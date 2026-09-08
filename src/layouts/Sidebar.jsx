@@ -215,6 +215,8 @@ export default function Sidebar() {
           {/* Requirement #15: assistants have identical upload permissions to teachers */}
           <Item to={`${base}/admin/courses`} icon="upload_file">رفع محتوى تعليمي</Item>
           <Item to={`${base}/assistant/messages`} icon="family_restroom">رسائل أولياء الأمور</Item>
+          <Item to={`${base}/students`} icon="family_restroom">الطلاب</Item>
+          <Item to={`${base}/leaderboard`} icon="military_tech">لوحة الشرف</Item>
           <Item to={`${base}/admin/scratchcards`} icon="vpn_key">أكواد الوصول</Item>
         </nav>
 
@@ -251,6 +253,8 @@ export default function Sidebar() {
               <Item to={`${base}/admin/courses`} icon="menu_book">إدارة الكورسات</Item>
               <Item to={`${base}/admin/quiz-builder`} icon="quiz">منشئ الاختبارات</Item>
               <Item to={`${base}/admin/scratchcards`} icon="vpn_key">أكواد الوصول</Item>
+              <Item to={`${base}/students`} icon="family_restroom">الطلاب</Item>
+              <Item to={`${base}/leaderboard`} icon="military_tech">لوحة الشرف</Item>
               <Item to={`${base}/admin/students/export`} icon="menu_book">تصدير الطلاب</Item>
               <Item to={`${base}/admin/reels`} icon="upload_file">رفع مقطع سريع</Item>
               {role === 'admin' && <Item to={`${base}/admin/settings`} icon="settings">إعدادات المنصة</Item>}

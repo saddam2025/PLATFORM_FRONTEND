@@ -68,6 +68,9 @@ export default function ParentSidebar() {
         <button type="button" onClick={() => navigate('/')} className="flex w-full items-center rounded-xl px-4 py-3 text-right text-[15px] font-medium text-white/70 transition hover:bg-[var(--sidebar-bg-soft)] hover:text-white">تغيير المدرس</button>
         <Item to={`${base}/parent/dashboard`}>لوحة التحكم</Item>
         <Item to={`${base}/parent/reports`}>تقارير الأبناء</Item>
+        <Item to={`${base}/parent/courses`}>كورسات الابن</Item>
+        <Item to={`${base}/parent/exam-grades`}>درجات الاختبارات</Item>
+        <Item to={`${base}/parent/assignment-grades`}>درجات الواجبات والملاحظات</Item>
         <Item to={`${base}/parent/activity`}>النشاط والرسائل</Item>
         <Item to={`${base}/parent/leaderboard`}>لوحة الشرف</Item>
       </nav>
