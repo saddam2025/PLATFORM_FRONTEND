@@ -151,7 +151,7 @@ export default function InstructorSelectorPage() {
               <h2 className="mt-3 text-3xl font-extrabold sm:text-4xl">تعلّم مع ناس فاهمة احتياجاتك</h2>
               <p className="mt-4 leading-8 text-white/75">شوف المحتوى المتاح واختار البداية اللي تناسب مستواك.</p>
             </div>
-            <div className={`mt-9 grid gap-6 ${instructors.length === 1 ? 'mx-auto w-full max-w-md grid-cols-1' : 'md:grid-cols-2'}`}>
+            <div className={`mt-9 grid gap-6 ${instructors.length === 1 ? 'mx-auto w-full max-w-md grid-cols-1 lg:max-w-2xl' : 'md:grid-cols-2'}`}>
               {loading && <p className="text-white/75">جارٍ تحميل المنصات المتاحة...</p>}
               {!loading && instructors.length === 0 && <p className="text-white/75">لا توجد منصات متاحة حاليًا.</p>}
               {instructors.map((teacher) => (
@@ -187,13 +187,6 @@ export default function InstructorSelectorPage() {
           </div>
         </section>}
 
-        {featuredLectures.length > 0 && <section className="landing-light-section mx-auto max-w-7xl px-5 pb-16 lg:px-8">
-          <div className="rounded-[var(--radius-xl)] border border-surface-border bg-surface-default p-6 shadow-card">
-            <div className="mb-6 space-y-2 text-right"><h2 className="font-display text-2xl font-semibold text-ink-900">محاضرات مقترحة</h2><p className="text-sm text-ink-500">محاضرات منشورة متاحة للشراء بشكل منفصل.</p></div>
-            <div dir="rtl" className="flex gap-5 overflow-x-auto">{featuredLectures.map((lecture) => <div key={lecture.id} className="w-[360px] min-w-[320px] shrink-0"><CourseCard course={{ ...lecture, title: `${lecture.order}. ${lecture.title}`, level: 'محاضرة', levelVariant: 'info' }} meta={lecture.courseTitle ? `من دورة: ${lecture.courseTitle}` : 'محاضرة متاحة للشراء بشكل منفصل'} openLabel="عرض الكورس" enrollLabel="عرض المحاضرة" onOpen={() => navigate(`/${lecture.subdomain}/courses/${lecture.courseId}`)} onEnroll={() => navigate(`/${lecture.subdomain}/courses/${lecture.courseId}`)} /></div>)}</div>
-          </div>
-        </section>}
-
         <section className="landing-light-section mx-auto max-w-7xl px-5 py-20 lg:px-8">
           <div className="grid items-center gap-10 rounded-[2.25rem] bg-[#eaf5ff] p-7 lg:grid-cols-2 lg:p-12">
             <div className="text-right">
@@ -206,6 +199,13 @@ export default function InstructorSelectorPage() {
             </div>
           </div>
         </section>
+
+        {featuredLectures.length > 0 && <section className="landing-light-section mx-auto max-w-7xl px-5 pb-16 lg:px-8">
+          <div className="rounded-[var(--radius-xl)] border border-surface-border bg-surface-default p-6 shadow-card">
+            <div className="mb-6 space-y-2 text-right"><h2 className="font-display text-2xl font-semibold text-ink-900">محاضرات مقترحة</h2><p className="text-sm text-ink-500">محاضرات منشورة متاحة للشراء بشكل منفصل.</p></div>
+            <div dir="rtl" className="flex gap-5 overflow-x-auto">{featuredLectures.map((lecture) => <div key={lecture.id} className="w-[360px] min-w-[320px] shrink-0"><CourseCard course={{ ...lecture, title: `${lecture.order}. ${lecture.title}`, level: 'محاضرة', levelVariant: 'info' }} meta={lecture.courseTitle ? `من دورة: ${lecture.courseTitle}` : 'محاضرة متاحة للشراء بشكل منفصل'} openLabel="عرض الكورس" enrollLabel="عرض المحاضرة" onOpen={() => navigate(`/${lecture.subdomain}/courses/${lecture.courseId}`)} onEnroll={() => navigate(`/${lecture.subdomain}/courses/${lecture.courseId}`)} /></div>)}</div>
+          </div>
+        </section>}
 
         <section className="bg-[#1081f5] px-5 py-20 lg:px-8">
           <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-2">
