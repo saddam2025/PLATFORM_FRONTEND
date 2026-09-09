@@ -1,14 +1,16 @@
 export const route = { path: '/', index: true, auth: null, title: 'ابدأ رحلتك' };
 
-import React, { useContext, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useContext, useEffect, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { InstructorContext } from '../../contexts/InstructorContext';
 import Avatar from '../../components/ui/Avatar';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import Footer from '../../components/common/Footer';
+import CourseCard from '../../components/common/CourseCard';
 import { landingAssets, landingFeatures } from '../../mocks/landingMockData';
 import Navbar from '../../layouts/Navbar';
+import instructorService from '../../services/instructorService';
 
 const valuePoints = [
   ['محتوى مرتب', 'كل حاجة قدامك بشكل واضح عشان تركز في اللي يهمك.'],
@@ -18,9 +20,39 @@ const valuePoints = [
 
 export default function InstructorSelectorPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { instructors = [], loading, selectInstructor = () => {} } = useContext(InstructorContext) || {};
   const teachersRef = useRef(null);
+  const [featuredCourses, setFeaturedCourses] = useState([]);
+  const [featuredLectures, setFeaturedLectures] = useState([]);
   const scrollToTeachers = () => teachersRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // Lets Footer.jsx (rendered on other routes too) navigate here and ask us
+  // to scroll straight to the teachers section, e.g. `navigate('/', { state: { scrollTo: 'teachers-section' } })`.
+  useEffect(() => {
+    if (location.state?.scrollTo === 'teachers-section') {
+      teachersRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [location.state]);
+
+  useEffect(() => {
+    let active = true;
+    Promise.all([
+      instructorService.getPublicFeaturedCourses(),
+      instructorService.getPublicFeaturedLectures()
+    ])
+      .then(([coursesResponse, lecturesResponse]) => {
+        if (!active) return;
+        setFeaturedCourses(coursesResponse.data || []);
+        setFeaturedLectures(lecturesResponse.data || []);
+      })
+      .catch(() => {
+        if (!active) return;
+        setFeaturedCourses([]);
+        setFeaturedLectures([]);
+      });
+    return () => { active = false; };
+  }, []);
 
   const handleSelect = (teacher) => {
     try {
@@ -112,14 +144,14 @@ export default function InstructorSelectorPage() {
           </div>
         </section>
 
-        <section ref={teachersRef} className="landing-dark-section bg-[#102f5c] px-5 py-20 text-white lg:px-8">
+        <section id="teachers-section" ref={teachersRef} className="landing-dark-section bg-[#102f5c] px-5 py-20 text-white lg:px-8">
           <div className="mx-auto max-w-7xl">
             <div className="max-w-2xl text-right">
               <span className="text-sm font-extrabold text-[#9fe4ff]">اختار اللي يناسبك</span>
               <h2 className="mt-3 text-3xl font-extrabold sm:text-4xl">تعلّم مع ناس فاهمة احتياجاتك</h2>
               <p className="mt-4 leading-8 text-white/75">شوف المحتوى المتاح واختار البداية اللي تناسب مستواك.</p>
             </div>
-            <div className="mt-9 grid gap-6 md:grid-cols-2">
+            <div className={`mt-9 grid gap-6 ${instructors.length === 1 ? 'mx-auto w-full max-w-md grid-cols-1' : 'md:grid-cols-2'}`}>
               {loading && <p className="text-white/75">جارٍ تحميل المنصات المتاحة...</p>}
               {!loading && instructors.length === 0 && <p className="text-white/75">لا توجد منصات متاحة حاليًا.</p>}
               {instructors.map((teacher) => (
@@ -147,6 +179,20 @@ export default function InstructorSelectorPage() {
             </div>
           </div>
         </section>
+
+        {featuredCourses.length > 0 && <section className="landing-light-section mx-auto max-w-7xl px-5 py-16 lg:px-8">
+          <div className="rounded-[var(--radius-xl)] border border-surface-border bg-surface-default p-6 shadow-card">
+            <div className="mb-6 space-y-2 text-right"><h2 className="font-display text-2xl font-semibold text-ink-900">كورسات مقترحة</h2><p className="text-sm text-ink-500">اختيارات من أحدث الكورسات المنشورة على منصات مدرسينا.</p></div>
+            <div dir="rtl" className="flex gap-5 overflow-x-auto">{featuredCourses.map((course) => <div key={course.id} className="w-[360px] min-w-[320px] shrink-0"><CourseCard course={course} openLabel="عرض التفاصيل" enrollLabel="اشترك" onOpen={() => navigate(`/${course.subdomain}/courses/${course.id}`)} onEnroll={() => navigate(`/${course.subdomain}/checkout/${course.id}`)} /></div>)}</div>
+          </div>
+        </section>}
+
+        {featuredLectures.length > 0 && <section className="landing-light-section mx-auto max-w-7xl px-5 pb-16 lg:px-8">
+          <div className="rounded-[var(--radius-xl)] border border-surface-border bg-surface-default p-6 shadow-card">
+            <div className="mb-6 space-y-2 text-right"><h2 className="font-display text-2xl font-semibold text-ink-900">محاضرات مقترحة</h2><p className="text-sm text-ink-500">محاضرات منشورة متاحة للشراء بشكل منفصل.</p></div>
+            <div dir="rtl" className="flex gap-5 overflow-x-auto">{featuredLectures.map((lecture) => <div key={lecture.id} className="w-[360px] min-w-[320px] shrink-0"><CourseCard course={{ ...lecture, title: `${lecture.order}. ${lecture.title}`, level: 'محاضرة', levelVariant: 'info' }} meta={lecture.courseTitle ? `من دورة: ${lecture.courseTitle}` : 'محاضرة متاحة للشراء بشكل منفصل'} openLabel="عرض الكورس" enrollLabel="عرض المحاضرة" onOpen={() => navigate(`/${lecture.subdomain}/courses/${lecture.courseId}`)} onEnroll={() => navigate(`/${lecture.subdomain}/courses/${lecture.courseId}`)} /></div>)}</div>
+          </div>
+        </section>}
 
         <section className="landing-light-section mx-auto max-w-7xl px-5 py-20 lg:px-8">
           <div className="grid items-center gap-10 rounded-[2.25rem] bg-[#eaf5ff] p-7 lg:grid-cols-2 lg:p-12">

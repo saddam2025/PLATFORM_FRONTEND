@@ -17,6 +17,7 @@ function mapTenant(tenant) {
     stagesOffered: Array.isArray(tenant.stagesOffered) ? tenant.stagesOffered : [],
     monthlyPrice: tenant.monthlyPrice,
     perLecturePrice: tenant.perLecturePrice,
+    supportPhone: tenant.supportPhone || '',
     themeColors: tenant.themeColors || {}
   };
 }
@@ -36,7 +37,30 @@ function mapCourse(course) {
     isPublished: course.isPublished,
     locked: course.locked,
     partialLectureCount: course.partialLectureCount || 0,
-    hasPartialLectureAccess: Boolean(course.hasPartialLectureAccess)
+    hasPartialLectureAccess: Boolean(course.hasPartialLectureAccess),
+    instructor: course.instructor ? {
+      name: course.instructor.name || course.instructorName || '',
+      avatar: resolveApiAssetUrl(course.instructor.avatar)
+    } : undefined,
+    subdomain: course.subdomain || course.instructor?.subdomain || ''
+  };
+}
+
+function mapLecture(lecture) {
+  return {
+    id: lecture._id,
+    courseId: lecture.courseId,
+    courseTitle: lecture.courseTitle || '',
+    title: lecture.title_ar || lecture.title_en,
+    subtitle: lecture.description_ar || lecture.description_en || '',
+    image: resolveApiAssetUrl(lecture.thumbnailUrl),
+    price: Number(lecture.price),
+    order: lecture.order,
+    instructor: lecture.instructor ? {
+      name: lecture.instructor.name || lecture.instructorName || '',
+      avatar: resolveApiAssetUrl(lecture.instructor.avatar)
+    } : undefined,
+    subdomain: lecture.subdomain || lecture.instructor?.subdomain || ''
   };
 }
 
@@ -61,6 +85,21 @@ const instructorService = {
     const params = Object.fromEntries(Object.entries(filters).filter(([, value]) => value));
     const response = await api.get(`/instructors/${encodeURIComponent(instructorId)}/courses`, { params });
     return { ...response, data: (response.data.data || []).map(mapCourse) };
+  },
+
+  getFeaturedLectures: async (instructorId) => {
+    const response = await api.get(`/instructors/${encodeURIComponent(instructorId)}/lectures/featured`);
+    return { ...response, data: (response.data.data || []).map(mapLecture) };
+  },
+
+  getPublicFeaturedCourses: async () => {
+    const response = await api.get('/public/featured-courses');
+    return { ...response, data: (response.data.data || []).map(mapCourse) };
+  },
+
+  getPublicFeaturedLectures: async () => {
+    const response = await api.get('/public/featured-lectures');
+    return { ...response, data: (response.data.data || []).map(mapLecture) };
   },
 
   getCourse: async (instructorId, courseId) => {
