@@ -4,7 +4,7 @@ import Button from '../ui/Button';
 import Avatar from '../ui/Avatar';
 import Badge from '../ui/Badge';
 
-export default function CourseCard({ course, onOpen, onEnroll, price, openLabel = 'عرض التفاصيل', enrollLabel = 'اشترك الآن', status, meta, showInstructor = true, openDisabled = false, enrollDisabled = false }) {
+export default function CourseCard({ course, onOpen, onEnroll, price, openLabel = 'عرض التفاصيل', enrollLabel = 'اشترك الآن', status, meta, showInstructor = true, openDisabled = false, enrollDisabled = false, hidePrice = false }) {
   const displayPrice = price ?? course.price;
   const [imageFailed, setImageFailed] = useState(false);
   const thumbnailUrl = course.image || course.thumbnailUrl;
@@ -12,7 +12,7 @@ export default function CourseCard({ course, onOpen, onEnroll, price, openLabel 
     <div className="relative h-44 overflow-hidden bg-gradient-to-bl from-brand-100 via-brand-50 to-surface-muted">
       {thumbnailUrl && !imageFailed ? <img src={thumbnailUrl} alt={course.title} onError={() => setImageFailed(true)} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" /> : <div className="grid h-full place-items-center text-4xl" aria-label="لا توجد صورة للكورس">📚</div>}
       <div className="absolute inset-0 bg-gradient-to-t from-navy-900/35 to-transparent" />
-      <div className="absolute left-4 top-4">{displayPrice != null && <Badge variant="brand">{displayPrice === 0 ? 'مجاني' : `${displayPrice} ج.م`}</Badge>}</div>
+      <div className="absolute left-4 top-4">{!hidePrice && displayPrice != null && <Badge variant="brand">{displayPrice === 0 ? 'مجاني' : `${displayPrice} ج.م`}</Badge>}</div>
       {course.level && <div className="absolute right-4 top-4"><Badge variant={course.levelVariant || 'info'}>{course.level}</Badge></div>}
       {status && <div className="absolute bottom-4 right-4"><Badge variant={status.variant || 'neutral'}>{status.label}</Badge></div>}
     </div>
@@ -28,4 +28,4 @@ export default function CourseCard({ course, onOpen, onEnroll, price, openLabel 
   </article>;
 }
 
-CourseCard.propTypes = { course: PropTypes.shape({ title: PropTypes.string, subtitle: PropTypes.string, image: PropTypes.string, thumbnailUrl: PropTypes.string, price: PropTypes.number, lectureCount: PropTypes.number, level: PropTypes.string, levelVariant: PropTypes.oneOf(['info', 'success', 'danger', 'brand']), instructor: PropTypes.shape({ name: PropTypes.string, avatar: PropTypes.string }), lessonsCount: PropTypes.number, tasksCount: PropTypes.number }).isRequired, onOpen: PropTypes.func, onEnroll: PropTypes.func, price: PropTypes.number, openLabel: PropTypes.string, enrollLabel: PropTypes.string, status: PropTypes.shape({ label: PropTypes.string.isRequired, variant: PropTypes.string }), meta: PropTypes.string, showInstructor: PropTypes.bool, openDisabled: PropTypes.bool, enrollDisabled: PropTypes.bool };
+CourseCard.propTypes = { course: PropTypes.shape({ title: PropTypes.string, subtitle: PropTypes.string, image: PropTypes.string, thumbnailUrl: PropTypes.string, price: PropTypes.number, lectureCount: PropTypes.number, level: PropTypes.string, levelVariant: PropTypes.oneOf(['info', 'success', 'danger', 'brand']), instructor: PropTypes.shape({ name: PropTypes.string, avatar: PropTypes.string }), lessonsCount: PropTypes.number, tasksCount: PropTypes.number }).isRequired, onOpen: PropTypes.func, onEnroll: PropTypes.func, price: PropTypes.number, openLabel: PropTypes.string, enrollLabel: PropTypes.string, status: PropTypes.shape({ label: PropTypes.string.isRequired, variant: PropTypes.string }), meta: PropTypes.string, showInstructor: PropTypes.bool, openDisabled: PropTypes.bool, enrollDisabled: PropTypes.bool, hidePrice: PropTypes.bool };

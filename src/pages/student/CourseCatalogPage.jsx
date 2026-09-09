@@ -12,6 +12,8 @@ import CourseCard from '../../components/common/CourseCard';
 import Input from '../../components/ui/Input';
 import Badge from '../../components/ui/Badge';
 import instructorService from '../../services/instructorService';
+import standaloneExamService from '../../services/standaloneExamService';
+import { useAuth } from '../../hooks/useAuth';
 
 export default function CourseCatalogPage() {
   const { instructorId, stageId } = useParams();
@@ -20,8 +22,10 @@ export default function CourseCatalogPage() {
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState(null);
   const [courses, setCourses] = useState([]);
+  const [exams, setExams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const { user } = useAuth() || {};
 
   useEffect(() => setSearch(searchParams.get('search') || ''), [searchParams]);
 
@@ -35,6 +39,15 @@ export default function CourseCatalogPage() {
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [instructorId, stageId, activeCategory]);
+
+  useEffect(() => {
+    let active = true;
+    if (user?.role !== 'student') { setExams([]); return () => { active = false; }; }
+    standaloneExamService.getAvailable()
+      .then((response) => { if (active) setExams(response.data?.data || []); })
+      .catch(() => { if (active) setExams([]); });
+    return () => { active = false; };
+  }, [user?.role]);
 
   const stageCourses = useMemo(() => {
     return courses;
@@ -84,7 +97,7 @@ export default function CourseCatalogPage() {
         </div>
       )}
 
-      {!loading && filteredCourses.length === 0 ? (
+      {!loading && filteredCourses.length === 0 && exams.length === 0 ? (
         <div className="bg-surface-muted rounded-2xl p-10 text-center text-ink-500">
           لا توجد دورات مطابقة
         </div>
@@ -99,6 +112,20 @@ export default function CourseCatalogPage() {
           onEnroll={() => navigate(`/${instructorId}/checkout/${course.id}`)}
           status={course.hasPartialLectureAccess ? { label: `لديك وصول إلى ${course.partialLectureCount} محاضرة`, variant: 'info' } : null}
         />
+          ))}
+          {exams.map((exam) => (
+            <CourseCard
+              key={`exam-${exam._id || exam.id}`}
+              course={{ ...exam, id: exam._id || exam.id, level: 'امتحان' }}
+              hidePrice
+              showInstructor={false}
+              meta={`${exam.durationMinutes} دقيقة`}
+              openLabel="تفاصيل الامتحان"
+              enrollLabel="ابدأ الامتحان الآن"
+              openDisabled
+              status={{ label: 'امتحان مستقل', variant: 'info' }}
+              onEnroll={() => navigate(`/${instructorId}/exams/${exam._id || exam.id}/take`)}
+            />
           ))}
         </div>
       )}

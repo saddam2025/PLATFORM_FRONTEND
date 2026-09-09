@@ -5,15 +5,29 @@ export const route = {
   title: 'الصفحة الرئيسية'
 };
 
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import CourseCard from '../../components/common/CourseCard.jsx';
 import Button from '../../components/ui/Button';
 import useTenantData from '../../hooks/useTenantData.js';
+import { useAuth } from '../../hooks/useAuth';
+import standaloneExamService from '../../services/standaloneExamService';
 
 export default function TenantHomepage() {
   const { instructorId } = useParams();
   const navigate = useNavigate();
   const { instructorProfile, catalogCourses, loading, error } = useTenantData(instructorId);
+  const { user } = useAuth() || {};
+  const [exams, setExams] = useState([]);
+
+  useEffect(() => {
+    let active = true;
+    if (user?.role !== 'student') { setExams([]); return () => { active = false; }; }
+    standaloneExamService.getAvailable()
+      .then((response) => { if (active) setExams(response.data?.data || []); })
+      .catch(() => { if (active) setExams([]); });
+    return () => { active = false; };
+  }, [user?.role]);
 
   if (loading) {
     return (
@@ -130,7 +144,7 @@ export default function TenantHomepage() {
           </Button>
         </div>
 
-        {catalogCourses.length === 0 ? (
+        {catalogCourses.length === 0 && exams.length === 0 ? (
           <div className="rounded-2xl border border-surface-border bg-surface-muted p-10 text-center text-ink-500">
             لا توجد دورات منشورة بعد. تابعنا قريبًا للحصول على محتوى جديد.
           </div>
@@ -145,6 +159,20 @@ export default function TenantHomepage() {
                 onOpen={() => navigate(`/${instructorId}/courses/${course.id}`)}
                 onEnroll={() => navigate(`/${instructorId}/checkout/${course.id}`)}
                 status={course.hasPartialLectureAccess ? { label: `لديك وصول إلى ${course.partialLectureCount} محاضرة`, variant: 'info' } : null}
+              />
+            ))}
+            {exams.map((exam) => (
+              <CourseCard
+                key={`exam-${exam._id || exam.id}`}
+                course={{ ...exam, id: exam._id || exam.id, level: 'امتحان' }}
+                hidePrice
+                showInstructor={false}
+                meta={`${exam.durationMinutes} دقيقة`}
+                openLabel="تفاصيل الامتحان"
+                enrollLabel="ابدأ الامتحان الآن"
+                openDisabled
+                status={{ label: 'امتحان مستقل', variant: 'info' }}
+                onEnroll={() => navigate(`/${instructorId}/exams/${exam._id || exam.id}/take`)}
               />
             ))}
           </div>

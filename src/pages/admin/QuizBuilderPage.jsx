@@ -18,6 +18,7 @@ import { useAuth } from '../../hooks/useAuth';
 import api from '../../services/api';
 import courseService from '../../services/courseService';
 import lectureService from '../../services/lectureService';
+import QuestionBuilder from '../../components/admin/QuestionBuilder';
 
 function makeEmptyQuestion() {
   return {
@@ -271,89 +272,7 @@ export default function QuizBuilderPage() {
         </div>
       </div>
 
-      {/* Questions builder */}
-      <div className="bg-surface-default rounded-2xl shadow-card p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-medium text-ink-900">الأسئلة</h2>
-          {errors.questions && (
-            <span className="text-xs text-danger-DEFAULT">{errors.questions}</span>
-          )}
-        </div>
-
-        {questions.map((q, qIndex) => (
-          <div key={q.id} className="border border-surface-border rounded-xl p-4 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-ink-900">السؤال {qIndex + 1}</h3>
-              {questions.length > 1 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-danger-DEFAULT"
-                  onClick={() => removeQuestion(qIndex)}
-                >
-                  حذف
-                </Button>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm text-ink-700 mb-1">نص السؤال</label>
-              <Input
-                placeholder="اكتب نص السؤال هنا"
-                value={q.text}
-                onChange={(e) => updateQuestion(qIndex, { text: e.target.value })}
-                error={errors[`q-${qIndex}-text`]}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {q.options.map((opt, optIndex) => (
-                <div key={optIndex} className="flex items-center gap-2">
-                  <input
-                    type="radio"
-                    name={`correct-${q.id}`}
-                    checked={q.correctOptionIndex === optIndex}
-                    onChange={() => updateQuestion(qIndex, { correctOptionIndex: optIndex })}
-                    className="shrink-0"
-                    aria-label={`تحديد الخيار ${optIndex + 1} كإجابة صحيحة`}
-                  />
-                  <Input
-                    placeholder={`الخيار ${optIndex + 1}`}
-                    value={opt}
-                    onChange={(e) => updateOption(qIndex, optIndex, e.target.value)}
-                    error={errors[`q-${qIndex}-opt-${optIndex}`]}
-                    className="flex-1"
-                  />
-                </div>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <label className="block text-sm text-ink-700 mb-1">الدرجة</label>
-                <Input
-                  type="number"
-                  min={1}
-                  value={q.points}
-                  onChange={(e) => updateQuestion(qIndex, { points: e.target.value })}
-                />
-              </div>
-              <div className="sm:col-span-2">
-                <label className="block text-sm text-ink-700 mb-1">الشرح (يظهر عند الإجابة الخاطئة بعد إعادة المحاولة)</label>
-                <Input
-                  placeholder="اشرح سبب الإجابة الصحيحة"
-                  value={q.explanation}
-                  onChange={(e) => updateQuestion(qIndex, { explanation: e.target.value })}
-                />
-              </div>
-            </div>
-          </div>
-        ))}
-
-        <Button variant="ghost" onClick={addQuestion}>
-          إضافة سؤال
-        </Button>
-      </div>
+      <QuestionBuilder questions={questions} errors={errors} onUpdateQuestion={updateQuestion} onUpdateOption={updateOption} onAddQuestion={addQuestion} onRemoveQuestion={removeQuestion} />
 
       <div className="flex justify-end">
         <Button variant="primary" onClick={handleSave} disabled={saving || !selectedCourseId || !selectedLectureId}>
