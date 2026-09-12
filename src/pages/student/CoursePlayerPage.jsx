@@ -120,6 +120,7 @@ export default function CoursePlayerPage() {
   };
 
   const videoUrl = resolveApiAssetUrl(lecture?.videoUrl || access?.videoUrl);
+  const bunnyEmbedUrl = lecture?.bunnyEmbedUrl || access?.lecture?.bunnyEmbedUrl;
   const title = lecture?.title_ar || lecture?.title_en || 'المحاضرة';
   const watermark = access?.watermark || { name: user?.name || 'طالب', studentId: user?.id || '---' };
 
@@ -156,7 +157,9 @@ export default function CoursePlayerPage() {
             </div>
           </div>
 
-          {videoUrl ? <div className="relative w-full overflow-hidden rounded-2xl bg-black ring-1 ring-black/40">
+          {bunnyEmbedUrl ? <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-black ring-1 ring-black/40">
+            <iframe className="h-full w-full" src={bunnyEmbedUrl} title={title} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+          </div> : videoUrl ? <div className="relative w-full overflow-hidden rounded-2xl bg-black ring-1 ring-black/40">
             <video
               ref={videoRef}
               className="w-full h-auto max-h-[60vh] bg-black"

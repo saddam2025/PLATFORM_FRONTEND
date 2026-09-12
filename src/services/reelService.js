@@ -1,25 +1,29 @@
 import api from './api';
+import { uploadVideoToBunny } from './bunnyUploadService';
 
 const reelService = {
   list: (instructorId, page = 1, limit = 10) => (
     api.get(`/instructors/${instructorId}/reels`, { params: { page, limit } })
   ),
 
-  upload: (instructorId, { video, caption, stage }, onProgress) => {
-    const formData = new FormData();
-    formData.append('video', video);
-    if (caption) formData.append('caption', caption);
-    if (stage) formData.append('stage', stage);
-
-    return api.post(`/instructors/${instructorId}/reels`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-      // Axios receives these values from the browser's actual XHR upload events.
-      onUploadProgress: (event) => {
-        if (event.total && onProgress) {
-          onProgress(Math.round((event.loaded * 100) / event.total));
-        }
-      },
-    });
+  upload: async (instructorId, { video, caption, stage }, onProgress) => {
+    let initialized;
+    try {
+      initialized = await api.post(`/instructors/${instructorId}/reels/upload-init`, { caption, stage, title: video.name });
+    } catch (error) {
+      throw { ...error, uploadStage: 'init' };
+    }
+    const payload = initialized.data.data;
+    try {
+      await uploadVideoToBunny(video, payload.upload, onProgress);
+    } catch (error) {
+      throw { message: error?.message || 'فشل النقل المباشر إلى Bunny Stream.', uploadStage: 'transfer' };
+    }
+    try {
+      return await api.post(`/instructors/${instructorId}/reels/confirm-upload`, { uploadId: payload.uploadId });
+    } catch (error) {
+      throw { ...error, uploadStage: 'confirm' };
+    }
   },
 
   trackView: (reelId) => api.patch(`/reels/${reelId}/view`),

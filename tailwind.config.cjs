@@ -46,7 +46,13 @@ module.exports = {
         navy: {
           500: 'var(--navy-500)',
           700: 'var(--navy-700)',
-          900: 'var(--navy-900)'
+          // Tailwind's `/opacity` modifiers require an alpha-aware color
+          // value. Keep the existing token for non-Tailwind consumers while
+          // exposing its RGB channels for utilities such as
+          // `from-navy-900/35`.
+          900: ({ opacityValue }) => opacityValue === undefined
+            ? 'rgb(var(--navy-900-rgb))'
+            : `rgb(var(--navy-900-rgb) / ${opacityValue})`
         },
         teal: {
           DEFAULT: 'var(--teal-DEFAULT)',

@@ -7,10 +7,16 @@ import Input from '../ui/Input';
 import Button from '../ui/Button';
 
 export default function LoginForm({ onSuccess, instructorId }) {
-  const { login, loading } = useAuth();
-  const [form, setForm] = useState({ email: '', password: '' });
+  const { login } = useAuth();
+  const [form, setForm] = useState({ identifier: '', password: '' });
   const [fieldErrors, setFieldErrors] = useState({});
   const [serverError, setServerError] = useState(null);
+  // Local, per-submit loading state — deliberately NOT the global
+  // AuthContext `loading` flag. That flag also drives RouteGuard (it
+  // replaces the entire routed page with a placeholder while true), so
+  // reusing it here would unmount/remount this whole page mid-request and
+  // wipe serverError right before it could render. See AuthProvider.jsx.
+  const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (e) => {
     setForm((s) => ({ ...s, [e.target.name]: e.target.value }));
@@ -20,7 +26,11 @@ export default function LoginForm({ onSuccess, instructorId }) {
 
   const validate = () => {
     const errs = {};
-    if (!form.email.trim()) errs.email = 'البريد الإلكتروني مطلوب';
+    const identifier = form.identifier.trim();
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
+    const phoneDigits = identifier.replace(/[^\d\u0660-\u0669]/g, '');
+    if (!identifier) errs.identifier = 'البريد الإلكتروني أو رقم الهاتف مطلوب';
+    else if (!isEmail && (phoneDigits.length < 7 || phoneDigits.length > 15)) errs.identifier = 'أدخل بريدًا إلكترونيًا أو رقم هاتف صالحًا';
     if (!form.password) errs.password = 'كلمة المرور مطلوبة';
     setFieldErrors(errs);
     return Object.keys(errs).length === 0;
@@ -31,8 +41,9 @@ export default function LoginForm({ onSuccess, instructorId }) {
     setServerError(null);
     if (!validate()) return;
 
+    setSubmitting(true);
     try {
-      const res = await login({ email: form.email, password: form.password }, instructorId);
+      const res = await login({ identifier: form.identifier, password: form.password }, instructorId);
       if (res.ok) {
         onSuccess?.();
       } else {
@@ -40,6 +51,8 @@ export default function LoginForm({ onSuccess, instructorId }) {
       }
     } catch (err) {
       setServerError(err?.message || 'حدث خطأ غير متوقع');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -55,15 +68,16 @@ export default function LoginForm({ onSuccess, instructorId }) {
       )}
 
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-ink-700 mb-1">البريد الإلكتروني</label>
+        <label htmlFor="identifier" className="block text-sm font-medium text-ink-700 mb-1">البريد الإلكتروني أو رقم الهاتف</label>
         <Input
-          id="email"
-          name="email"
-          type="email"
-          value={form.email}
+          id="identifier"
+          name="identifier"
+          type="text"
+          inputMode="email"
+          value={form.identifier}
           onChange={handleChange}
-          placeholder="name@example.com"
-          error={fieldErrors.email}
+          placeholder="name@example.com أو 010..."
+          error={fieldErrors.identifier}
         />
       </div>
 
@@ -80,8 +94,8 @@ export default function LoginForm({ onSuccess, instructorId }) {
         />
       </div>
 
-      <Button type="submit" variant="primary" size="md" className="w-full" disabled={loading}>
-        {loading ? 'جارٍ الدخول...' : 'تسجيل الدخول'}
+      <Button type="submit" variant="primary" size="md" className="w-full" disabled={submitting}>
+        {submitting ? 'جارٍ الدخول...' : 'تسجيل الدخول'}
       </Button>
 
       <div className="text-center text-sm text-ink-500">

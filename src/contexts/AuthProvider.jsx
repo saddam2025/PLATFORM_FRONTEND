@@ -59,33 +59,38 @@ export function AuthProvider({ children }) {
     setUser(userObj || null);
   }, []);
 
+  // NOTE: this intentionally does NOT touch the global `loading` state.
+  // `loading` gates RouteGuard's entire routed subtree (it renders a plain
+  // "جارٍ التحميل..." placeholder in its place while true) — that flag must
+  // only ever reflect initial session hydration (see refreshUser below).
+  // It previously also flipped true/false around this request, which made
+  // RouteGuard unmount the whole LoginPage while the request was in flight
+  // and remount a brand-new instance once it settled — wiping out
+  // LoginForm's local `serverError` state before it could ever be shown,
+  // so a failed login silently looked like nothing happened. Per-submit
+  // loading/disabled-button state is now LoginForm's own local concern.
   const login = useCallback(
     async (credentials) => {
-      setLoading(true);
       try {
         const res = await authService.login(credentials);
         const payload = res?.data || {};
         const tkn = payload.token || payload.accessToken || payload.data?.token;
         const userObj = payload.user || payload.data?.user || payload;
         if (!tkn && !userObj) {
-          setLoading(false);
-          return { ok: false, error: 'Invalid server response' };
+          return { ok: false, error: 'قد يكون هناك خطأ في البريد الإلكتروني أو كلمة المرور، أعد المحاولة' };
         }
 
         saveSession(tkn, userObj);
-        setLoading(false);
         navigate(dashboardPathFor(userObj), { replace: true });
         return { ok: true, data: userObj };
-      } catch (err) {
-        setLoading(false);
-        return { ok: false, error: err?.message || err || 'خطأ في تسجيل الدخول' };
+      } catch {
+        return { ok: false, error: 'قد يكون هناك خطأ في البريد الإلكتروني أو كلمة المرور، أعد المحاولة' };
       }
     },
     [navigate, saveSession]
   );
 
   const acceptInvite = useCallback(async (inviteToken, password) => {
-    setLoading(true);
     try {
       const res = await authService.acceptInvite(inviteToken, password);
       const payload = res?.data || {};
@@ -97,8 +102,6 @@ export function AuthProvider({ children }) {
       return { ok: true, data: userObj };
     } catch (err) {
       return { ok: false, error: err?.message || 'تعذر قبول الدعوة' };
-    } finally {
-      setLoading(false);
     }
   }, [navigate, saveSession]);
 

@@ -6,6 +6,7 @@ import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Navbar from '../../layouts/Navbar';
 import { useAuth } from '../../hooks/useAuth';
+import { hasValidPassword, PASSWORD_POLICY_MESSAGE } from '../../utils/passwordPolicy';
 
 export default function AcceptInvitePage() {
   const { token } = useParams();
@@ -18,7 +19,7 @@ export default function AcceptInvitePage() {
   const submit = async (event) => {
     event.preventDefault();
     setError('');
-    if (password.length < 8) return setError('كلمة المرور يجب أن تكون 8 أحرف على الأقل.');
+    if (!hasValidPassword(password)) return setError(PASSWORD_POLICY_MESSAGE);
     if (password !== confirmPassword) return setError('كلمتا المرور غير متطابقتين.');
     setSubmitting(true);
     const result = await acceptInvite(token, password);

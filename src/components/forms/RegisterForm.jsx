@@ -9,6 +9,7 @@ import api from '../../services/api';
 // the context itself lives in AuthProvider.jsx and is exposed via this hook).
 import { useAuth } from '../../hooks/useAuth';
 import { STAGES as stageDefinitions } from '../../constants/stages';
+import { hasValidPassword, PASSWORD_POLICY_MESSAGE, passwordRequirements } from '../../utils/passwordPolicy';
 
 const TRACK_STAGE_IDS = new Set(['grade-10', 'baccalaureate-1', 'baccalaureate-2', 'grade-11', 'grade-12']);
 const TRACKS = ['علمي علوم', 'علمي رياضة', 'أدبي'];
@@ -40,6 +41,7 @@ export default function RegisterForm({ instructorId: propInstructorId, instructo
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const passwordStatus = passwordRequirements(form.password);
 
   const onChange = (key) => (e) => {
     const value = e?.target?.type === 'checkbox' ? e.target.checked : e.target.value;
@@ -76,6 +78,7 @@ export default function RegisterForm({ instructorId: propInstructorId, instructo
     if (!form.email.trim()) e.email = 'البريد الإلكتروني مطلوب';
     else if (!validateEmail(form.email.trim())) e.email = 'البريد الإلكتروني غير صالح';
     if (!form.password) e.password = 'كلمة المرور مطلوبة';
+    else if (!hasValidPassword(form.password)) e.password = PASSWORD_POLICY_MESSAGE;
     if (!form.confirmPassword) e.confirmPassword = 'تأكيد كلمة المرور مطلوب';
     if (form.password && form.confirmPassword && form.password !== form.confirmPassword) {
       e.confirmPassword = 'كلمتا المرور غير متطابقتين';
@@ -154,7 +157,11 @@ export default function RegisterForm({ instructorId: propInstructorId, instructo
       // there's no separate "register+session" helper).
       if (loginFn) {
         try {
-          await loginFn({ email: form.email.trim(), password: form.password }, propInstructorId);
+          const loginResult = await loginFn({ identifier: form.email.trim(), password: form.password }, propInstructorId);
+          if (!loginResult?.ok) {
+            setServerError(loginResult?.error || 'تم التسجيل ولكن فشل تسجيل الدخول تلقائياً');
+            return;
+          }
         } catch (loginErr) {
           setServerError(loginErr?.message || 'تم التسجيل ولكن فشل تسجيل الدخول تلقائياً');
           setSubmitting(false);
@@ -364,6 +371,11 @@ export default function RegisterForm({ instructorId: propInstructorId, instructo
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-ink-700 mb-2">كلمة السر</label>
             <Input id="password" name="password" type="password" value={form.password} onChange={onChange('password')} error={errors.password} required />
+            <div className="mt-2 space-y-1 text-xs text-ink-500" aria-live="polite">
+              <p className={passwordStatus.minLength ? 'text-success-text' : undefined}>12 حرفًا على الأقل {passwordStatus.minLength ? '✓' : '✗'}</p>
+              <p className={passwordStatus.hasLetter ? 'text-success-text' : undefined}>يحتوي على حروف {passwordStatus.hasLetter ? '✓' : '✗'}</p>
+              <p className={passwordStatus.hasDigit ? 'text-success-text' : undefined}>يحتوي على أرقام {passwordStatus.hasDigit ? '✓' : '✗'}</p>
+            </div>
           </div>
 
           <div>

@@ -99,7 +99,14 @@ export default function ReelsUploadPage() {
       if (inputRef.current) inputRef.current.value = '';
       await loadReels();
     } catch (requestError) {
-      setUploadError(messageFor(requestError, 'تعذر رفع الفيديو. حاول مرة أخرى.'));
+      const fallback = requestError?.uploadStage === 'init'
+        ? 'تعذر إنشاء مساحة الرفع في Bunny Stream.'
+        : requestError?.uploadStage === 'transfer'
+          ? 'فشل النقل المباشر للفيديو إلى Bunny Stream.'
+          : requestError?.uploadStage === 'confirm'
+            ? 'اكتمل النقل لكن Bunny لم يؤكد الفيديو بعد. انتظر قليلاً ثم أعد المحاولة.'
+            : 'تعذر رفع الفيديو. حاول مرة أخرى.';
+      setUploadError(messageFor(requestError, fallback));
     } finally {
       setUploading(false);
     }
@@ -144,7 +151,7 @@ export default function ReelsUploadPage() {
         <h2 className="text-lg font-extrabold text-ink-900">المقاطع المنشورة</h2>
         <p className="mt-1 text-sm text-ink-500">تعرض هذه القائمة بيانات المقاطع الحقيقية المحفوظة على الخادم.</p>
         {deleteError && <p role="alert" className="mt-4 rounded-xl bg-danger-soft p-3 text-sm text-danger-DEFAULT">{deleteError}</p>}
-        {loading ? <p className="mt-5 text-sm text-ink-500">جارٍ تحميل المقاطع...</p> : listError ? <div role="alert" className="mt-5 rounded-xl bg-danger-soft p-3 text-sm text-danger-DEFAULT"><p>{listError}</p><Button variant="subtle" size="sm" className="mt-3" onClick={() => loadReels()}>إعادة المحاولة</Button></div> : reels.length === 0 ? <p className="mt-5 text-sm text-ink-500">لا توجد مقاطع منشورة حالياً.</p> : <div className="mt-5 space-y-3">{reels.map((reel) => <article key={reel._id} className="rounded-xl bg-surface-muted p-4"><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-sm font-bold text-ink-900">{reel.caption || 'بدون وصف'}</p><div className="mt-2 flex flex-wrap gap-2">{reel.stage && <Badge variant="neutral">{stageLabel(reel.stage)}</Badge>}<Badge variant="info">{reel.viewCount} مشاهدة</Badge>{formatDate(reel.createdAt) && <Badge variant="neutral">{formatDate(reel.createdAt)}</Badge>}</div></div><Button variant="subtle" size="sm" className="text-danger-DEFAULT" onClick={() => remove(reel._id)} disabled={deletingId === reel._id}>{deletingId === reel._id ? 'جارٍ الحذف...' : 'حذف'}</Button></div><video className="mt-4 max-h-64 w-full rounded-lg bg-black" controls preload="metadata" src={resolveApiAssetUrl(reel.videoUrl)}>متصفحك لا يدعم تشغيل الفيديو.</video></article>)}</div>}
+        {loading ? <p className="mt-5 text-sm text-ink-500">جارٍ تحميل المقاطع...</p> : listError ? <div role="alert" className="mt-5 rounded-xl bg-danger-soft p-3 text-sm text-danger-DEFAULT"><p>{listError}</p><Button variant="subtle" size="sm" className="mt-3" onClick={() => loadReels()}>إعادة المحاولة</Button></div> : reels.length === 0 ? <p className="mt-5 text-sm text-ink-500">لا توجد مقاطع منشورة حالياً.</p> : <div className="mt-5 space-y-3">{reels.map((reel) => <article key={reel._id} className="rounded-xl bg-surface-muted p-4"><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-sm font-bold text-ink-900">{reel.caption || 'بدون وصف'}</p><div className="mt-2 flex flex-wrap gap-2">{reel.stage && <Badge variant="neutral">{stageLabel(reel.stage)}</Badge>}<Badge variant="info">{reel.viewCount} مشاهدة</Badge>{formatDate(reel.createdAt) && <Badge variant="neutral">{formatDate(reel.createdAt)}</Badge>}</div></div><Button variant="subtle" size="sm" className="text-danger-DEFAULT" onClick={() => remove(reel._id)} disabled={deletingId === reel._id}>{deletingId === reel._id ? 'جارٍ الحذف...' : 'حذف'}</Button></div>{reel.bunnyEmbedUrl ? <iframe className="mt-4 aspect-video w-full rounded-lg bg-black" src={reel.bunnyEmbedUrl} title={reel.caption || 'Bunny video'} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen /> : <video className="mt-4 max-h-64 w-full rounded-lg bg-black" controls preload="metadata" src={resolveApiAssetUrl(reel.videoUrl)}>متصفحك لا يدعم تشغيل الفيديو.</video>}</article>)}</div>}
         {moreError && <p role="alert" className="mt-4 rounded-xl bg-danger-soft p-3 text-sm text-danger-DEFAULT">{moreError}</p>}
         {hasMore && <div className="mt-5 text-center"><Button variant="subtle" onClick={() => loadReels(pagination.page + 1)} disabled={loadingMore}>{loadingMore ? 'جارٍ تحميل المزيد...' : 'تحميل المزيد'}</Button></div>}
       </section>
