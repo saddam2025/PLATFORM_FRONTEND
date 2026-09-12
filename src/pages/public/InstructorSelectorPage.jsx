@@ -67,7 +67,7 @@ export default function InstructorSelectorPage() {
   return (
     <div className="landing-page min-h-screen overflow-x-hidden bg-[#f5f9ff] text-[#102650]" dir="rtl">
       <div className="bg-[#0c254a] px-3 pb-14 sm:px-6 lg:px-10">
-        <Navbar />
+        <Navbar sticky />
         <section className="mx-auto grid max-w-7xl items-center gap-10 px-3 pb-6 pt-16 lg:grid-cols-2 lg:px-8 lg:pb-14 lg:pt-24">
           <div className="text-right">
             <span className="inline-flex rounded-full bg-white/10 px-4 py-2 text-sm font-bold text-[#b7e5ff]">تجربتك التعليمية من مكان واحد</span>

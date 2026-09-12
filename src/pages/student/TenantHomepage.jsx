@@ -99,7 +99,7 @@ export default function TenantHomepage() {
               <Button
                 variant="primary"
                 size="lg"
-                className="min-w-[180px] bg-white text-navy-900 hover:bg-brand-50"
+                className="min-w-[180px]"
                 onClick={() => navigate(`/${instructorId}/catalog`)}
               >
                 استعرض الكورسات

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useMatch } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
@@ -8,6 +8,7 @@ export default function Layouts() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const { user } = useAuth() || {};
   const showSidebar = Boolean(user);
+  const isTenantHomepage = Boolean(useMatch({ path: '/:instructorId', end: true }));
   const toggleMobileSidebar = () => setMobileSidebarOpen((open) => !open);
 
   return (
@@ -19,7 +20,7 @@ export default function Layouts() {
       )}
 
       <div className="flex-1 flex flex-col min-w-0">
-<Navbar sidebarOpen={mobileSidebarOpen} onToggleSidebar={showSidebar ? toggleMobileSidebar : undefined} />
+<Navbar sidebarOpen={mobileSidebarOpen} onToggleSidebar={showSidebar ? toggleMobileSidebar : undefined} sticky={isTenantHomepage} />
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8 animate-fadeIn">
           <Outlet />

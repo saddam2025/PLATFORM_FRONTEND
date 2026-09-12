@@ -12,7 +12,7 @@ const sizes = {
 }
 
 const variants = {
-  primary: 'bg-teal text-navy-900 shadow-pop hover:-translate-y-0.5 hover:shadow-glow',
+  primary: '!rounded-2xl bg-teal text-navy-900 shadow-lg hover:-translate-y-0.5 hover:shadow-glow',
   ghost: 'bg-brand-100 text-brand-700 border border-transparent hover:bg-brand-50',
   subtle: 'bg-surface-muted text-ink-700 hover:bg-surface-border',
 }
