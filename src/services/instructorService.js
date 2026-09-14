@@ -30,6 +30,7 @@ function mapCourse(course) {
     image: resolveApiAssetUrl(course.thumbnailUrl || course.thumbnail || course.imageUrl || course.image),
     price: course.price,
     lectureCount: course.lectureCount || 0,
+    homeworkCount: course.homeworkCount || 0,
     stage: course.stage,
     category: course.categoryId?.name || '',
     accessPeriodDays: course.accessPeriodDays,
