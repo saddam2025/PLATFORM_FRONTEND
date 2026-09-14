@@ -131,6 +131,9 @@ export default function TenantSettingsPage() {
   const { theme, toggleTheme } = useContext(ThemeContext) || {};
   const [logoFile, setLogoFile] = useState(null);
   const [logoPreview, setLogoPreview] = useState(null);
+  const [faviconFile, setFaviconFile] = useState(null);
+  const [faviconUrl, setFaviconUrl] = useState('');
+  const [brandingUploading, setBrandingUploading] = useState('');
   const [brandName, setBrandName] = useState('');
   const [logoUrl, setLogoUrl] = useState('');
   const [supportPhone, setSupportPhone] = useState('');
@@ -149,6 +152,7 @@ export default function TenantSettingsPage() {
     const gateway = payload?.gateway || {};
     setBrandName(tenant.name || '');
     setLogoUrl(tenant.logoUrl || '');
+    setFaviconUrl(tenant.faviconUrl || '');
     setSupportPhone(tenant.supportPhone || '');
     setSupportEmail(tenant.supportEmail || '');
     setVideoDelivery({ provider: tenant.videoDelivery?.provider || '', pullZone: tenant.videoDelivery?.pullZone || '', maxViewsPerLesson: tenant.videoDelivery?.maxViewsPerLesson ?? 10, accessWindowDays: tenant.videoDelivery?.accessWindowDays ?? 10 });
@@ -186,6 +190,7 @@ export default function TenantSettingsPage() {
       const response = await api.patch(`/instructors/${instructorId}/settings`, {
         name: brandName,
         logoUrl: logoUrl || null,
+        faviconUrl: faviconUrl || null,
         supportPhone,
         supportEmail,
         videoDelivery: { ...videoDelivery, maxViewsPerLesson: Number(videoDelivery.maxViewsPerLesson), accessWindowDays: Number(videoDelivery.accessWindowDays) },
@@ -371,6 +376,29 @@ export default function TenantSettingsPage() {
     return key;
   };
 
+  const uploadBrandAsset = async (assetType, file) => {
+    if (!file || brandingUploading) return;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 3 * 1024 * 1024) {
+      setSettingsError('اختر صورة JPEG أو PNG أو WebP لا يتجاوز حجمها 3 ميجابايت.');
+      return;
+    }
+    setBrandingUploading(assetType);
+    setSettingsError('');
+    try {
+      const form = new FormData();
+      form.append('image', file);
+      const response = await api.post(`/instructors/${instructorId}/settings/branding/${assetType}`, form, { headers: { 'Content-Type': 'multipart/form-data' } });
+      const url = response.data.data?.[assetType === 'logo' ? 'logoUrl' : 'faviconUrl'];
+      if (!url) throw new Error('لم يُرجع الخادم رابط الصورة.');
+      if (assetType === 'logo') setLogoUrl(url); else setFaviconUrl(url);
+      setSettingsSuccess('تم رفع صورة الهوية وحفظها بنجاح.');
+    } catch (error) {
+      setSettingsError(error?.message || 'تعذر رفع الصورة. حاول مرة أخرى.');
+    } finally {
+      setBrandingUploading('');
+    }
+  };
+
   const executeAssistantAction = async () => {
     if (!assistantAction) return;
     const { type, assistant } = assistantAction;
@@ -487,11 +515,16 @@ export default function TenantSettingsPage() {
                 <img src={logoPreview} alt="معاينة الشعار" className="mt-3 w-24 h-24 object-cover rounded-lg border border-surface-border" />
               )}
               <Input value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="رابط الشعار الحالي (اختياري)" className="mt-2" />
+              <Button type="button" variant="primary" className="mt-2" onClick={() => uploadBrandAsset('logo', logoFile)} disabled={!logoFile || brandingUploading === 'logo'}>{brandingUploading === 'logo' ? 'جارٍ رفع الشعار...' : 'رفع الشعار'}</Button>
             </div>
 
             <div>
               <label htmlFor="brandName" className="block text-sm font-medium text-ink-700 mb-1">اسم العلامة التجارية</label>
               <Input id="brandName" value={brandName} onChange={(e) => setBrandName(e.target.value)} />
+              <label className="mt-4 block text-sm font-medium text-ink-700 mb-1">أيقونة المتصفح (صورة مربعة صغيرة)</label>
+              <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => setFaviconFile(e.target.files?.[0] || null)} className="w-full text-sm" />
+              <Button type="button" variant="primary" className="mt-2" onClick={() => uploadBrandAsset('favicon', faviconFile)} disabled={!faviconFile || brandingUploading === 'favicon'}>{brandingUploading === 'favicon' ? 'جارٍ رفع الأيقونة...' : 'رفع أيقونة المتصفح'}</Button>
+              {faviconUrl && <p className="mt-2 text-xs text-ink-500">تم حفظ أيقونة المتصفح.</p>}
             </div>
           </div>
 

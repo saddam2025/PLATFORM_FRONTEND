@@ -19,6 +19,7 @@ export default function CoursePlayerPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const videoRef = useRef(null);
+  const playerFrameRef = useRef(null);
   const sessionSecondsRef = useRef(0);
   const lastPlayedAtRef = useRef(null);
   const lastSavedAtRef = useRef(0);
@@ -28,7 +29,13 @@ export default function CoursePlayerPage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
   const [progressError, setProgressError] = useState('');
-  const [watermarkPosition, setWatermarkPosition] = useState({ top: '10%', left: '10%' });
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const updateFullscreenState = () => setIsFullscreen(document.fullscreenElement === playerFrameRef.current);
+    document.addEventListener('fullscreenchange', updateFullscreenState);
+    return () => document.removeEventListener('fullscreenchange', updateFullscreenState);
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -63,17 +70,6 @@ export default function CoursePlayerPage() {
     loadPlayer();
     return () => { active = false; };
   }, [courseId, lectureId]);
-
-  useEffect(() => {
-    const moveWatermark = () => {
-      setWatermarkPosition({
-        top: `${Math.floor(Math.random() * 72) + 8}%`,
-        left: `${Math.floor(Math.random() * 82) + 8}%`
-      });
-    };
-    const interval = window.setInterval(moveWatermark, 5000);
-    return () => window.clearInterval(interval);
-  }, []);
 
   const saveProgress = async () => {
     const video = videoRef.current;
@@ -119,10 +115,22 @@ export default function CoursePlayerPage() {
     if (video && video.currentTime - lastSavedAtRef.current >= 15) void saveProgress();
   };
 
+  const toggleFullscreen = async () => {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await playerFrameRef.current?.requestFullscreen();
+    } catch {
+      setProgressError('تعذر تغيير وضع عرض الفيديو في هذا المتصفح.');
+    }
+  };
+
   const videoUrl = resolveApiAssetUrl(lecture?.videoUrl || access?.videoUrl);
   const bunnyEmbedUrl = lecture?.bunnyEmbedUrl || access?.lecture?.bunnyEmbedUrl;
   const title = lecture?.title_ar || lecture?.title_en || 'المحاضرة';
-  const watermark = access?.watermark || { name: user?.name || 'طالب', studentId: user?.id || '---' };
+  const watermark = access?.watermark || { name: user?.name || 'طالب', phone: user?.phone || '' };
+  const watermarkText = [watermark.name, watermark.phone].filter(Boolean).join(' • ');
+  const homeworkUrl = lecture?.homeworkUrl ? resolveApiAssetUrl(lecture.homeworkUrl) : '';
+  const quizId = lecture?.quizId || '';
 
   if (loading) {
     return <div dir="rtl" className="container mx-auto px-4 py-8 text-center text-sm text-ink-500">جارٍ التحقق من صلاحية المشاهدة...</div>;
@@ -157,13 +165,17 @@ export default function CoursePlayerPage() {
             </div>
           </div>
 
-          {bunnyEmbedUrl ? <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-black ring-1 ring-black/40">
-            <iframe className="h-full w-full" src={bunnyEmbedUrl} title={title} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
-          </div> : videoUrl ? <div className="relative w-full overflow-hidden rounded-2xl bg-black ring-1 ring-black/40">
+          {bunnyEmbedUrl ? <div ref={playerFrameRef} className="video-player-frame relative aspect-video w-full overflow-hidden rounded-2xl bg-black ring-1 ring-black/40">
+            <iframe className="h-full w-full" src={bunnyEmbedUrl} title={title} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" />
+            <div className="video-watermark">{watermarkText}</div>
+            <button type="button" className="video-fullscreen-button" onClick={toggleFullscreen}>{isFullscreen ? 'تصغير الفيديو' : 'تكبير الفيديو'}</button>
+          </div> : videoUrl ? <div ref={playerFrameRef} className="video-player-frame relative w-full overflow-hidden rounded-2xl bg-black ring-1 ring-black/40">
             <video
               ref={videoRef}
               className="w-full h-auto max-h-[60vh] bg-black"
               controls
+              controlsList="nodownload nofullscreen"
+              disablePictureInPicture
               src={videoUrl}
               preload="metadata"
               onLoadedMetadata={handleLoadedMetadata}
@@ -172,12 +184,8 @@ export default function CoursePlayerPage() {
               onEnded={handlePause}
               onTimeUpdate={handleTimeUpdate}
             />
-            <div
-              className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap text-sm text-white opacity-30"
-              style={watermarkPosition}
-            >
-              {`${watermark.name} - ${watermark.studentId}`}
-            </div>
+            <div className="video-watermark">{watermarkText}</div>
+            <button type="button" className="video-fullscreen-button" onClick={toggleFullscreen}>{isFullscreen ? 'تصغير الفيديو' : 'تكبير الفيديو'}</button>
           </div>
           : <div className="rounded-2xl bg-surface-muted p-6 text-center text-sm text-ink-600">لا يوجد فيديو لهذه المحاضرة. أكمل متطلباتها المتاحة أدناه.</div>}
 
@@ -187,9 +195,15 @@ export default function CoursePlayerPage() {
         <section className="rounded-3xl bg-surface-default shadow-card p-6 text-right">
           <h2 className="font-display text-2xl font-bold text-ink-900">{title}</h2>
           {lecture?.description_ar && <p className="mt-2 text-sm leading-relaxed text-ink-600">{lecture.description_ar}</p>}
-          <div className="mt-5 flex flex-wrap gap-2">
-            {lecture?.homeworkUrl && <Button variant="primary" onClick={() => navigate(`/${instructorId}/courses/${courseId}/lectures/${lectureId}/assignments`)}>تسليم الواجب</Button>}
-            {lecture?.quizId && <Button variant="ghost" onClick={() => navigate(`/${instructorId}/courses/${courseId}/quizzes/${lecture.quizId}`)}>بدء الاختبار</Button>}
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
+            <article className="rounded-2xl border border-brand-200 bg-brand-50/50 p-5">
+              <p className="text-sm font-bold text-ink-900">الواجب</p>
+              {homeworkUrl ? <><p className="mt-2 text-sm text-ink-600">تم رفع واجب هذه المحاضرة، ويمكنك عرضه أو تحميله ثم تسليم الحل.</p><div className="mt-4 flex flex-wrap gap-2"><a href={homeworkUrl} target="_blank" rel="noreferrer" download><Button size="sm" variant="ghost">عرض / تحميل الواجب</Button></a><Button size="sm" variant="primary" onClick={() => navigate(`/${instructorId}/courses/${courseId}/lectures/${lectureId}/assignments`)}>تسليم الواجب</Button></div></> : <p className="mt-2 text-sm text-ink-500">الواجب لسه منزلش.</p>}
+            </article>
+            <article className="rounded-2xl border border-surface-border bg-surface-muted p-5">
+              <p className="text-sm font-bold text-ink-900">الامتحان</p>
+              {quizId ? <><p className="mt-2 text-sm text-ink-600">اختبار المحاضرة جاهز. تأكد من فهم الدرس قبل البدء.</p><Button className="mt-4" size="sm" variant="primary" onClick={() => navigate(`/${instructorId}/courses/${courseId}/quizzes/${quizId}`)}>بدء الامتحان</Button></> : <p className="mt-2 text-sm text-ink-500">الامتحان لسه منزلش.</p>}
+            </article>
           </div>
           <div className="mt-5">
             <Button variant="ghost" onClick={() => { window.location.href = 'mailto:support@riyadiaty.example.com'; }}>

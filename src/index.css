@@ -137,6 +137,56 @@ body {
   animation: fadeIn .25s cubic-bezier(.4,0,.2,1) both;
 }
 
+/* Text-only anti-piracy watermark: a steady path across the entire player
+   keeps it visible over both native video and Bunny's embedded player. */
+@keyframes videoWatermarkTravel {
+  0% { top: 10%; left: 8%; }
+  25% { top: 16%; left: 72%; }
+  50% { top: 74%; left: 68%; }
+  75% { top: 66%; left: 10%; }
+  100% { top: 38%; left: 44%; }
+}
+.video-watermark {
+  position: absolute;
+  z-index: 10;
+  pointer-events: none;
+  white-space: nowrap;
+  color: rgba(255, 255, 255, .72);
+  font-size: clamp(.7rem, 1.4vw, 1rem);
+  font-weight: 700;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .85);
+  transform: translate(-50%, -50%);
+  animation: videoWatermarkTravel 28s linear infinite alternate;
+}
+.video-player-frame:fullscreen {
+  width: 100vw;
+  height: 100vh;
+  border-radius: 0;
+  display: grid;
+  place-items: center;
+}
+.video-player-frame:fullscreen video,
+.video-player-frame:fullscreen iframe {
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  object-fit: contain;
+}
+.video-fullscreen-button {
+  position: absolute;
+  z-index: 20;
+  top: .75rem;
+  left: .75rem;
+  border: 1px solid rgba(255, 255, 255, .55);
+  border-radius: .6rem;
+  padding: .4rem .65rem;
+  background: rgba(0, 0, 0, .42);
+  color: #fff;
+  font-size: .78rem;
+  font-weight: 700;
+}
+.video-fullscreen-button:hover { background: rgba(0, 0, 0, .68); }
+
 /* Keep sidebar content scrollable without showing a browser-specific track. */
 .sidebar-scroll {
   -ms-overflow-style: none;

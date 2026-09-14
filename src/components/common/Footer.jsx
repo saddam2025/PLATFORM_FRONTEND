@@ -66,7 +66,7 @@ export default function Footer() {
       </div>
 
       <div className="border-t border-surface-border bg-surface-muted px-4 py-4 text-center text-xs text-ink-500 sm:px-6 lg:px-8">
-        <div>© {new Date().getFullYear()} منصة. كل الحقوق محفوظة.</div>
+        <div>© {new Date().getFullYear()} <Logo className="inline-flex align-middle" />. كل الحقوق محفوظة.</div>
         <div>تم إنشاء المنصة بواسطة المهندس عبدالرحمن محسن زغلول</div>
       </div>
       {showParentGuide && <ConfirmModal title="متابعة ابنك من حساب ولي الأمر" description={<ol className="list-inside list-decimal space-y-2 text-right"><li>أنشئ حسابًا جديدًا أو سجّل الدخول كولي أمر.</li><li>اطلب من ابنك كود الربط الذي يظهر له في لوحة الطالب؛ هذا هو <span dir="ltr">parentAccessCode</span> الخاص بحسابه.</li><li>أدخل كود الربط عند التسجيل ليتم ربط حسابك بحساب ابنك.</li><li>بعد الدخول، ستجد في لوحة ولي الأمر دورات ابنك ودرجاته.</li></ol>} confirmLabel="حسنًا" cancelLabel="إغلاق" onConfirm={() => setShowParentGuide(false)} onCancel={() => setShowParentGuide(false)} />}

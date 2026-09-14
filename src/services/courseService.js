@@ -5,7 +5,7 @@ function toCourseFormData(fields, files = {}) {
   Object.entries(fields).forEach(([key, value]) => {
     if (value !== undefined && value !== null) formData.append(key, key === 'questions' ? JSON.stringify(value) : String(value));
   });
-  ['video', 'thumbnail', 'homework'].forEach((field) => {
+  ['thumbnail'].forEach((field) => {
     if (files[field]) formData.append(field, files[field]);
   });
   return formData;

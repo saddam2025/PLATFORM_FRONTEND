@@ -14,13 +14,10 @@ export const route = {
   title: 'محرر الدورة'
 };
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
-import Badge from '../../components/ui/Badge';
-// FIX: real hook file is src/hooks/useAuth.js — there is no src/contexts/AuthContext.jsx.
-import { useAuth } from '../../hooks/useAuth';
 import courseService from '../../services/courseService';
 import LectureManager from '../../components/admin/LectureManager';
 import { STAGES } from '../../constants/stages';
@@ -43,16 +40,7 @@ function emptyQuestion() {
 export default function CourseEditorPage() {
   const { instructorId, courseId } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth() || {};
-  const role = user?.role || null;
-  const permissions = Array.isArray(user?.permissions) ? user.permissions : [];
-
   const isNew = !courseId || courseId === 'new';
-
-  // Admins always allowed; assistants need can_upload_video specifically for
-  // the video field only — everything else on this form stays editable for
-  // assistants per feature #15 ("identical permissions" once granted).
-  const canUploadVideo = role === 'admin' || permissions.includes('can_upload_video');
 
   // ---- Basic info ----
   const [titleEn, setTitleEn] = useState('');
@@ -87,21 +75,6 @@ export default function CourseEditorPage() {
     setThumbnailFile(f);
     setThumbnailPreview(f ? URL.createObjectURL(f) : null);
   };
-
-  // ---- Video (single file per course, matches Course schema's videoUrl_encrypted field) ----
-  const [videoFile, setVideoFile] = useState(null);
-  const [externalVideoUrl, setExternalVideoUrl] = useState('');
-  const videoInputRef = useRef(null);
-
-  const handleVideoChange = (e) => {
-    if (!canUploadVideo) return; // defensive guard in addition to the disabled attribute
-    const f = e.target.files?.[0] ?? null;
-    setVideoFile(f);
-  };
-
-  // ---- Homework attachment ----
-  const [homeworkFile, setHomeworkFile] = useState(null);
-  const [externalHomeworkUrl, setExternalHomeworkUrl] = useState('');
 
   // ---- Exam / questions (answer key + explanations, feature #16) ----
   const [questions, setQuestions] = useState([]);
@@ -320,57 +293,19 @@ export default function CourseEditorPage() {
           <section className="rounded-2xl bg-surface-default shadow-card p-6">
             <h2 className="text-lg font-semibold text-ink-900 mb-4">الوسائط</h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
               {/* Thumbnail */}
               <div>
                 <label className="block text-sm font-medium text-ink-700 mb-1">صورة مصغرة</label>
-                <input type="file" accept="image/*" onChange={handleThumbnailChange} className="w-full text-sm" />
+                <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleThumbnailChange} className="w-full text-sm" />
                 {thumbnailPreview && (
                   <img src={thumbnailPreview} alt="معاينة الصورة المصغرة" className="mt-3 w-full h-32 object-cover rounded-lg border border-surface-border" />
                 )}
               </div>
-
-              {/* Video uploads as multipart field "video" when the form is saved. */}
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <label className="block text-sm font-medium text-ink-700">ملف الفيديو</label>
-                  {!canUploadVideo && (
-                    <Badge variant="danger" className="text-xs">لا تملك صلاحية رفع الفيديو</Badge>
-                  )}
-                </div>
-                <input
-                  ref={videoInputRef}
-                  type="file"
-                  accept="video/*"
-                  onChange={handleVideoChange}
-                  disabled={!canUploadVideo}
-                  className={`w-full text-sm ${!canUploadVideo ? 'opacity-60 cursor-not-allowed' : ''}`}
-                />
-                {videoFile && (
-                  <div className="mt-3">
-                    <div className="text-xs text-ink-500 mb-1">{videoFile.name}</div>
-                    <div className="text-xs text-ink-500 mt-1">سيتم رفع الملف عند حفظ الدورة.</div>
-                  </div>
-                )}
-                <Input value={externalVideoUrl} onChange={(e) => setExternalVideoUrl(e.target.value)} placeholder="أو رابط Bunny / Cloudflare Stream الخارجي" className="mt-3" />
-              </div>
             </div>
           </section>
 
-          {/* 4. Homework attachment */}
-          <section className="rounded-2xl bg-surface-default shadow-card p-6">
-            <h2 className="text-lg font-semibold text-ink-900 mb-4">مرفق الواجب</h2>
-            <input
-              type="file"
-              accept=".pdf,.doc,.docx"
-              onChange={(e) => setHomeworkFile(e.target.files?.[0] ?? null)}
-              className="w-full text-sm"
-            />
-            {homeworkFile && <div className="text-xs text-ink-500 mt-2">{homeworkFile.name}</div>}
-            <Input value={externalHomeworkUrl} onChange={(e) => setExternalHomeworkUrl(e.target.value)} placeholder="أو رابط PDF من Cloudflare R2" className="mt-3" />
-          </section>
-
-          {/* 5. Exam builder — questions, answer key, explanations */}
+          {/* 4. Exam builder — questions, answer key, explanations */}
           <section className="rounded-2xl bg-surface-default shadow-card p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-ink-900">الاختبار وبنك الأسئلة</h2>

@@ -1,8 +1,16 @@
 import React, { useState } from 'react';
-import { Outlet, useMatch } from 'react-router-dom';
+import { Outlet, useMatch, useParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
+import useTenantData from '../hooks/useTenantData';
+import TenantSeoHead from '../components/seo/TenantSeoHead';
+
+function TenantMetadata() {
+  const { instructorId } = useParams();
+  const { instructorProfile } = useTenantData(instructorId);
+  return instructorProfile ? <TenantSeoHead tenant={instructorProfile} tenantId={instructorId} /> : null;
+}
 
 export default function Layouts() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -13,6 +21,7 @@ export default function Layouts() {
 
   return (
     <div className="min-h-screen flex bg-surface-canvas text-ink-900">
+      <TenantMetadata />
       {showSidebar && (
         <aside className="sidebar hidden lg:block w-72 shrink-0">
           <Sidebar />

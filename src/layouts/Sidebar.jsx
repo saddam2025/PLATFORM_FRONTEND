@@ -140,7 +140,6 @@ function BrandHeader() {
   return (
     <div className="mb-8 flex items-center gap-3 px-2">
       <Logo light />
-      <div className="text-xs text-white/60">منصة التعلم الذكي</div>
     </div>
   );
 }

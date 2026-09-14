@@ -157,11 +157,11 @@ export default function InstructorSelectorPage() {
               {instructors.map((teacher) => (
                 <article key={teacher.subdomain} className="overflow-hidden rounded-3xl bg-white text-[#102650] shadow-xl">
                   <div className="h-72 bg-[#eaf5ff]">
-                    {teacher.logoUrl ? <img src={teacher.logoUrl} alt="" className="h-full w-full object-cover object-top" /> : <div className="grid h-full place-items-center text-5xl">📚</div>}
+                    {teacher.profileImageUrl || teacher.avatar ? <img src={teacher.profileImageUrl || teacher.avatar} alt={teacher.name} className="h-full w-full object-cover object-top" /> : <div className="grid h-full place-items-center text-5xl">📚</div>}
                   </div>
                   <div className="p-6">
                   <div className="flex items-center gap-4">
-                    <Avatar src={teacher.logoUrl} name={teacher.name} size="lg" />
+                    <Avatar src={teacher.profileImageUrl || teacher.avatar} name={teacher.name} size="lg" />
                     <div className="min-w-0 text-right">
                       <h3 className="text-xl font-extrabold">{teacher.name}</h3>
                       <p className="mt-1 text-sm text-[#607897]">{teacher.subdomain}</p>
