@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { Building2, LayoutDashboard, LogOut, Menu, Plus, X } from 'lucide-react';
+import { Building2, LayoutDashboard, LogOut, Menu, Plus, ShieldCheck, X } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import ThemeToggle from '../components/ui/ThemeToggle';
 import Logo from '../components/common/Logo';
@@ -9,6 +9,7 @@ const navItems = [
   { to: '/super-admin', label: 'نظرة عامة', icon: LayoutDashboard, end: true },
   { to: '/super-admin/tenants', label: 'المؤسسات', icon: Building2 },
   { to: '/super-admin/tenants/new', label: 'إضافة مؤسسة', icon: Plus },
+  { to: '/super-admin/security', label: 'أمان الحساب', icon: ShieldCheck },
 ];
 
 export default function SuperAdminLayout() {

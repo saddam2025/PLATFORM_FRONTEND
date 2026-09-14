@@ -22,6 +22,15 @@ const authService = {
     return api.get('/auth/me');
   },
 
+  setupMfa: async () => api.post('/auth/mfa/setup'),
+
+  confirmMfa: async (code) => api.post('/auth/mfa/confirm', { code }),
+
+  verifyMfaLogin: async ({ pendingLoginToken, code, backupCode }) =>
+    api.post('/auth/mfa/verify-login', { pendingLoginToken, ...(code ? { code } : {}), ...(backupCode ? { backupCode } : {}) }),
+
+  disableMfa: async ({ password, code }) => api.post('/auth/mfa/disable', { password, code }),
+
   acceptInvite: async (token, password) => api.post(`/auth/accept-invite/${encodeURIComponent(token)}`, { password }),
 
   uploadAvatar: async (file) => {

@@ -219,6 +219,7 @@ export default function Sidebar() {
           <Item to={`${base}/students`} icon="family_restroom">الطلاب</Item>
           <Item to={`${base}/leaderboard`} icon="military_tech">لوحة الشرف</Item>
           <Item to={`${base}/admin/scratchcards`} icon="vpn_key">أكواد الوصول</Item>
+          <Item to={`${base}/security`} icon="admin_panel_settings">أمان الحساب</Item>
         </nav>
 
         <InstructorsList />
@@ -260,6 +261,7 @@ export default function Sidebar() {
               <Item to={`${base}/admin/students/export`} icon="menu_book">تصدير الطلاب</Item>
               <Item to={`${base}/admin/reels`} icon="upload_file">رفع مقطع سريع</Item>
               {role === 'admin' && <Item to={`${base}/admin/settings`} icon="settings">إعدادات المنصة</Item>}
+              <Item to={`${base}/security`} icon="admin_panel_settings">أمان الحساب</Item>
             </div>
           </div>
 

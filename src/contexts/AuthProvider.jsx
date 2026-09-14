@@ -74,6 +74,14 @@ export function AuthProvider({ children }) {
       try {
         const res = await authService.login(credentials);
         const payload = res?.data || {};
+        if (payload.mfaRequired && payload.pendingLoginToken) {
+          return {
+            ok: false,
+            mfaRequired: true,
+            pendingLoginToken: payload.pendingLoginToken,
+            expiresIn: payload.expiresIn,
+          };
+        }
         const tkn = payload.token || payload.accessToken || payload.data?.token;
         const userObj = payload.user || payload.data?.user || payload;
         if (!tkn && !userObj) {
@@ -89,6 +97,21 @@ export function AuthProvider({ children }) {
     },
     [navigate, saveSession]
   );
+
+  const verifyMfaLogin = useCallback(async ({ pendingLoginToken, code, backupCode }) => {
+    try {
+      const res = await authService.verifyMfaLogin({ pendingLoginToken, code, backupCode });
+      const payload = res?.data || {};
+      const tkn = payload.token || payload.data?.token;
+      const userObj = payload.user || payload.data?.user;
+      if (!tkn || !userObj) return { ok: false, error: 'استجابة غير مكتملة من الخادم' };
+      saveSession(tkn, userObj);
+      navigate(dashboardPathFor(userObj), { replace: true });
+      return { ok: true, data: userObj };
+    } catch (err) {
+      return { ok: false, error: err?.message || 'رمز التحقق غير صحيح أو انتهت صلاحيته' };
+    }
+  }, [navigate, saveSession]);
 
   const acceptInvite = useCallback(async (inviteToken, password) => {
     try {
@@ -177,6 +200,7 @@ export function AuthProvider({ children }) {
         token,
         loading,
         login,
+        verifyMfaLogin,
         acceptInvite,
         logout,
         refreshUser,
