@@ -30,12 +30,22 @@ export default function CoursePlayerPage() {
   const [loadError, setLoadError] = useState('');
   const [progressError, setProgressError] = useState('');
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isMobileFullscreen, setIsMobileFullscreen] = useState(false);
 
   useEffect(() => {
     const updateFullscreenState = () => setIsFullscreen(document.fullscreenElement === playerFrameRef.current);
     document.addEventListener('fullscreenchange', updateFullscreenState);
     return () => document.removeEventListener('fullscreenchange', updateFullscreenState);
   }, []);
+
+  // iOS Safari cannot fullscreen an arbitrary iframe element. Use a page-level
+  // mobile presentation so the watermark remains above Bunny's iframe.
+  useEffect(() => {
+    if (!isMobileFullscreen) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = previousOverflow; };
+  }, [isMobileFullscreen]);
 
   useEffect(() => {
     let active = true;
@@ -116,6 +126,13 @@ export default function CoursePlayerPage() {
   };
 
   const toggleFullscreen = async () => {
+    const isMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches;
+    if (isMobile) {
+      setIsMobileFullscreen((current) => !current);
+      setProgressError('');
+      return;
+    }
+
     try {
       if (document.fullscreenElement) await document.exitFullscreen();
       else await playerFrameRef.current?.requestFullscreen();
@@ -129,6 +146,7 @@ export default function CoursePlayerPage() {
   const title = lecture?.title_ar || lecture?.title_en || 'المحاضرة';
   const watermark = access?.watermark || { name: user?.name || 'طالب', phone: user?.phone || '' };
   const watermarkText = [watermark.name, watermark.phone].filter(Boolean).join(' • ');
+  const fullscreenLabel = isFullscreen || isMobileFullscreen ? 'تصغير الفيديو' : 'تكبير الفيديو';
   const homeworkUrl = lecture?.homeworkUrl ? resolveApiAssetUrl(lecture.homeworkUrl) : '';
   const quizId = lecture?.quizId || '';
 
@@ -165,10 +183,13 @@ export default function CoursePlayerPage() {
             </div>
           </div>
 
-          {bunnyEmbedUrl ? <div ref={playerFrameRef} className="video-player-frame relative aspect-video w-full overflow-hidden rounded-2xl bg-black ring-1 ring-black/40">
+          {bunnyEmbedUrl ? <div ref={playerFrameRef} className={`video-player-frame relative aspect-video w-full overflow-hidden rounded-2xl bg-black ring-1 ring-black/40${isMobileFullscreen ? ' video-mobile-fullscreen' : ''}`}>
             <iframe className="h-full w-full" src={bunnyEmbedUrl} title={title} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" />
             <div className="video-watermark">{watermarkText}</div>
-            <button type="button" className="video-fullscreen-button" onClick={toggleFullscreen}>{isFullscreen ? 'تصغير الفيديو' : 'تكبير الفيديو'}</button>
+            <button type="button" className="video-fullscreen-button" onClick={toggleFullscreen}>{fullscreenLabel}</button>
+            {/* Covers Bunny's own mobile fullscreen control. Its native iframe
+                fullscreen would hide this page-owned watermark. */}
+            <button type="button" className="video-mobile-fullscreen-control" onClick={toggleFullscreen} aria-label={fullscreenLabel}>⛶</button>
           </div> : videoUrl ? <div ref={playerFrameRef} className="video-player-frame relative w-full overflow-hidden rounded-2xl bg-black ring-1 ring-black/40">
             <video
               ref={videoRef}
@@ -185,7 +206,7 @@ export default function CoursePlayerPage() {
               onTimeUpdate={handleTimeUpdate}
             />
             <div className="video-watermark">{watermarkText}</div>
-            <button type="button" className="video-fullscreen-button" onClick={toggleFullscreen}>{isFullscreen ? 'تصغير الفيديو' : 'تكبير الفيديو'}</button>
+            <button type="button" className="video-fullscreen-button" onClick={toggleFullscreen}>{fullscreenLabel}</button>
           </div>
           : <div className="rounded-2xl bg-surface-muted p-6 text-center text-sm text-ink-600">لا يوجد فيديو لهذه المحاضرة. أكمل متطلباتها المتاحة أدناه.</div>}
 

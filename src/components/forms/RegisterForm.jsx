@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import Input from '../ui/Input';
 import Button from '../ui/Button';
 import Badge from '../ui/Badge';
-import api from '../../services/api';
 // FIX: real hook file is src/hooks/useAuth.js (there is no src/contexts/AuthContext.jsx —
 // the context itself lives in AuthProvider.jsx and is exposed via this hook).
 import { useAuth } from '../../hooks/useAuth';
@@ -16,7 +15,7 @@ const TRACKS = ['علمي علوم', 'علمي رياضة', 'أدبي'];
 
 export default function RegisterForm({ instructorId: propInstructorId, instructors = [], onInstructorChange }) {
   const auth = useAuth() || {};
-  const loginFn = auth.login || null;
+  const registerFn = auth.register || null;
 
   const [form, setForm] = useState({
     name: '',
@@ -150,27 +149,18 @@ export default function RegisterForm({ instructorId: propInstructorId, instructo
       // FIX: api.js baseURL already resolves to `${VITE_API_URL}` which itself
       // already ends in /api/v1 — prefixing '/api/v1' again here would call
       // /api/v1/api/v1/auth/register and 404. Use the relative path only.
-      await api.post('/auth/register', body);
-
-      // On success, log the user in immediately using the same credentials
-      // to establish a session (AuthProvider only exposes login/logout/refreshUser,
-      // there's no separate "register+session" helper).
-      if (loginFn) {
-        try {
-          const loginResult = await loginFn({ identifier: form.email.trim(), password: form.password }, propInstructorId);
-          if (!loginResult?.ok) {
-            setServerError(loginResult?.error || 'تم التسجيل ولكن فشل تسجيل الدخول تلقائياً');
-            return;
-          }
-        } catch (loginErr) {
-          setServerError(loginErr?.message || 'تم التسجيل ولكن فشل تسجيل الدخول تلقائياً');
-          setSubmitting(false);
-          return;
-        }
+      if (!registerFn) {
+        setServerError('خدمة التسجيل غير متاحة. يرجى تحديث الصفحة والمحاولة مرة أخرى.');
+        return;
       }
 
-      // AuthProvider selects the correct role dashboard after the session is
-      // established; do not override that destination with the public home.
+      // The successful registration response already includes a token. Do not
+      // make a second login request, which could fail independently after the
+      // account has been created and incorrectly look like registration failed.
+      const registrationResult = await registerFn(body);
+      if (!registrationResult?.ok) {
+        setServerError(registrationResult?.error || 'تعذر إنشاء الحساب. يرجى المحاولة لاحقًا.');
+      }
     } catch (err) {
       // FIX: api.js's response interceptor already normalizes axios errors into
       // a plain { message, status } object before rejecting (see api.js), so the

@@ -11,6 +11,7 @@ export const AuthContext = createContext({
   token: null,
   loading: true,
   login: async () => {},
+  register: async () => {},
   acceptInvite: async () => {},
   logout: () => {},
   refreshUser: async () => {},
@@ -97,6 +98,27 @@ export function AuthProvider({ children }) {
     },
     [navigate, saveSession]
   );
+
+  // Registration already returns a signed session token.  Reusing it avoids
+  // a second request whose independent failure could falsely make a completed
+  // registration look unsuccessful.
+  const register = useCallback(async (registrationPayload) => {
+    try {
+      const res = await authService.register(registrationPayload);
+      const payload = res?.data || {};
+      const tkn = payload.token || payload.accessToken || payload.data?.token;
+      const userObj = payload.user || payload.data?.user;
+      if (!tkn || !userObj) {
+        return { ok: false, error: 'تم إنشاء الحساب، لكن استجابة تسجيل الدخول غير مكتملة.' };
+      }
+
+      saveSession(tkn, userObj);
+      navigate(dashboardPathFor(userObj), { replace: true });
+      return { ok: true, data: userObj };
+    } catch (err) {
+      return { ok: false, error: err?.message || 'تعذر إنشاء الحساب. يرجى المحاولة لاحقًا.' };
+    }
+  }, [navigate, saveSession]);
 
   const verifyMfaLogin = useCallback(async ({ pendingLoginToken, code, backupCode }) => {
     try {
@@ -200,6 +222,7 @@ export function AuthProvider({ children }) {
         token,
         loading,
         login,
+        register,
         verifyMfaLogin,
         acceptInvite,
         logout,
