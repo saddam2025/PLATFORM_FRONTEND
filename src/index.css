@@ -213,7 +213,7 @@ body {
 }
 /* Sits above Bunny's bottom-right fullscreen icon and routes the tap to
    the safe page-level mode instead of iframe-native fullscreen. */
-.video-player-frame.video-mobile-fullscreen .video-mobile-fullscreen-control {
+.video-mobile-fullscreen-control {
   display: grid;
   place-items: center;
   position: absolute;

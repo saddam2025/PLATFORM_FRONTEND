@@ -8,7 +8,7 @@ export const route = {
 };
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
@@ -22,9 +22,10 @@ function formatPrice(n) {
 export default function CourseManagementPage() {
   const { instructorId } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [courses, setCourses] = useState([]);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(() => searchParams.get('search') || '');
   const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -43,11 +44,14 @@ export default function CourseManagementPage() {
   };
 
   useEffect(() => { loadCourses(); }, [instructorId]);
+  useEffect(() => { setSearch(searchParams.get('search') || ''); }, [searchParams]);
 
   const filteredCourses = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return courses;
-    return courses.filter((c) => (c.title_ar || c.title_en || '').toLowerCase().includes(q));
+    return courses.filter((c) => [c.title_ar, c.title_en, c.stage, c.categoryId?.name]
+      .filter(Boolean)
+      .some((value) => String(value).toLowerCase().includes(q)));
   }, [courses, search]);
 
   const handleTogglePublish = async (course) => {

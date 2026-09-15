@@ -149,7 +149,9 @@ export default function AssistantDashboard() {
                           <Button variant="primary" size="sm">تصحيح</Button>
                         </Link>
                       ) : (
-                        <Button variant="ghost" size="sm" onClick={() => { /* view details */ }}>عرض</Button>
+                        <Link to={`/${instructorId}/assistant/grade/${a._id}?view=1`}>
+                          <Button variant="ghost" size="sm">عرض</Button>
+                        </Link>
                       )}
                     </div>
                   </div>

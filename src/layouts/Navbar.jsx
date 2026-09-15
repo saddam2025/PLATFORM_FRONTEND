@@ -22,7 +22,14 @@ export default function Navbar({ sidebarOpen = false, onToggleSidebar, sticky = 
   const accountLink = dashboardPathFor(user);
   const submitSearch = (event) => {
     event?.preventDefault();
-    if (instructorId) navigate(`/${instructorId}/catalog?search=${encodeURIComponent(search.trim())}`);
+    if (!instructorId) return;
+    const query = search.trim();
+    // Staff manage the same course content from the management page; sending
+    // them to the student catalogue made the navbar search appear inert.
+    const target = ['admin', 'assistant', 'teacher'].includes(user?.role)
+      ? `/${instructorId}/admin/courses`
+      : `/${instructorId}/catalog`;
+    navigate(`${target}?search=${encodeURIComponent(query)}`);
   };
 
   return (

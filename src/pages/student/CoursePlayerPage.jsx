@@ -7,6 +7,7 @@ export const route = {
 };
 
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate, useParams } from 'react-router-dom';
 import Avatar from '../../components/ui/Avatar';
 import Badge from '../../components/ui/Badge';
@@ -31,11 +32,30 @@ export default function CoursePlayerPage() {
   const [progressError, setProgressError] = useState('');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isMobileFullscreen, setIsMobileFullscreen] = useState(false);
+  const [isPhone, setIsPhone] = useState(false);
 
   useEffect(() => {
     const updateFullscreenState = () => setIsFullscreen(document.fullscreenElement === playerFrameRef.current);
     document.addEventListener('fullscreenchange', updateFullscreenState);
     return () => document.removeEventListener('fullscreenchange', updateFullscreenState);
+  }, []);
+
+  // Do not use viewport width alone: an iPhone in landscape is often wider
+  // than 767px. The user agent keeps the phone-only behaviour stable across
+  // orientation changes, while the media query covers mobile test devices.
+  useEffect(() => {
+    const updatePhoneState = () => {
+      const phoneUserAgent = /Android.*Mobile|iPhone|iPod|IEMobile|Opera Mini/i.test(navigator.userAgent || '');
+      const narrowTouchViewport = window.matchMedia('(max-width: 767px) and (pointer: coarse)').matches;
+      setIsPhone(phoneUserAgent || narrowTouchViewport);
+    };
+    updatePhoneState();
+    window.addEventListener('resize', updatePhoneState);
+    window.addEventListener('orientationchange', updatePhoneState);
+    return () => {
+      window.removeEventListener('resize', updatePhoneState);
+      window.removeEventListener('orientationchange', updatePhoneState);
+    };
   }, []);
 
   // iOS Safari cannot fullscreen an arbitrary iframe element. Use a page-level
@@ -126,8 +146,7 @@ export default function CoursePlayerPage() {
   };
 
   const toggleFullscreen = async () => {
-    const isMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches;
-    if (isMobile) {
+    if (isPhone) {
       setIsMobileFullscreen((current) => !current);
       setProgressError('');
       return;
@@ -149,6 +168,35 @@ export default function CoursePlayerPage() {
   const fullscreenLabel = isFullscreen || isMobileFullscreen ? 'تصغير الفيديو' : 'تكبير الفيديو';
   const homeworkUrl = lecture?.homeworkUrl ? resolveApiAssetUrl(lecture.homeworkUrl) : '';
   const quizId = lecture?.quizId || '';
+  const playerFrame = bunnyEmbedUrl ? <div ref={playerFrameRef} className={`video-player-frame relative aspect-video w-full overflow-hidden rounded-2xl bg-black ring-1 ring-black/40${isMobileFullscreen ? ' video-mobile-fullscreen' : ''}`}>
+    <iframe className="h-full w-full" src={bunnyEmbedUrl} title={title} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" />
+    <div className="video-watermark">{watermarkText}</div>
+    <button type="button" className="video-fullscreen-button" onClick={toggleFullscreen}>{fullscreenLabel}</button>
+    {/* This is rendered only for phones and intercepts Bunny's own fullscreen
+        control before it can enter an iframe-only mode without the watermark. */}
+    {isPhone && <button type="button" className="video-mobile-fullscreen-control" onClick={toggleFullscreen} aria-label={fullscreenLabel}>⛶</button>}
+  </div> : videoUrl ? <div ref={playerFrameRef} className={`video-player-frame relative w-full overflow-hidden rounded-2xl bg-black ring-1 ring-black/40${isMobileFullscreen ? ' video-mobile-fullscreen' : ''}`}>
+    <video
+      ref={videoRef}
+      className="w-full h-auto max-h-[60vh] bg-black"
+      controls
+      controlsList="nodownload nofullscreen"
+      disablePictureInPicture
+      src={videoUrl}
+      preload="metadata"
+      onLoadedMetadata={handleLoadedMetadata}
+      onPlay={handlePlay}
+      onPause={handlePause}
+      onEnded={handlePause}
+      onTimeUpdate={handleTimeUpdate}
+    />
+    <div className="video-watermark">{watermarkText}</div>
+    <button type="button" className="video-fullscreen-button" onClick={toggleFullscreen}>{fullscreenLabel}</button>
+  </div>
+    : <div className="rounded-2xl bg-surface-muted p-6 text-center text-sm text-ink-600">لا يوجد فيديو لهذه المحاضرة. أكمل متطلباتها المتاحة أدناه.</div>;
+  const renderedPlayer = isMobileFullscreen && typeof document !== 'undefined'
+    ? createPortal(playerFrame, document.body)
+    : playerFrame;
 
   if (loading) {
     return <div dir="rtl" className="container mx-auto px-4 py-8 text-center text-sm text-ink-500">جارٍ التحقق من صلاحية المشاهدة...</div>;
@@ -183,32 +231,7 @@ export default function CoursePlayerPage() {
             </div>
           </div>
 
-          {bunnyEmbedUrl ? <div ref={playerFrameRef} className={`video-player-frame relative aspect-video w-full overflow-hidden rounded-2xl bg-black ring-1 ring-black/40${isMobileFullscreen ? ' video-mobile-fullscreen' : ''}`}>
-            <iframe className="h-full w-full" src={bunnyEmbedUrl} title={title} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" />
-            <div className="video-watermark">{watermarkText}</div>
-            <button type="button" className="video-fullscreen-button" onClick={toggleFullscreen}>{fullscreenLabel}</button>
-            {/* Covers Bunny's own mobile fullscreen control. Its native iframe
-                fullscreen would hide this page-owned watermark. */}
-            <button type="button" className="video-mobile-fullscreen-control" onClick={toggleFullscreen} aria-label={fullscreenLabel}>⛶</button>
-          </div> : videoUrl ? <div ref={playerFrameRef} className="video-player-frame relative w-full overflow-hidden rounded-2xl bg-black ring-1 ring-black/40">
-            <video
-              ref={videoRef}
-              className="w-full h-auto max-h-[60vh] bg-black"
-              controls
-              controlsList="nodownload nofullscreen"
-              disablePictureInPicture
-              src={videoUrl}
-              preload="metadata"
-              onLoadedMetadata={handleLoadedMetadata}
-              onPlay={handlePlay}
-              onPause={handlePause}
-              onEnded={handlePause}
-              onTimeUpdate={handleTimeUpdate}
-            />
-            <div className="video-watermark">{watermarkText}</div>
-            <button type="button" className="video-fullscreen-button" onClick={toggleFullscreen}>{fullscreenLabel}</button>
-          </div>
-          : <div className="rounded-2xl bg-surface-muted p-6 text-center text-sm text-ink-600">لا يوجد فيديو لهذه المحاضرة. أكمل متطلباتها المتاحة أدناه.</div>}
+          {renderedPlayer}
 
           {progressError && <p role="alert" className="mt-3 text-sm text-danger-DEFAULT">{progressError}</p>}
         </section>
