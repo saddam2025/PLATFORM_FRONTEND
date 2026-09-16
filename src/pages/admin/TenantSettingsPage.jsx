@@ -23,7 +23,13 @@ import { ThemeContext } from '../../contexts/ThemeProvider';
 const fieldClasses =
   'w-full rounded-md border border-surface-border bg-surface-default px-3 py-2 text-sm text-ink-900 outline-none focus:ring-2 focus:ring-brand-500';
 
-const ASSISTANT_PERMISSION_KEYS = ['can_upload_video', 'can_grade_exams', 'can_generate_access_codes'];
+const ASSISTANT_PERMISSION_KEYS = [
+  'can_upload_video',
+  'can_grade_exams',
+  'can_create_quizzes',
+  'can_generate_access_codes',
+  'can_generate_wallet_codes'
+];
 
 function normalizeAssistantPermissions(permissions) {
   return ASSISTANT_PERMISSION_KEYS.reduce((result, key) => {
@@ -250,7 +256,9 @@ export default function TenantSettingsPage() {
     email: '',
     can_upload_video: false,
     can_grade_exams: false,
-    can_generate_access_codes: false
+    can_create_quizzes: false,
+    can_generate_access_codes: false,
+    can_generate_wallet_codes: false
   });
   const [editingId, setEditingId] = useState(null);
   const [editingPermissions, setEditingPermissions] = useState({});
@@ -265,7 +273,9 @@ export default function TenantSettingsPage() {
       email: '',
       can_upload_video: false,
       can_grade_exams: false,
-      can_generate_access_codes: false
+      can_create_quizzes: false,
+      can_generate_access_codes: false,
+      can_generate_wallet_codes: false
     });
     setInviteLink('');
     setFormError('');
@@ -372,7 +382,9 @@ export default function TenantSettingsPage() {
   const permissionLabel = (key) => {
     if (key === 'can_upload_video') return 'رفع الفيديوهات';
     if (key === 'can_grade_exams') return 'تصحيح الاختبارات';
+    if (key === 'can_create_quizzes') return 'إنشاء اختبارات المحاضرات';
     if (key === 'can_generate_access_codes') return 'توليد أكواد الوصول';
+    if (key === 'can_generate_wallet_codes') return 'توليد أكواد شحن المحفظة';
     return key;
   };
 
@@ -641,8 +653,16 @@ export default function TenantSettingsPage() {
                     <span className="text-sm text-ink-700">تصحيح الاختبارات</span>
                   </label>
                   <label className="inline-flex items-center gap-2">
+                    <input type="checkbox" checked={form.can_create_quizzes} onChange={handleFormChange('can_create_quizzes')} />
+                    <span className="text-sm text-ink-700">إنشاء اختبارات المحاضرات</span>
+                  </label>
+                  <label className="inline-flex items-center gap-2">
                     <input type="checkbox" checked={form.can_generate_access_codes} onChange={handleFormChange('can_generate_access_codes')} />
                     <span className="text-sm text-ink-700">توليد أكواد الوصول</span>
+                  </label>
+                  <label className="inline-flex items-center gap-2">
+                    <input type="checkbox" checked={form.can_generate_wallet_codes} onChange={handleFormChange('can_generate_wallet_codes')} />
+                    <span className="text-sm text-ink-700">توليد أكواد شحن المحفظة</span>
                   </label>
                 </div>
               </div>
@@ -705,7 +725,7 @@ export default function TenantSettingsPage() {
                     <td className="py-3 px-3">
                       {editingId === a.id ? (
                         <div className="flex items-center gap-2 flex-wrap">
-                          {['can_upload_video', 'can_grade_exams', 'can_generate_access_codes'].map((key) => (
+                          {ASSISTANT_PERMISSION_KEYS.map((key) => (
                             <label key={key} className="inline-flex items-center gap-2 text-sm">
                               <input
                                 type="checkbox"

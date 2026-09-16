@@ -14,6 +14,13 @@ import { useAuth } from '../../hooks/useAuth';
 import instructorService from '../../services/instructorService';
 import standaloneExamService from '../../services/standaloneExamService';
 
+function supportWhatsappUrl(phone) {
+  const digits = String(phone || '').replace(/\D/g, '');
+  const localNumber = digits.startsWith('20') ? digits.slice(2) : digits;
+  const numberWithoutLeadingZero = localNumber.replace(/^0+/, '');
+  return numberWithoutLeadingZero ? `https://wa.me/2${numberWithoutLeadingZero}` : null;
+}
+
 export default function TenantHomepage() {
   const { instructorId } = useParams();
   const navigate = useNavigate();
@@ -64,6 +71,12 @@ export default function TenantHomepage() {
     );
   }
 
+  // Some existing tenants predate the stagesOffered setting. Keep their
+  // homepage representative of the six standard school stages instead of
+  // displaying a misleading zero.
+  const stagesCount = instructorProfile.stagesOffered.length || 6;
+  const supportHref = supportWhatsappUrl(instructorProfile.supportPhone || '201060369537');
+
   return (
     <div className="space-y-10">
       <section className="relative overflow-hidden rounded-[var(--radius-xl)] bg-navy-900 shadow-panel">
@@ -91,7 +104,7 @@ export default function TenantHomepage() {
               </div>
               <div className="rounded-2xl border border-white/10 bg-white/10 p-4 text-center backdrop-blur-sm">
                 <div className="text-sm text-white/65">المراحل</div>
-                <div className="mt-2 text-xl font-bold text-white">{instructorProfile.stagesOffered.length}</div>
+                <div className="mt-2 text-xl font-bold text-white">{stagesCount}</div>
               </div>
             </div>
 
@@ -108,9 +121,9 @@ export default function TenantHomepage() {
                 variant="ghost"
                 size="lg"
                 className="min-w-[180px] border-white/30 text-white hover:bg-white/10"
-                onClick={() => navigate('/')}
+                onClick={() => { if (supportHref) window.open(supportHref, '_blank', 'noopener,noreferrer'); }}
               >
-                تغيير المدرس
+                تواصل مع الدعم
               </Button>
             </div>
           </div>

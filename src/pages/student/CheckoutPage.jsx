@@ -1,6 +1,9 @@
 // src/pages/student/CheckoutPage.jsx
 export const route = {
-  path: '/:instructorId/checkout/:courseId',
+  path: [
+    '/:instructorId/checkout/:courseId',
+    '/:instructorId/courses/:courseId/lectures/:lectureId/checkout'
+  ],
   index: false,
   auth: 'required',
   roles: ['student'],
@@ -17,7 +20,7 @@ import { stageLabel } from '../../constants/stages';
 import { useAuth } from '../../hooks/useAuth';
 
 export default function CheckoutPage() {
-  const { instructorId, courseId } = useParams();
+  const { instructorId, courseId, lectureId } = useParams();
   const navigate = useNavigate();
   const { user, updateUser } = useAuth() || {};
   const [searchParams] = useSearchParams();
@@ -29,11 +32,12 @@ export default function CheckoutPage() {
   const [iframeUrl, setIframeUrl] = useState('');
   const [walletLoading, setWalletLoading] = useState(false);
   const [walletMessage, setWalletMessage] = useState('');
-  const [showScratchCard, setShowScratchCard] = useState(false);
-  const [scratchCode, setScratchCode] = useState('');
-  const [scratchLoading, setScratchLoading] = useState(false);
+  const [paymentError, setPaymentError] = useState('');
+  const [courseCode, setCourseCode] = useState('');
+  const [courseCodeLoading, setCourseCodeLoading] = useState(false);
 
   const isSubscription = courseId === 'subscription';
+  const isLectureCheckout = Boolean(lectureId);
   const stageId = searchParams.get('stageId');
 
   useEffect(() => {
@@ -43,6 +47,20 @@ export default function CheckoutPage() {
       setLoadingOrder(false);
       setCourse(null);
       setOrderError(stageId ? '' : 'لم يتم تحديد المرحلة الدراسية للاشتراك.');
+      return () => { active = false; };
+    }
+
+    if (isLectureCheckout) {
+      setLoadingOrder(true);
+      setOrderError('');
+      api.get(`/courses/${courseId}/lectures`)
+        .then((response) => {
+          const lecture = (response?.data?.data || []).find((item) => String(item._id) === String(lectureId));
+          if (!lecture) throw new Error('المحاضرة غير متاحة.');
+          if (active) setCourse(lecture);
+        })
+        .catch((error) => { if (active) setOrderError(error?.message || 'تعذر تحميل تفاصيل المحاضرة.'); })
+        .finally(() => { if (active) setLoadingOrder(false); });
       return () => { active = false; };
     }
 
@@ -60,7 +78,7 @@ export default function CheckoutPage() {
       });
 
     return () => { active = false; };
-  }, [courseId, instructorId, isSubscription, stageId]);
+  }, [courseId, instructorId, isLectureCheckout, isSubscription, lectureId, stageId]);
 
   const startPaymobCheckout = async () => {
     setPaymobLoading(true);
@@ -69,7 +87,7 @@ export default function CheckoutPage() {
     try {
       const response = isSubscription
         ? await api.post(`/subscriptions/${stageId}/checkout`, { instructorId, paymentMethod: 'paymob' })
-        : await api.post(`/courses/${courseId}/checkout/paymob`);
+        : await api.post(isLectureCheckout ? `/courses/${courseId}/lectures/${lectureId}/checkout/paymob` : `/courses/${courseId}/checkout/paymob`);
       const nextIframeUrl = response?.data?.data?.iframeUrl;
       if (!nextIframeUrl) throw new Error('لم تُرجع بوابة الدفع رابط الإطار المطلوب.');
       setIframeUrl(nextIframeUrl);
@@ -83,12 +101,13 @@ export default function CheckoutPage() {
   const enrollFreeCourse = async () => {
     setWalletLoading(true);
     setWalletMessage('');
+    setPaymentError('');
     try {
-      await api.post(`/courses/${courseId}/checkout/free`);
-      setWalletMessage('تم الاشتراك في الدورة المجانية بنجاح.');
-      navigate(`/${instructorId}/dashboard`, { replace: true });
+      await api.post(isLectureCheckout ? `/courses/${courseId}/lectures/${lectureId}/checkout/free` : `/courses/${courseId}/checkout/free`);
+      setWalletMessage(`تم الاشتراك في ${isLectureCheckout ? 'المحاضرة' : 'الدورة'} المجانية بنجاح.`);
+      navigate(isLectureCheckout ? `/${instructorId}/courses/${courseId}` : `/${instructorId}/dashboard`, { replace: true });
     } catch (error) {
-      setWalletMessage(error?.message || 'تعذر إتمام الاشتراك المجاني.');
+      setPaymentError(error?.message || 'تعذر إتمام الاشتراك المجاني.');
     } finally {
       setWalletLoading(false);
     }
@@ -97,36 +116,37 @@ export default function CheckoutPage() {
   const payWithWallet = async () => {
     setWalletLoading(true);
     setWalletMessage('');
+    setPaymentError('');
     try {
-      const response = await api.post(`/courses/${courseId}/checkout/wallet`);
+      const response = await api.post(isLectureCheckout ? `/courses/${courseId}/lectures/${lectureId}/checkout/wallet` : `/courses/${courseId}/checkout/wallet`);
       updateUser?.({ walletBalance: response?.data?.data?.walletBalance });
-      setWalletMessage(`تم الاشتراك بنجاح. رصيدك المتبقي: ${response?.data?.data?.walletBalance ?? ''} ج.م`);
-      navigate(`/${instructorId}/dashboard`, { replace: true });
+      setWalletMessage(`تم الاشتراك في ${isLectureCheckout ? 'المحاضرة' : 'الدورة'} بنجاح. رصيدك المتبقي: ${response?.data?.data?.walletBalance ?? ''} ج.م`);
+      navigate(isLectureCheckout ? `/${instructorId}/courses/${courseId}` : `/${instructorId}/dashboard`, { replace: true });
     } catch (error) {
-      setWalletMessage(error?.message || 'تعذر إتمام الدفع من المحفظة.');
+      setPaymentError(error?.message || 'تعذر إتمام الدفع من المحفظة.');
     } finally {
       setWalletLoading(false);
     }
   };
 
-  const redeemScratchCard = async (event) => {
-    event.preventDefault();
-    if (!scratchCode.trim()) return;
-    setScratchLoading(true);
+  const redeemCourseCode = async () => {
+    if (!courseCode.trim()) return;
+    setCourseCodeLoading(true);
     setWalletMessage('');
+    setPaymentError('');
     try {
-      const response = await api.post('/scratchcards/redeem', { code: scratchCode.trim() });
-      updateUser?.({ walletBalance: response?.data?.data?.walletBalance });
-      setScratchCode('');
-      setShowScratchCard(false);
-      setWalletMessage(`تم شحن المحفظة بنجاح. الرصيد الحالي: ${response?.data?.data?.walletBalance ?? ''} ج.م. يمكنك الآن الدفع بالمحفظة.`);
+      await api.post('/access-codes/redeem', { code: courseCode.trim(), expectedCourseId: courseId, ...(isLectureCheckout ? { expectedLectureId: lectureId } : {}) });
+      setCourseCode('');
+      setWalletMessage(`تم الاشتراك في ${isLectureCheckout ? 'المحاضرة' : 'الدورة'} باستخدام الكود بنجاح.`);
+      navigate(isLectureCheckout ? `/${instructorId}/courses/${courseId}` : `/${instructorId}/dashboard`, { replace: true });
     } catch (error) {
-      setWalletMessage(error?.message || 'تعذر شحن البطاقة.');
+      setPaymentError(error?.message || `تعذر استخدام كود ${isLectureCheckout ? 'المحاضرة' : 'الدورة'}.`);
     } finally {
-      setScratchLoading(false);
+      setCourseCodeLoading(false);
     }
   };
 
+  const itemLabel = isLectureCheckout ? 'المحاضرة' : 'الدورة';
   const orderTitle = isSubscription ? 'اشتراك شهري' : (course?.title_ar || course?.title_en);
   const orderPrice = isSubscription ? null : course?.price;
   const isFreeCourse = !isSubscription && Number(orderPrice) === 0;
@@ -136,7 +156,7 @@ export default function CheckoutPage() {
       <div>
         <h1 className="text-xl font-semibold text-ink-900">الدفع</h1>
         <p className="text-sm text-ink-500 mt-1">
-          {isSubscription ? 'إتمام الاشتراك الشهري' : 'إتمام عملية الشراء'}
+          {isSubscription ? 'إتمام الاشتراك الشهري' : `إتمام شراء ${itemLabel}`}
         </p>
       </div>
 
@@ -150,25 +170,25 @@ export default function CheckoutPage() {
               <h2 className="text-lg font-semibold text-ink-900">{isFreeCourse ? 'اشتراك مجاني' : 'خيارات الدفع'}</h2>
               {isFreeCourse ? (
                 <>
-                  <p className="mt-2 text-sm text-ink-600">هذه الدورة مجانية ولا تتطلب أي وسيلة دفع.</p>
+                  <p className="mt-2 text-sm text-ink-600">هذه {itemLabel} مجانية ولا تتطلب أي وسيلة دفع.</p>
                   <Button className="mt-5" variant="primary" onClick={enrollFreeCourse} disabled={walletLoading}>{walletLoading ? 'جارٍ الاشتراك...' : 'اشتراك'}</Button>
                 </>
               ) : <>
               <p className="mt-2 text-sm text-ink-600">
-                سيتم فتح بوابة Paymob الآمنة لإتمام الدفع عند توفرها للخطة المختارة.
+                سيتم فتح بوابة الدفع الآمنة لإتمام الدفع بالفيزا عند توفرها للخطة المختارة.
               </p>
 
               {paymobError && <div role="alert" className="mt-4 rounded-xl bg-danger-soft p-4 text-sm text-danger-DEFAULT">{paymobError}</div>}
 
               {!iframeUrl && (
                 <Button className="mt-5" variant="primary" onClick={startPaymobCheckout} disabled={paymobLoading}>
-                  {paymobLoading ? 'جارٍ فتح بوابة الدفع...' : 'الدفع عبر Paymob'}
+                  {paymobLoading ? 'جارٍ فتح بوابة الدفع...' : 'الدفع بالفيزا'}
                 </Button>
               )}
 
               {iframeUrl && (
                 <iframe
-                  title="بوابة دفع Paymob"
+                  title="بوابة الدفع بالفيزا"
                   src={iframeUrl}
                   className="mt-5 h-[680px] w-full rounded-xl border border-surface-border"
                   allow="payment"
@@ -177,15 +197,15 @@ export default function CheckoutPage() {
               {!isSubscription && (
                 <div className="mt-6 border-t border-surface-border pt-5">
                   <h3 className="font-medium text-ink-900">الدفع من المحفظة</h3>
-                  <p className="mt-1 text-sm text-ink-600">رصيدك الحالي: {user?.walletBalance ?? 0} ج.م. يمكنك شحنه بكارت Scratch ثم الدفع هنا.</p>
+                  <p className="mt-1 text-sm text-ink-600">رصيدك الحالي: {user?.walletBalance ?? 0} ج.م.</p>
                   <div className="mt-3 flex flex-wrap gap-3">
                     <Button variant="subtle" onClick={payWithWallet} disabled={walletLoading}>{walletLoading ? 'جارٍ التنفيذ...' : 'الدفع بالمحفظة'}</Button>
-                    <Button variant="ghost" onClick={() => setShowScratchCard((shown) => !shown)}>شحن كارت Scratch</Button>
                   </div>
-                  {showScratchCard && <form onSubmit={redeemScratchCard} className="mt-4 flex flex-wrap gap-2"><input value={scratchCode} onChange={(event) => setScratchCode(event.target.value)} placeholder="أدخل كود الكارت" className="rounded-xl border border-surface-border bg-surface-canvas px-3 py-2 text-sm text-ink-900 outline-none" /><Button type="submit" variant="primary" disabled={scratchLoading}>{scratchLoading ? 'جارٍ الشحن...' : 'شحن الرصيد'}</Button></form>}
+                  <div className="mt-5 border-t border-surface-border pt-5"><h3 className="font-medium text-ink-900">الدفع بكود {isLectureCheckout ? 'المحاضرة' : 'الكورس'}</h3><div className="mt-3 flex flex-wrap gap-2"><input value={courseCode} onChange={(event) => setCourseCode(event.target.value)} placeholder={`أدخل كود ${isLectureCheckout ? 'المحاضرة' : 'الكورس'}`} className="min-w-0 flex-1 rounded-xl border border-surface-border bg-surface-canvas px-3 py-2 text-sm text-ink-900 outline-none" /><Button type="button" variant="primary" onClick={redeemCourseCode} disabled={courseCodeLoading || !courseCode.trim()}>{courseCodeLoading ? 'جارٍ التحقق...' : 'استخدام الكود'}</Button></div></div>
                 </div>
               )}
               {walletMessage && <div className="mt-4 rounded-xl bg-success-soft p-3 text-sm text-success-DEFAULT">{walletMessage}</div>}
+              {paymentError && <div role="alert" className="mt-4 rounded-xl bg-danger-soft p-3 text-sm text-danger-DEFAULT">{paymentError}</div>}
               </>}
             </section>
           </div>

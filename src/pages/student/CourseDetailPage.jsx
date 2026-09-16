@@ -32,13 +32,11 @@ function LockIcon() {
 export default function CourseDetailPage() {
   const { instructorId, courseId } = useParams();
   const navigate = useNavigate();
-  const { user, updateUser } = useAuth() || {};
+  const { user } = useAuth() || {};
   const [course, setCourse] = useState(null);
   const [lectures, setLectures] = useState([]);
   const [error, setError] = useState('');
   const [purchaseError, setPurchaseError] = useState('');
-  const [busyLectureId, setBusyLectureId] = useState('');
-  const [iframeUrl, setIframeUrl] = useState('');
 
   useEffect(() => {
     let active = true;
@@ -58,25 +56,6 @@ export default function CourseDetailPage() {
   };
 
   useEffect(() => { void loadLectures(); }, [courseId, user?.role]);
-
-  const unlockLecture = async (lecture, method) => {
-    setPurchaseError('');
-    setBusyLectureId(lecture._id);
-    try {
-      const response = await api.post(`/courses/${courseId}/lectures/${lecture._id}/checkout/${method}`);
-      if (method === 'paymob') {
-        setIframeUrl(response.data.data?.iframeUrl || '');
-      } else {
-        const newBalance = response.data.data?.walletBalance;
-        if (method === 'wallet' && typeof newBalance === 'number') {
-          updateUser({ walletBalance: newBalance });
-        }
-        await loadLectures();
-      }
-    } catch (requestError) {
-      setPurchaseError(requestError?.message || 'تعذر إتمام العملية.');
-    } finally { setBusyLectureId(''); }
-  };
 
   const lectureStatus = (lecture) => ({
     free: { label: 'مجانية', variant: 'success' },
@@ -183,7 +162,7 @@ export default function CourseDetailPage() {
           const canOpen = isStudent && (lecture.status === 'free' || lecture.status === 'purchased');
           const canBuy = isStudent && lecture.status === 'not_purchased';
           const previewMeta = !user ? 'سجّل الدخول لشراء أو مشاهدة المحاضرة' : 'معاينة للمحتوى المنشور';
-          return <CourseCard key={lecture._id} course={{ title: `${lecture.order}. ${lecture.title_ar || lecture.title_en}`, subtitle: lecture.description_ar || lecture.description_en || 'محاضرة من هذه الدورة', image: resolveApiAssetUrl(lecture.thumbnailUrl), price: Number(lecture.price) }} price={Number(lecture.price)} showInstructor={false} meta={isStudent ? (canOpen ? 'المحاضرة متاحة للمشاهدة' : lecture.status === 'pending_previous' ? 'أكمل المتطلبات أولاً' : 'متاحة للشراء بشكل منفصل') : previewMeta} status={state} singleAction openLabel="ادخل المحاضرة" openDisabled={isStudent ? !canOpen && !canBuy : Boolean(user)} onOpen={() => { if (canOpen) navigate(`/${instructorId}/courses/${courseId}/lectures/${lecture._id}/learn`); else if (canBuy) unlockLecture(lecture, 'paymob'); else if (!user) navigate(`/${instructorId}/login`); }} />;
+          return <CourseCard key={lecture._id} course={{ title: `${lecture.order}. ${lecture.title_ar || lecture.title_en}`, subtitle: lecture.description_ar || lecture.description_en || 'محاضرة من هذه الدورة', image: resolveApiAssetUrl(lecture.thumbnailUrl), price: Number(lecture.price) }} price={Number(lecture.price)} showInstructor={false} meta={isStudent ? (canOpen ? 'المحاضرة متاحة للمشاهدة' : lecture.status === 'pending_previous' ? 'أكمل المتطلبات أولاً' : 'متاحة للشراء بشكل منفصل') : previewMeta} status={state} singleAction openLabel={canBuy ? 'اشترك في المحاضرة' : 'ادخل المحاضرة'} openDisabled={isStudent ? !canOpen && !canBuy : Boolean(user)} onOpen={() => { if (canOpen) navigate(`/${instructorId}/courses/${courseId}/lectures/${lecture._id}/learn`); else if (canBuy) navigate(`/${instructorId}/courses/${courseId}/lectures/${lecture._id}/checkout`); else if (!user) navigate(`/${instructorId}/login`); }} />;
         })}</div>
         {lectures.length === 0 && <p className="text-sm text-ink-500">لا توجد محاضرات منشورة حاليًا.</p>}
       </section>
@@ -204,7 +183,6 @@ export default function CourseDetailPage() {
           </Button>
         </div>
       </div>
-      {iframeUrl && <div className="fixed inset-0 z-20 flex items-center justify-center bg-black/60 p-4"><section className="h-[90vh] w-full max-w-3xl overflow-hidden rounded-2xl bg-surface-default shadow-card"><div className="flex items-center justify-between p-3"><h2 className="font-semibold">إتمام دفع المحاضرة</h2><Button size="sm" variant="ghost" onClick={() => setIframeUrl('')}>إغلاق</Button></div><iframe title="Paymob lecture payment" src={iframeUrl} className="h-[calc(100%-56px)] w-full border-0" /></section></div>}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 // src/layouts/ParentSidebar.jsx
 import React, { useContext } from 'react';
-import { NavLink, useNavigate, useParams } from 'react-router-dom';
+import { NavLink, useParams } from 'react-router-dom';
 import { InstructorContext } from '../contexts/InstructorContext';
 import { useAuth } from '../hooks/useAuth'; // FIX: was importing non-existent useAuth from AuthProvider
 import Avatar from '../components/ui/Avatar';
@@ -30,7 +30,6 @@ export default function ParentSidebar() {
   const { selected } = useContext(InstructorContext);
   const { user, logout } = useAuth();
   const { instructorId } = useParams();
-  const navigate = useNavigate();
   const base = instructorId ? `/${instructorId}` : '';
 
   return (
@@ -65,7 +64,6 @@ export default function ParentSidebar() {
       </div>
 
       <nav className="flex-1 space-y-1.5">
-        <button type="button" onClick={() => navigate('/')} className="flex w-full items-center rounded-xl px-4 py-3 text-right text-[15px] font-medium text-white/70 transition hover:bg-[var(--sidebar-bg-soft)] hover:text-white">تغيير المدرس</button>
         <Item to={`${base}/parent/dashboard`}>لوحة التحكم</Item>
         <Item to={`${base}/parent/reports`}>تقارير الأبناء</Item>
         <Item to={`${base}/parent/courses`}>كورسات الابن</Item>

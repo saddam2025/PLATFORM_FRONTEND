@@ -152,6 +152,8 @@ export default function Sidebar() {
   const role = user?.role || null;
   const permissions = Array.isArray(user?.permissions) ? user.permissions : [];
   const canGrade = role === 'admin' || role === 'teacher' || permissions.includes('can_grade_exams');
+  const canCreateQuizzes = role === 'admin' || permissions.includes('can_create_quizzes');
+  const canGenerateWalletCodes = role === 'admin' || permissions.includes('can_generate_wallet_codes');
 
   // Public pages use a tenant slug in the URL. Management pages must instead
   // use the authenticated owner's ObjectId, otherwise the backend correctly
@@ -218,11 +220,12 @@ export default function Sidebar() {
           {canGrade && <Item to={`${base}/assistant/grade`} icon="assignment_turned_in">تصحيح الواجبات</Item>}
           {/* Requirement #15: assistants have identical upload permissions to teachers */}
           <Item to={`${base}/admin/courses`} icon="upload_file">رفع محتوى تعليمي</Item>
+          {canCreateQuizzes && <Item to={`${base}/admin/quiz-builder`} icon="quiz">منشئ اختبارات المحاضرات</Item>}
           <Item to={`${base}/admin/standalone-exams`} icon="quiz">امتحانات منفصلة</Item>
           <Item to={`${base}/assistant/messages`} icon="family_restroom">رسائل أولياء الأمور</Item>
           <Item to={`${base}/students`} icon="family_restroom">الطلاب</Item>
           <Item to={`${base}/leaderboard`} icon="military_tech">لوحة الشرف</Item>
-          <Item to={`${base}/admin/scratchcards`} icon="vpn_key">أكواد الوصول</Item>
+          {canGenerateWalletCodes && <Item to={`${base}/admin/scratchcards`} icon="vpn_key">أكواد شحن المحفظة</Item>}
           <Item to={`${base}/security`} icon="admin_panel_settings">أمان الحساب</Item>
         </nav>
 

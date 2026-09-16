@@ -67,6 +67,7 @@ const scopedRoutes = [
   { path: 'catalog', element: CourseCatalogPage },
   { path: 'courses/:courseId', element: CourseDetailPage },
   { path: 'checkout/:courseId', element: CheckoutPage },
+  { path: 'courses/:courseId/lectures/:lectureId/checkout', element: CheckoutPage },
   { path: 'dashboard', element: StudentDashboard },
   { path: 'exam-grades', element: ExamGradesPage },
   { path: 'assignment-grades', element: AssignmentGradesPage },

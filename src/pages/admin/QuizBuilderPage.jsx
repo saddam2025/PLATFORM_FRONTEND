@@ -36,7 +36,7 @@ export default function QuizBuilderPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth() || {};
-  const lacksPermission = user?.role === 'assistant' && !user?.permissions?.includes('can_grade_exams');
+  const lacksPermission = user?.role === 'assistant' && !user?.permissions?.includes('can_create_quizzes');
 
   const [quizId, setQuizId] = useState(null);
   const [courses, setCourses] = useState([]);
