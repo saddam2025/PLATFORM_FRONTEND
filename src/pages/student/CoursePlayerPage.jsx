@@ -14,6 +14,7 @@ import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import { useAuth } from '../../hooks/useAuth';
 import api, { resolveApiAssetUrl } from '../../services/api';
+import quizService from '../../services/quizService';
 
 export default function CoursePlayerPage() {
   const { instructorId, courseId, lectureId } = useParams();
