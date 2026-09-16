@@ -1,6 +1,6 @@
 // src/App.jsx
 import React, { Suspense, useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { buildAutoRoutes } from './routes.auto';
 import Layouts from './layouts/Layouts';
 import ParentLayout from './layouts/ParentLayout';
@@ -10,11 +10,13 @@ import { InstructorProvider } from './contexts/InstructorContext';
 import { SelectedChildProvider } from './contexts/SelectedChildContext';
 import { ThemeProvider } from './contexts/ThemeProvider';
 import useAuth from './hooks/useAuth';
-import { dashboardPathFor } from './utils/dashboardPath';
+import { dashboardPathFor, managedInstructorIdFor } from './utils/dashboardPath';
 import ScrollToTop from './components/common/ScrollToTop';
 
 function RouteGuard({ route, children }) {
   const { user, loading } = useAuth();
+  const { instructorId } = useParams();
+  const location = useLocation();
 
   if (loading) {
     return <div className="p-6">جارٍ التحميل...</div>;
@@ -45,6 +47,18 @@ function RouteGuard({ route, children }) {
 
   if (requiredRoles.length > 0 && (!user || !requiredRoles.includes(user.role))) {
     return <Navigate to={dashboardPathFor(user)} replace />;
+  }
+
+  // Never let a public tenant slug, another instructor's ObjectId, or a
+  // stale bookmarked URL become the target of a management request. The
+  // sidebar uses the same trusted source, and this guard also repairs direct
+  // links before a page can call the API.
+  const routeAllowsManagement = requiredRoles.some((role) => ['admin', 'teacher', 'assistant'].includes(role));
+  const managedInstructorId = managedInstructorIdFor(user);
+  if (instructorId && routeAllowsManagement && managedInstructorId && String(instructorId) !== String(managedInstructorId)) {
+    const pathParts = location.pathname.split('/');
+    pathParts[1] = encodeURIComponent(managedInstructorId);
+    return <Navigate to={`${pathParts.join('/')}${location.search}${location.hash}`} replace />;
   }
 
   return children;

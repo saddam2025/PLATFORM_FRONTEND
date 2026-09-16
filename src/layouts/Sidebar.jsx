@@ -26,6 +26,7 @@ import { InstructorContext } from '../contexts/InstructorContext';
 import Avatar from '../components/ui/Avatar';
 import { useAuth } from '../hooks/useAuth';
 import Logo from '../components/common/Logo';
+import { managedInstructorIdFor } from '../utils/dashboardPath';
 
 function SidebarIcon({ name }) {
   const shared = 'h-5 w-5';
@@ -152,7 +153,11 @@ export default function Sidebar() {
   const permissions = Array.isArray(user?.permissions) ? user.permissions : [];
   const canGrade = role === 'admin' || role === 'teacher' || permissions.includes('can_grade_exams');
 
-  const base = instructorId ? `/${instructorId}` : '';
+  // Public pages use a tenant slug in the URL. Management pages must instead
+  // use the authenticated owner's ObjectId, otherwise the backend correctly
+  // rejects the request as an invalid or foreign instructor.
+  const managedInstructorId = managedInstructorIdFor(user);
+  const base = managedInstructorId || instructorId ? `/${managedInstructorId || instructorId}` : '';
 
   const InstructorsList = () => (
     <div className="mt-6 px-3 pb-2 pt-4 border-t border-white/10">
