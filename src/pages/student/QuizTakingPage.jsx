@@ -23,18 +23,44 @@ export default function QuizTakingPage() {
   const [submitting, setSubmitting] = useState(false);
   const subscriptionId = location.state?.monthlyExam?.subscriptionId;
 
+  const redirectToResult = useCallback((submission) => {
+    if (!submission?._id) return false;
+    navigate(`/${instructorId}/quizzes/${quizId}/results/${submission._id}`, { replace: true });
+    return true;
+  }, [instructorId, navigate, quizId]);
+
   const load = useCallback(async () => {
     setLoading(true); setError('');
     try {
+      const submissionResponse = await quizService.getMySubmission(quizId);
+      if (redirectToResult(submissionResponse?.data?.data)) return;
+
       const response = await quizService.getQuiz(quizId);
       const received = response?.data?.data;
       if (!received || !Array.isArray(received.questions)) throw new Error('استجابة الاختبار غير صالحة.');
       setQuiz(received); setAnswersByQuestionId({}); setCurrentIndex(0);
-    } catch (requestError) { setError(errorMessage(requestError, 'تعذر تحميل الاختبار. حاول مرة أخرى.')); }
+    } catch (requestError) {
+      if (requestError?.status === 409 && requestError?.submissionId) {
+        redirectToResult({ _id: requestError.submissionId });
+        return;
+      }
+      setError(errorMessage(requestError, 'تعذر تحميل الاختبار. حاول مرة أخرى.'));
+    }
     finally { setLoading(false); }
-  }, [quizId]);
+  }, [quizId, redirectToResult]);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    const handlePageShow = (event) => {
+      if (!event.persisted) return;
+      quizService.getMySubmission(quizId)
+        .then((response) => redirectToResult(response?.data?.data))
+        .catch(() => {});
+    };
+    window.addEventListener('pageshow', handlePageShow);
+    return () => window.removeEventListener('pageshow', handlePageShow);
+  }, [quizId, redirectToResult]);
   const answers = useMemo(() => quiz?.questions.map((question) => answersByQuestionId[question._id] ?? null) || [], [quiz, answersByQuestionId]);
   const selectOption = (optionIndex) => setAnswersByQuestionId((current) => ({ ...current, [quiz.questions[currentIndex]._id]: optionIndex }));
   const submit = async () => {
@@ -46,7 +72,7 @@ export default function QuizTakingPage() {
         : await quizService.submitQuiz(quizId, answers);
       const result = response?.data?.data;
       if (!result?.submissionId) throw new Error('استجابة الإرسال لا تحتوي على معرف المحاولة.');
-      navigate(`/${instructorId}/quizzes/${quizId}/results/${result.submissionId}`);
+      navigate(`/${instructorId}/quizzes/${quizId}/results/${result.submissionId}`, { replace: true });
     } catch (requestError) { setSubmitError(errorMessage(requestError, 'تعذر إرسال إجابات الاختبار. حاول مرة أخرى.')); }
     finally { setSubmitting(false); }
   };

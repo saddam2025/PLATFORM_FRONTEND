@@ -33,6 +33,8 @@ export default function CoursePlayerPage() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isMobileFullscreen, setIsMobileFullscreen] = useState(false);
   const [isPhone, setIsPhone] = useState(false);
+  const [quizSubmission, setQuizSubmission] = useState(null);
+  const [assignment, setAssignment] = useState(null);
 
   useEffect(() => {
     const updateFullscreenState = () => setIsFullscreen(document.fullscreenElement === playerFrameRef.current);
@@ -168,6 +170,23 @@ export default function CoursePlayerPage() {
   const fullscreenLabel = isFullscreen || isMobileFullscreen ? 'تصغير الفيديو' : 'تكبير الفيديو';
   const homeworkUrl = lecture?.homeworkUrl ? resolveApiAssetUrl(lecture.homeworkUrl) : '';
   const quizId = lecture?.quizId || '';
+
+  useEffect(() => {
+    let active = true;
+    if (!quizId) { setQuizSubmission(null); return () => { active = false; }; }
+    quizService.getMySubmission(quizId)
+      .then((response) => { if (active) setQuizSubmission(response?.data?.data || null); })
+      .catch(() => { if (active) setQuizSubmission(null); });
+    return () => { active = false; };
+  }, [quizId]);
+
+  useEffect(() => {
+    let active = true;
+    api.get(`/courses/${courseId}/lectures/${lectureId}/assignments/mine`)
+      .then((response) => { if (active) setAssignment(response?.data?.data || null); })
+      .catch(() => { if (active) setAssignment(null); });
+    return () => { active = false; };
+  }, [courseId, lectureId]);
   const playerFrame = bunnyEmbedUrl ? <div ref={playerFrameRef} className={`video-player-frame relative aspect-video w-full overflow-hidden rounded-2xl bg-black ring-1 ring-black/40${isMobileFullscreen ? ' video-mobile-fullscreen' : ''}`}>
     <iframe className="h-full w-full" src={bunnyEmbedUrl} title={title} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" />
     <div className="video-watermark">{watermarkText}</div>
@@ -242,11 +261,11 @@ export default function CoursePlayerPage() {
           <div className="mt-5 grid gap-4 md:grid-cols-2">
             <article className="rounded-2xl border border-brand-200 bg-brand-50/50 p-5">
               <p className="text-sm font-bold text-ink-900">الواجب</p>
-              {homeworkUrl ? <><p className="mt-2 text-sm text-ink-600">تم رفع واجب هذه المحاضرة، ويمكنك عرضه أو تحميله ثم تسليم الحل.</p><div className="mt-4 flex flex-wrap gap-2"><a href={homeworkUrl} target="_blank" rel="noreferrer" download><Button size="sm" variant="ghost">عرض / تحميل الواجب</Button></a><Button size="sm" variant="primary" onClick={() => navigate(`/${instructorId}/courses/${courseId}/lectures/${lectureId}/assignments`)}>تسليم الواجب</Button></div></> : <p className="mt-2 text-sm text-ink-500">الواجب لسه منزلش.</p>}
+              {homeworkUrl ? <><p className="mt-2 text-sm text-ink-600">تم رفع واجب هذه المحاضرة، ويمكنك عرضه أو تحميله ثم تسليم الحل.</p><div className="mt-4 flex flex-wrap gap-2"><a href={homeworkUrl} target="_blank" rel="noreferrer" download><Button size="sm" variant="ghost">عرض / تحميل الواجب</Button></a><Button size="sm" variant="primary" onClick={() => navigate(assignment ? `/${instructorId}/assignment-grades` : `/${instructorId}/courses/${courseId}/lectures/${lectureId}/assignments`)}>{assignment ? 'شوف درجة الواجب' : 'تسليم الواجب'}</Button></div></> : <p className="mt-2 text-sm text-ink-500">الواجب لسه منزلش.</p>}
             </article>
             <article className="rounded-2xl border border-surface-border bg-surface-muted p-5">
               <p className="text-sm font-bold text-ink-900">الامتحان</p>
-              {quizId ? <><p className="mt-2 text-sm text-ink-600">اختبار المحاضرة جاهز. تأكد من فهم الدرس قبل البدء.</p><Button className="mt-4" size="sm" variant="primary" onClick={() => navigate(`/${instructorId}/courses/${courseId}/quizzes/${quizId}`)}>بدء الامتحان</Button></> : <p className="mt-2 text-sm text-ink-500">الامتحان لسه منزلش.</p>}
+              {quizId ? <><p className="mt-2 text-sm text-ink-600">اختبار المحاضرة جاهز. تأكد من فهم الدرس قبل البدء.</p><Button className="mt-4" size="sm" variant="primary" onClick={() => navigate(quizSubmission ? `/${instructorId}/exam-grades` : `/${instructorId}/courses/${courseId}/quizzes/${quizId}`)}>{quizSubmission ? 'شوف درجتك' : 'بدء الامتحان'}</Button></> : <p className="mt-2 text-sm text-ink-500">الامتحان لسه منزلش.</p>}
             </article>
           </div>
           <div className="mt-5">
