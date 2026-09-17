@@ -80,7 +80,9 @@ export default function AssignmentGradingPage() {
     }
     setSaving(true);
     try {
-      await api.patch(`/assignments/${assignment._id}/grade`, { grade: status === 'graded' ? numericGrade : null, feedback, status });
+      const response = await api.patch(`/assignments/${assignment._id}/grade`, { grade: status === 'graded' ? numericGrade : null, feedback, status });
+      const updatedAssignment = response.data.data;
+      setAssignment((current) => current ? { ...current, ...updatedAssignment, studentId: current.studentId, courseId: current.courseId } : updatedAssignment);
       setSuccess('تم حفظ التقييم وإشعار الطالب.');
       setQueue((items) => items.filter((item) => item._id !== assignment._id));
       setTimeout(() => navigate(`/${instructorId}/assistant/grade`), 700);
@@ -95,6 +97,8 @@ export default function AssignmentGradingPage() {
   if (loading) return <div dir="rtl" className="p-6 text-ink-600">جارٍ تحميل الواجبات...</div>;
 
   if (!assignmentId) return <div dir="rtl" className="min-h-screen bg-surface-canvas text-ink-900 p-6"><h1 className="text-2xl font-semibold mb-6">واجبات بانتظار التصحيح</h1>{saveError && <div className="rounded-md p-3 bg-danger-soft text-danger-DEFAULT mb-4">{saveError}</div>}<div className="space-y-3">{queue.length === 0 ? <div className="rounded-2xl bg-surface-default shadow-card p-6 text-ink-600">لا توجد واجبات بانتظار التصحيح.</div> : queue.map((item) => <button type="button" key={item._id} onClick={() => navigate(`/${instructorId}/assistant/grade/${item._id}`)} className="w-full text-right rounded-2xl bg-surface-default shadow-card p-4 hover:ring-2 hover:ring-brand-500"><div className="flex justify-between gap-3"><div><p className="font-semibold">{item.studentId?.name || 'طالب'}</p><p className="text-sm text-ink-500 mt-1">{item.courseId?.title_ar || 'واجب المحاضرة'} — {formatDateTime(item.submittedAt)}</p></div><Badge variant="neutral">بانتظار</Badge></div></button>)}</div></div>;
+
+  if (String(assignment?._id || '') !== assignmentId) return <div dir="rtl" className="min-h-screen bg-surface-canvas p-6 text-center"><p className={saveError ? 'text-danger-DEFAULT' : 'text-ink-600'}>{saveError || 'جارٍ تحميل تفاصيل الواجب...'}</p>{saveError && <Button className="mt-4" variant="ghost" onClick={() => navigate(`/${instructorId}/assistant/grade`)}>العودة لقائمة الواجبات</Button>}</div>;
 
   const fileUrl = resolveApiAssetUrl(assignment.submissionFileUrl);
   const isPdf = fileUrl?.toLowerCase().endsWith('.pdf');

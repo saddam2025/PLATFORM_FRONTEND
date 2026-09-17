@@ -32,7 +32,10 @@ export default function AssignmentSubmissionPage() {
       setError(null);
       try {
         const [mineResponse, courseResponse] = await Promise.all([
-          api.get(`/courses/${courseId}/lectures/${lectureId}/assignments/mine`),
+          api.get(`/courses/${courseId}/lectures/${lectureId}/assignments/mine`, {
+            headers: { 'Cache-Control': 'no-cache' },
+            params: { _: Date.now() }
+          }),
           api.post(`/courses/${courseId}/lectures/${lectureId}/start-view`),
         ]);
         if (!active) return;
@@ -79,6 +82,21 @@ export default function AssignmentSubmissionPage() {
       setFile(null);
       setSuccess('تم تسليم الواجب بنجاح وهو الآن بانتظار المراجعة.');
     } catch (err) {
+      if (err?.status === 409) {
+        try {
+          const mineResponse = await api.get(`/courses/${courseId}/lectures/${lectureId}/assignments/mine`, {
+            headers: { 'Cache-Control': 'no-cache' },
+            params: { _: Date.now() }
+          });
+          setAssignment(mineResponse.data.data);
+          setFile(null);
+          setSuccess('تم تسجيل التسليم بالفعل وهو الآن بانتظار التقييم.');
+          return;
+        } catch (refreshError) {
+          setError(refreshError?.message || 'تم تسجيل التسليم، لكن تعذر تحديث حالته. أعد تحميل الصفحة.');
+          return;
+        }
+      }
       setError(err?.message || 'فشل تسليم الواجب. حاول مرة أخرى.');
     } finally {
       setSubmitting(false);
