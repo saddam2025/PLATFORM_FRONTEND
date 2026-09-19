@@ -13,13 +13,7 @@ import useTenantData from '../../hooks/useTenantData.js';
 import { useAuth } from '../../hooks/useAuth';
 import instructorService from '../../services/instructorService';
 import standaloneExamService from '../../services/standaloneExamService';
-
-function supportWhatsappUrl(phone) {
-  const digits = String(phone || '').replace(/\D/g, '');
-  const localNumber = digits.startsWith('20') ? digits.slice(2) : digits;
-  const numberWithoutLeadingZero = localNumber.replace(/^0+/, '');
-  return numberWithoutLeadingZero ? `https://wa.me/2${numberWithoutLeadingZero}` : null;
-}
+import { egyptianWhatsappUrl } from '../../utils/phone';
 
 export default function TenantHomepage() {
   const { instructorId } = useParams();
@@ -75,7 +69,7 @@ export default function TenantHomepage() {
   // homepage representative of the six standard school stages instead of
   // displaying a misleading zero.
   const stagesCount = instructorProfile.stagesOffered.length || 6;
-  const supportHref = supportWhatsappUrl(instructorProfile.supportPhone || '201060369537');
+  const supportHref = egyptianWhatsappUrl(instructorProfile.supportPhone || '201060369537');
 
   return (
     <div className="space-y-10">

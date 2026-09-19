@@ -17,6 +17,7 @@ import api from '../../services/api';
 import authService from '../../services/authService';
 // FIX: real hook file is src/hooks/useAuth.js — there is no src/contexts/AuthContext.jsx.
 import { useAuth } from '../../hooks/useAuth';
+import { normalizeEgyptianPhone } from '../../utils/phone';
 import { ThemeContext } from '../../contexts/ThemeProvider';
 
 // Shared select/textarea styling matching Input.jsx's `.input` look.
@@ -159,7 +160,7 @@ export default function TenantSettingsPage() {
     setBrandName(tenant.name || '');
     setLogoUrl(tenant.logoUrl || '');
     setFaviconUrl(tenant.faviconUrl || '');
-    setSupportPhone(tenant.supportPhone || '');
+    setSupportPhone(normalizeEgyptianPhone(tenant.supportPhone));
     setSupportEmail(tenant.supportEmail || '');
     setVideoDelivery({ provider: tenant.videoDelivery?.provider || '', pullZone: tenant.videoDelivery?.pullZone || '', maxViewsPerLesson: tenant.videoDelivery?.maxViewsPerLesson ?? 10, accessWindowDays: tenant.videoDelivery?.accessWindowDays ?? 10 });
     setDocumentDelivery({ provider: tenant.documentDelivery?.provider || '', publicBaseUrl: tenant.documentDelivery?.publicBaseUrl || '' });
@@ -197,7 +198,7 @@ export default function TenantSettingsPage() {
         name: brandName,
         logoUrl: logoUrl || null,
         faviconUrl: faviconUrl || null,
-        supportPhone,
+        supportPhone: normalizeEgyptianPhone(supportPhone),
         supportEmail,
         videoDelivery: { ...videoDelivery, maxViewsPerLesson: Number(videoDelivery.maxViewsPerLesson), accessWindowDays: Number(videoDelivery.accessWindowDays) },
         documentDelivery,
