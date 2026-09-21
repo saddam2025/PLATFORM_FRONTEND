@@ -18,6 +18,13 @@ function requestBody(fields, thumbnail) {
 }
 
 const standaloneExamAdminService = {
+  uploadQuestionImage: (instructorId, file, scope = 'exam') => {
+    const formData = new FormData();
+    formData.append('questionImage', file);
+    const path = scope === 'quiz' ? `/instructors/${encodeURIComponent(instructorId)}/courses/question-image` : `/instructors/${encodeURIComponent(instructorId)}/exams/question-image`;
+    // Remove the JSON default so the browser can add the multipart boundary.
+    return api.post(path, formData, { headers: { 'Content-Type': undefined } });
+  },
   list: (instructorId) => api.get(`/instructors/${encodeURIComponent(instructorId)}/exams`),
   get: async (instructorId, examId) => {
     const response = await api.get(`/instructors/${encodeURIComponent(instructorId)}/exams`);

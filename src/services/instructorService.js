@@ -38,6 +38,7 @@ function mapCourse(course) {
     accessPeriodDays: course.accessPeriodDays,
     maxViews: course.maxViews,
     isPublished: course.isPublished,
+    owned: Boolean(course.owned),
     locked: course.locked,
     partialLectureCount: course.partialLectureCount || 0,
     hasPartialLectureAccess: Boolean(course.hasPartialLectureAccess),

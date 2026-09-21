@@ -24,6 +24,8 @@ function makeEmptyQuestion() {
   return {
     id: `q-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     text: '',
+    stemType: 'text',
+    imageUrl: null,
     options: ['', '', '', ''],
     correctOptionIndex: 0,
     points: 1,
@@ -103,7 +105,7 @@ export default function QuizBuilderPage() {
         setTitle(quiz.title || '');
         setPassingScore(quiz.passingScore ?? 50);
         setTimeLimitMinutes(quiz.timeLimitMinutes ?? 15);
-        setQuestions(quiz.questions.map((question) => ({ id: question._id || `q-${Date.now()}`, text: question.text, options: question.options, correctOptionIndex: question.correctOptionIndex, points: question.points, explanation: question.explanation || '' })));
+        setQuestions(quiz.questions.map((question) => ({ id: question._id || `q-${Date.now()}`, text: question.text || '', stemType: question.stemType || 'text', imageUrl: question.imageUrl || null, options: question.options, correctOptionIndex: question.correctOptionIndex, points: question.points, explanation: question.explanation || '' })));
       })
       .catch((err) => { if (active) setLoadError(err?.message || 'تعذر تحميل الاختبار.'); })
       .finally(() => { if (active) setLoading(false); });
@@ -149,7 +151,7 @@ export default function QuizBuilderPage() {
     if (questions.length === 0) nextErrors.questions = 'أضف سؤالاً واحداً على الأقل';
 
     questions.forEach((q, idx) => {
-      if (!q.text.trim()) nextErrors[`q-${idx}-text`] = 'نص السؤال مطلوب';
+      if (q.stemType === 'image' ? !q.imageUrl : !q.text.trim()) nextErrors[`q-${idx}-text`] = q.stemType === 'image' ? 'ارفع صورة السؤال أولاً' : 'نص السؤال مطلوب';
       q.options.forEach((opt, optIdx) => {
         if (!opt.trim()) nextErrors[`q-${idx}-opt-${optIdx}`] = 'مطلوب';
       });
@@ -171,6 +173,8 @@ export default function QuizBuilderPage() {
       timeLimitMinutes: Number(timeLimitMinutes),
       questions: questions.map((q) => ({
         text: q.text,
+        stemType: q.stemType || 'text',
+        imageUrl: q.stemType === 'image' ? q.imageUrl : null,
         options: q.options,
         correctOptionIndex: q.correctOptionIndex,
         points: Number(q.points) || 1,
@@ -272,7 +276,7 @@ export default function QuizBuilderPage() {
         </div>
       </div>
 
-      <QuestionBuilder questions={questions} errors={errors} onUpdateQuestion={updateQuestion} onUpdateOption={updateOption} onAddQuestion={addQuestion} onRemoveQuestion={removeQuestion} />
+      <QuestionBuilder instructorId={instructorId} scope="quiz" questions={questions} errors={errors} onUpdateQuestion={updateQuestion} onUpdateOption={updateOption} onAddQuestion={addQuestion} onRemoveQuestion={removeQuestion} />
 
       <div className="flex justify-end">
         <Button variant="primary" onClick={handleSave} disabled={saving || !selectedCourseId || !selectedLectureId}>

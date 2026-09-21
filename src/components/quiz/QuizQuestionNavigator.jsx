@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import Button from '../ui/Button';
 import MathText from '../math/MathText';
+import QuestionStemDisplay from './QuestionStemDisplay';
 
 export default function QuizQuestionNavigator({ questions, currentIndex, answers, onSelect, onPrevious, onNext, submitting, submitLabel }) {
   const question = questions[currentIndex];
@@ -14,7 +15,7 @@ export default function QuizQuestionNavigator({ questions, currentIndex, answers
         {questions.map((item, index) => <span key={item._id || item.id || index} className={`h-2.5 w-2.5 rounded-full ${index === currentIndex ? 'bg-brand-500' : answers[index] != null ? 'bg-brand-200' : 'bg-surface-muted'}`} />)}
       </div>
       <div className="space-y-4 rounded-2xl bg-surface-default p-6 shadow-card">
-        <h2 className="text-lg font-medium text-ink-900"><MathText content={question.text} /></h2>
+        <div className="text-lg font-medium text-ink-900"><QuestionStemDisplay question={question} /></div>
         <div className="space-y-2">
           {question.options.map((option, optionIndex) => {
             const selected = answers[currentIndex] === optionIndex;

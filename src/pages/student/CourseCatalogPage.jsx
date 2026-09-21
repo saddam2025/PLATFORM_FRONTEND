@@ -130,7 +130,8 @@ export default function CourseCatalogPage() {
         <CourseCard
           key={course.id}
           course={course}
-          openLabel="عرض التفاصيل"
+          openLabel={course.owned ? 'ادخل الكورس' : 'عرض التفاصيل'}
+          singleAction={course.owned}
           onOpen={() => navigate(`/${instructorId}/courses/${course.id}`)}
           onEnroll={() => navigate(`/${instructorId}/checkout/${course.id}`)}
           status={course.hasPartialLectureAccess ? { label: `لديك وصول إلى ${course.partialLectureCount} محاضرة`, variant: 'info' } : null}

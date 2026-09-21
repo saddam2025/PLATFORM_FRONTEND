@@ -156,7 +156,7 @@ export default function TenantHomepage() {
           <div className="space-y-2"><h2 className="font-display text-2xl font-semibold text-ink-900">كورسات مقترحة</h2><p className="text-sm text-ink-500">اختيارات مقترحة من أحدث كورسات المنصة.</p></div>
           <Button variant="subtle" size="md" onClick={() => navigate(`/${instructorId}/catalog`)}>عرض الكل</Button>
         </div>
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">{suggestedCourses.map((course) => <CourseCard key={course.id} course={course} openLabel="عرض التفاصيل" enrollLabel="اشترك" onOpen={() => navigate(`/${instructorId}/courses/${course.id}`)} onEnroll={() => navigate(`/${instructorId}/checkout/${course.id}`)} status={course.hasPartialLectureAccess ? { label: `لديك وصول إلى ${course.partialLectureCount} محاضرة`, variant: 'info' } : null} />)}</div>
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">{suggestedCourses.map((course) => <CourseCard key={course.id} course={course} openLabel={course.owned ? 'ادخل الكورس' : 'عرض التفاصيل'} enrollLabel="اشترك" singleAction={course.owned} onOpen={() => navigate(`/${instructorId}/courses/${course.id}`)} onEnroll={() => navigate(`/${instructorId}/checkout/${course.id}`)} status={course.hasPartialLectureAccess ? { label: `لديك وصول إلى ${course.partialLectureCount} محاضرة`, variant: 'info' } : null} />)}</div>
       </section>}
 
       {featuredLectures.length > 0 && <section className="rounded-[var(--radius-xl)] border border-surface-border bg-surface-default p-6 shadow-card">
@@ -185,8 +185,9 @@ export default function TenantHomepage() {
               <CourseCard
                 key={course.id}
                 course={course}
-                openLabel="عرض التفاصيل"
+                openLabel={course.owned ? 'ادخل الكورس' : 'عرض التفاصيل'}
                 enrollLabel="اشترك"
+                singleAction={course.owned}
                 onOpen={() => navigate(`/${instructorId}/courses/${course.id}`)}
                 onEnroll={() => navigate(`/${instructorId}/checkout/${course.id}`)}
                 status={course.hasPartialLectureAccess ? { label: `لديك وصول إلى ${course.partialLectureCount} محاضرة`, variant: 'info' } : null}

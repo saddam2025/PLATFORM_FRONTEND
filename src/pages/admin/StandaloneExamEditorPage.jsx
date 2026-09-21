@@ -2,4 +2,4 @@ export const route = { path: ['/:instructorId/admin/standalone-exams/new', '/:in
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import StandaloneExamForm from '../../components/admin/StandaloneExamForm';
-export default function StandaloneExamEditorPage() { const { instructorId, examId } = useParams(); const navigate = useNavigate(); return <div dir="rtl" className="mx-auto max-w-5xl"><StandaloneExamForm instructorId={instructorId} examId={examId} onCancel={() => navigate(`/${instructorId}/admin/standalone-exams`)} /></div>; }
+export default function StandaloneExamEditorPage() { const { instructorId, examId } = useParams(); const navigate = useNavigate(); const goToManagement = () => navigate(`/${instructorId}/admin/standalone-exams`, { replace: true }); return <div dir="rtl" className="mx-auto max-w-5xl"><StandaloneExamForm instructorId={instructorId} examId={examId} onSaved={goToManagement} onCancel={goToManagement} /></div>; }
