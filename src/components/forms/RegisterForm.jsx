@@ -297,8 +297,8 @@ export default function RegisterForm({ instructorId: propInstructorId, instructo
                   className="w-full rounded-xl border border-surface-border bg-surface-muted text-ink-900 text-right p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                 >
                   <option value="" disabled>اختر النوع</option>
-                  <option value="male">ذكر</option>
-                  <option value="female">أنثى</option>
+                  <option value="male">ولد</option>
+                  <option value="female">بنت</option>
                 </select>
                 {errors.gender && <p className="text-xs text-danger-DEFAULT mt-1">{errors.gender}</p>}
               </div>

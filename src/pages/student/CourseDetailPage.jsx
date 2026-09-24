@@ -107,7 +107,7 @@ export default function CourseDetailPage() {
           <span className="mb-3 inline-flex rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white backdrop-blur">
             دورة متقدمة
           </span>
-          <h1 className="font-display text-3xl font-bold text-white text-balance">{course.title}</h1>
+          <h1 className="font-display text-lg font-bold leading-tight text-white text-balance sm:text-3xl">{course.title}</h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/80">
             {course.subtitle}
           </p>
