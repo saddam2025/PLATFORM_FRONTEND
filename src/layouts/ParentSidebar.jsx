@@ -33,7 +33,7 @@ export default function ParentSidebar() {
   const base = instructorId ? `/${instructorId}` : '';
 
   return (
-    <div className="sidebar-scroll flex flex-col h-full bg-[var(--sidebar-bg)] text-white px-4 py-8 overflow-y-auto">
+    <div className="sidebar-scroll flex h-full max-h-[100dvh] flex-col overscroll-contain bg-[var(--sidebar-bg)] px-4 py-8 text-white overflow-y-auto">
       <div className="mb-8 flex items-center gap-3 px-2">
         <Logo light />
         <div className="text-xs text-white/60">بوابة ولي الأمر</div>

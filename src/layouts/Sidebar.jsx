@@ -211,7 +211,7 @@ export default function Sidebar() {
   // ---- ASSISTANT ----
   if (role === 'assistant') {
     return (
-      <div className="sidebar-scroll flex flex-col h-full bg-[var(--sidebar-bg)] text-white px-4 py-8 overflow-y-auto">
+      <div className="sidebar-scroll flex h-full max-h-[100dvh] flex-col overscroll-contain bg-[var(--sidebar-bg)] px-4 py-8 text-white overflow-y-auto">
         <BrandHeader />
         <Header avatarSrc={user?.avatarUrl || user?.avatar || selected?.avatar} name={user?.name || selected?.name || 'مساعد'} subtitle="لوحة المساعد" />
 
@@ -240,7 +240,7 @@ export default function Sidebar() {
   // ---- TEACHER / ADMIN ----
   if (role === 'admin' || role === 'teacher') {
     return (
-      <div className="sidebar-scroll flex flex-col h-full bg-[var(--sidebar-bg)] text-white px-4 py-8 overflow-y-auto">
+      <div className="sidebar-scroll flex h-full max-h-[100dvh] flex-col overscroll-contain bg-[var(--sidebar-bg)] px-4 py-8 text-white overflow-y-auto">
         <BrandHeader />
         <Header avatarSrc={user?.avatarUrl || user?.avatar || selected?.avatar} name={user?.name || selected?.name || 'اختر مدرس'} subtitle={selected?.tagline || 'منصة تعليمية'} />
 
@@ -284,7 +284,7 @@ export default function Sidebar() {
 
   // ---- STUDENT (default) ----
   return (
-    <div className="sidebar-scroll flex flex-col h-full bg-[var(--sidebar-bg)] text-white px-4 py-8 overflow-y-auto">
+    <div className="sidebar-scroll flex h-full max-h-[100dvh] flex-col overscroll-contain bg-[var(--sidebar-bg)] px-4 py-8 text-white overflow-y-auto">
       <BrandHeader />
       <Header avatarSrc={user?.avatarUrl || user?.avatar || selected?.avatar} name={user?.name || 'طالب'} subtitle={selected?.name || 'منصة تعليمية'} />
 

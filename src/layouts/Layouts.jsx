@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Outlet, useMatch, useParams } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Outlet, useLocation, useMatch, useParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
@@ -14,21 +14,29 @@ function TenantMetadata() {
 
 export default function Layouts() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const location = useLocation();
   const { user } = useAuth() || {};
   const showSidebar = Boolean(user);
   const isTenantHomepage = Boolean(useMatch({ path: '/:instructorId', end: true }));
   const toggleMobileSidebar = () => setMobileSidebarOpen((open) => !open);
+  useEffect(() => { setMobileSidebarOpen(false); }, [location.pathname]);
+  useEffect(() => {
+    if (!mobileSidebarOpen) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = previousOverflow; };
+  }, [mobileSidebarOpen]);
 
   return (
     <div className="min-h-screen flex bg-surface-canvas text-ink-900">
       <TenantMetadata />
       {showSidebar && (
-        <aside className="sidebar hidden lg:block w-72 shrink-0">
+        <aside className="sidebar fixed inset-y-0 right-0 z-30 hidden h-[100dvh] w-72 lg:block">
           <Sidebar />
         </aside>
       )}
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 min-w-0 lg:mr-72 flex flex-col">
 <Navbar sidebarOpen={mobileSidebarOpen} onToggleSidebar={showSidebar ? toggleMobileSidebar : undefined} sticky={isTenantHomepage} />
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8 animate-fadeIn">
@@ -44,8 +52,8 @@ export default function Layouts() {
             className="absolute inset-0 bg-black/30"
             aria-label="إغلاق القائمة"
           />
-          <aside className="absolute inset-y-0 right-0 w-full max-w-[320px] border-l border-surface-border bg-surface-default shadow-panel animate-fadeIn">
-            <div className="sidebar-scroll h-full overflow-y-auto p-4">
+          <aside className="absolute inset-y-0 right-0 h-[100dvh] w-full max-w-[320px] overscroll-contain border-l border-surface-border bg-surface-default shadow-panel animate-fadeIn">
+            <div className="sidebar-scroll h-full overflow-y-auto overscroll-contain p-4">
               <Sidebar />
             </div>
           </aside>
