@@ -13,7 +13,8 @@ import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
 import courseService from '../../services/courseService';
-import { stageLabel } from '../../constants/stages';
+import { STAGES } from '../../constants/stages';
+import { resolveApiAssetUrl } from '../../services/api';
 
 function formatPrice(n) {
   return `${n.toLocaleString('ar-EG')} ج.م`;
@@ -26,9 +27,12 @@ export default function CourseManagementPage() {
 
   const [courses, setCourses] = useState([]);
   const [search, setSearch] = useState(() => searchParams.get('search') || '');
+  const [stageFilter, setStageFilter] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('');
   const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [visibleCount, setVisibleCount] = useState(6);
 
   const loadCourses = async () => {
     setLoading(true);
@@ -45,14 +49,21 @@ export default function CourseManagementPage() {
 
   useEffect(() => { loadCourses(); }, [instructorId]);
   useEffect(() => { setSearch(searchParams.get('search') || ''); }, [searchParams]);
+  useEffect(() => { setVisibleCount(6); }, [search]);
 
   const filteredCourses = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return courses;
-    return courses.filter((c) => [c.title_ar, c.title_en, c.stage, c.categoryId?.name]
-      .filter(Boolean)
-      .some((value) => String(value).toLowerCase().includes(q)));
-  }, [courses, search]);
+    return courses.filter((c) => {
+      if (stageFilter && c.stage !== stageFilter) return false;
+      if (categoryFilter && c.categoryId?.name !== categoryFilter) return false;
+      if (!q) return true;
+      return [c.title_ar, c.title_en, c.stage, c.categoryId?.name]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(q));
+    });
+  }, [courses, search, stageFilter, categoryFilter]);
+  const categories = useMemo(() => [...new Set(courses.map((course) => course.categoryId?.name).filter(Boolean))], [courses]);
+  const visibleCourses = filteredCourses.slice(0, visibleCount);
 
   const handleTogglePublish = async (course) => {
     try {
@@ -120,144 +131,40 @@ export default function CourseManagementPage() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
+        <select aria-label="المرحلة الدراسية" className="input w-auto min-w-[170px]" value={stageFilter} onChange={(e) => setStageFilter(e.target.value)}>
+          <option value="">المرحلة الدراسية</option>
+          {STAGES.map((stage) => <option key={stage.id} value={stage.id}>{stage.label}</option>)}
+        </select>
+        <select aria-label="التصنيف" className="input w-auto min-w-[150px]" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
+          <option value="">التصنيف</option>
+          {categories.map((category) => <option key={category} value={category}>{category}</option>)}
+        </select>
       </div>
 
-      {/* Table */}
-      <div className="bg-surface-default rounded-2xl shadow-card overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-right">
-            <thead>
-              <tr className="bg-surface-muted/60 text-ink-500">
-                <th className="px-5 py-4 font-medium">العنوان</th>
-                <th className="px-5 py-4 font-medium">المرحلة</th>
-                <th className="px-5 py-4 font-medium">التصنيف</th>
-                <th className="px-5 py-4 font-medium">السعر</th>
-                <th className="px-5 py-4 font-medium">الحالة</th>
-                <th className="px-5 py-4 font-medium">إجراءات</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredCourses.map((course) => (
-                <tr
-                  key={course._id}
-                  className="border-t border-surface-border/70 transition-colors hover:bg-surface-muted/40"
-                >
-                  <td className="px-5 py-4">
-                    <div className="flex items-center gap-3">
-                      <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-500/12 text-brand-600">
-                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
-                          <path d="M4 5h16v14H4z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-                          <path d="M8 9h8M8 13h5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-                        </svg>
-                      </span>
-                      <span className="font-semibold text-ink-900">{course.title_ar || course.title_en}</span>
-                    </div>
-                  </td>
-                  <td className="px-5 py-4 text-ink-700">{stageLabel(course.stage)}</td>
-                  <td className="px-5 py-4">
-                    <span className="inline-flex rounded-full bg-surface-muted px-3 py-1 text-xs text-ink-600">
-                      {course.categoryId?.name || '—'}
-                    </span>
-                  </td>
-                  <td className="px-5 py-4">
-                    <span className="font-bold text-ink-900">{formatPrice(course.price)}</span>
-                  </td>
-                  <td className="px-5 py-4">
-                    <div className="flex flex-col items-start gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleTogglePublish(course)}
-                        role="switch"
-                        aria-checked={course.isPublished}
-                        className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
-                          course.isPublished ? 'bg-success-DEFAULT' : 'bg-surface-muted'
-                        }`}
-                      >
-                        <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
-                            course.isPublished ? '-translate-x-1' : '-translate-x-6'
-                          }`}
-                        />
-                      </button>
-                      <Badge variant={course.isPublished ? 'success' : 'neutral'}>
-                        {course.isPublished ? 'منشورة' : 'مسودة'}
-                      </Badge>
-                    </div>
-                  </td>
-                  <td className="px-5 py-4">
-                    {confirmingDeleteId === course._id ? (
-                      <div className="flex items-center gap-2 rounded-xl bg-danger-DEFAULT/8 px-3 py-2">
-                        <span className="text-xs font-medium text-danger-DEFAULT">تأكيد الحذف؟</span>
-                        <Button variant="primary" size="sm" onClick={() => handleDelete(course._id)}>
-                          نعم
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => setConfirmingDeleteId(null)}>
-                          إلغاء
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          aria-label="تعديل"
-                          onClick={() => navigate(`/${instructorId}/admin/courses/edit/${course._id}`)}
-                        >
-                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
-                            <path d="M4 20h4l10-10-4-4L4 16v4z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-                          </svg>
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-danger-DEFAULT"
-                          aria-label="حذف"
-                          onClick={() => setConfirmingDeleteId(course._id)}
-                        >
-                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
-                            <path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                        </Button>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              ))}
-
-              {!loading && filteredCourses.length === 0 && (
-                <tr>
-                    <td colSpan={6} className="px-4 py-12 text-center text-ink-500">
-                    لا توجد دورات مطابقة للبحث
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+      <section aria-label="قائمة الكورسات" className="space-y-5">
+        {!loading && filteredCourses.length === 0 && <div className="rounded-2xl bg-surface-default p-12 text-center text-ink-500 shadow-card">لا توجد دورات مطابقة للبحث</div>}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {visibleCourses.map((course) => (
+            <article key={course._id} className="group overflow-hidden rounded-3xl border border-surface-border bg-surface-default shadow-card transition duration-300 hover:-translate-y-1 hover:shadow-soft">
+              <div className="relative aspect-[16/9] overflow-hidden bg-surface-muted">
+                {course.thumbnailUrl ? <img src={resolveApiAssetUrl(course.thumbnailUrl)} alt={course.title_ar || course.title_en} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" /> : <div className="grid h-full place-items-center text-4xl text-brand-500" aria-label="لا توجد صورة للكورس">📚</div>}
+                <div className="absolute inset-0 bg-gradient-to-t from-navy-900/60 via-transparent to-transparent" />
+                <div className="absolute left-3 top-3 flex gap-1">
+                  <Button variant="ghost" size="sm" aria-label="تعديل" onClick={() => navigate(`/${instructorId}/admin/courses/edit/${course._id}`)}><svg className="h-4 w-4" viewBox="0 0 24 24" fill="none"><path d="M4 20h4l10-10-4-4L4 16v4z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /></svg></Button>
+                  <Button variant="ghost" size="sm" className="text-danger-DEFAULT" aria-label="حذف" onClick={() => setConfirmingDeleteId(course._id)}><svg className="h-4 w-4" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg></Button>
+                </div>
+              </div>
+              <div className="space-y-4 p-5">
+                <h2 className="min-h-14 text-lg font-bold leading-7 text-ink-900 line-clamp-2">{course.title_ar || course.title_en}</h2>
+                <div className="flex items-center justify-between border-y border-surface-border py-3"><span className="font-bold text-ink-900">{formatPrice(Number(course.price) || 0)}</span><div className="flex items-center gap-2"><button type="button" onClick={() => handleTogglePublish(course)} role="switch" aria-checked={course.isPublished} aria-label={course.isPublished ? 'إلغاء نشر الكورس' : 'نشر الكورس'} className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border transition-colors ${course.isPublished ? 'border-success-600 bg-success-DEFAULT' : 'border-surface-border bg-surface-muted'}`}><span className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-md ring-1 ring-black/10 transition-all ${course.isPublished ? 'start-6' : 'start-1'}`} /></button><Badge variant={course.isPublished ? 'success' : 'neutral'}>{course.isPublished ? 'منشورة' : 'مسودة'}</Badge></div></div>
+                {confirmingDeleteId === course._id && <div className="flex items-center gap-2 rounded-xl bg-danger-DEFAULT/8 p-3"><span className="text-xs font-medium text-danger-DEFAULT">تأكيد الحذف؟</span><Button variant="primary" size="sm" onClick={() => handleDelete(course._id)}>نعم</Button><Button variant="ghost" size="sm" onClick={() => setConfirmingDeleteId(null)}>إلغاء</Button></div>}
+              </div>
+            </article>
+          ))}
         </div>
-
-        {/* Footer / pagination */}
-        <div className="flex items-center justify-between gap-4 border-t border-surface-border/70 px-5 py-4">
-          <span className="text-xs text-ink-500">
-            عرض 1 - {filteredCourses.length} من {courses.length} كورس
-          </span>
-          <div className="flex items-center gap-1">
-            <button className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-500 hover:bg-surface-muted" aria-label="التالي">
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
-                <path d="M15 6l-6 6 6 6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-            <button className="flex h-8 min-w-8 items-center justify-center rounded-lg bg-accent px-2 text-sm font-semibold text-accent-ink">1</button>
-            <button className="flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-sm text-ink-600 hover:bg-surface-muted">2</button>
-            <button className="flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-sm text-ink-600 hover:bg-surface-muted">3</button>
-            <span className="px-1 text-ink-400">…</span>
-            <button className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-500 hover:bg-surface-muted" aria-label="السابق">
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
-                <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
+        {visibleCount < filteredCourses.length && <div className="flex justify-center"><Button variant="subtle" onClick={() => setVisibleCount((count) => count + 6)}>عرض المزيد</Button></div>}
+        <p className="text-center text-xs text-ink-500">عرض {visibleCourses.length} من {filteredCourses.length} كورس</p>
+      </section>
     </div>
   );
 }

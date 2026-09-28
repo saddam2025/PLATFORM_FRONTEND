@@ -119,6 +119,38 @@ body {
   .container { padding-inline: 0.75rem; }
 }
 
+/* Course-editor lecture rows use the same compact card treatment as course
+   management while retaining their existing action buttons and handlers. */
+section.bg-surface-default.shadow-card > div.space-y-2 {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 1rem;
+}
+section.bg-surface-default.shadow-card > div.space-y-2 > article {
+  min-height: 9rem;
+  flex-direction: column;
+  align-items: stretch;
+  border-radius: 1.5rem;
+  background: var(--surface-default);
+  box-shadow: var(--shadow-card);
+  padding: 1rem;
+  transition: transform .3s ease, box-shadow .3s ease;
+}
+section.bg-surface-default.shadow-card > div.space-y-2 > article:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-soft);
+}
+section.bg-surface-default.shadow-card > div.space-y-2 > article > div:last-child {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+@media (min-width: 640px) {
+  section.bg-surface-default.shadow-card > div.space-y-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 1024px) {
+  section.bg-surface-default.shadow-card > div.space-y-2 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
 /* Accessibility */
 .sr-only {
   position: absolute !important;

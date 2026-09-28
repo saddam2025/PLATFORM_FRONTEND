@@ -8,22 +8,22 @@ export default function CourseCard({ course, onOpen, onEnroll, price, openLabel 
   const displayPrice = price ?? course.price;
   const [imageFailed, setImageFailed] = useState(false);
   const thumbnailUrl = course.image || course.thumbnailUrl;
-  return <article className="group overflow-hidden rounded-[var(--radius-lg)] border border-surface-border bg-surface-default shadow-card transition duration-300 hover:-translate-y-1 hover:shadow-soft animate-fadeIn">
-    <div className="relative h-44 overflow-hidden bg-gradient-to-bl from-brand-100 via-brand-50 to-surface-muted">
-      {thumbnailUrl && !imageFailed ? <img src={thumbnailUrl} alt={course.title} onError={() => setImageFailed(true)} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" /> : <div className="grid h-full place-items-center text-4xl" aria-label="لا توجد صورة للكورس">📚</div>}
-      <div className="absolute inset-0 bg-gradient-to-t from-navy-900/35 to-transparent" />
-      <div className="absolute left-4 top-4">{!hidePrice && displayPrice != null && <Badge variant="brand">{displayPrice === 0 ? 'مجاني' : `${displayPrice} ج.م`}</Badge>}</div>
-      {course.level && <div className="absolute right-4 top-4"><Badge variant={course.levelVariant || 'info'}>{course.level}</Badge></div>}
-      {status && <div className="absolute bottom-4 right-4"><Badge variant={status.variant || 'neutral'}>{status.label}</Badge></div>}
+  return <article dir="rtl" className="group overflow-hidden rounded-[2rem] border border-[var(--surface-border)] bg-[var(--surface-default)] shadow-card transition duration-300 hover:-translate-y-1 hover:shadow-soft dark:border-white/10 dark:bg-[#12151d] animate-fadeIn">
+    <div className="relative aspect-[16/10] overflow-hidden rounded-b-[2rem] bg-gradient-to-bl from-brand-100 via-brand-50 to-surface-muted">
+      {thumbnailUrl && !imageFailed ? <img src={thumbnailUrl} alt={course.title} onError={() => setImageFailed(true)} className="h-full w-full object-cover transition duration-500 group-hover:scale-110" /> : <div className="grid h-full place-items-center text-4xl" aria-label="لا توجد صورة للكورس">📚</div>}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/5 to-transparent" />
+      <div className="absolute left-4 top-4">{!hidePrice && displayPrice != null && <Badge variant="brand" className="bg-white/90 shadow-lg">{displayPrice === 0 ? 'مجاني' : `${displayPrice} ج.م`}</Badge>}</div>
+      {course.level && <div className="absolute right-4 top-4"><Badge variant={course.levelVariant || 'info'} className="bg-slate-900/75 !text-white ring-0 backdrop-blur-sm">{course.level}</Badge></div>}
+      {status && <div className="absolute bottom-4 right-4"><Badge variant={status.variant || 'neutral'} className="bg-slate-900/75 !text-white ring-0 backdrop-blur-sm">{status.label}</Badge></div>}
     </div>
-    <div className="p-5">
-      <h3 className="truncate text-lg font-extrabold text-ink-900">{course.title}</h3>
-      <p className="mt-2 min-h-10 text-sm leading-5 text-ink-600 line-clamp-2">{course.subtitle || 'شرح مبسط وتدريبات تساعدك على إتقان المادة.'}</p>
-      <div className="my-4 flex items-center gap-3 border-y border-surface-border py-3">
-        {showInstructor && <><Avatar src={course.instructor?.avatar} name={course.instructor?.name} size="sm" /><div className="min-w-0 flex-1"><p className="truncate text-sm font-bold text-ink-800">{course.instructor?.name || 'فريق المنصة'}</p><p className="text-xs text-ink-500">{meta || `${course.lectureCount ?? course.lessonsCount ?? 0} محاضرة · ${course.homeworkCount ?? 0} واجبات`}</p></div></>}
-        {!showInstructor && <p className="text-sm text-ink-600">{meta}</p>}
+    <div className="relative z-10 -mt-8 rounded-t-[2rem] border-t border-[var(--surface-border)] bg-[var(--surface-default)] p-5 pt-7 text-[var(--ink-900)] shadow-[0_-10px_25px_rgba(15,23,42,0.12)] dark:border-white/10 dark:bg-[#12151d] dark:text-white dark:shadow-[0_-10px_25px_rgba(0,0,0,0.2)]">
+      <h3 className="min-h-14 text-lg font-extrabold leading-7 text-[var(--ink-900)] line-clamp-2 dark:text-white">{course.title}</h3>
+      <p className="mt-2 min-h-10 text-sm leading-6 text-[var(--ink-600)] line-clamp-2 dark:text-slate-300">{course.subtitle || 'شرح مبسط وتدريبات تساعدك على إتقان المادة.'}</p>
+      <div className="my-4 flex min-h-14 items-center gap-3 border-y border-[var(--surface-border)] py-3 dark:border-white/10">
+        {showInstructor && <><Avatar src={course.instructor?.avatar} name={course.instructor?.name} size="sm" /><div className="min-w-0 flex-1"><p className="truncate text-sm font-bold text-[var(--ink-900)] dark:text-white">{course.instructor?.name || 'فريق المنصة'}</p><p className="truncate text-xs text-[var(--ink-500)] dark:text-slate-400">{meta || `${course.lectureCount ?? course.lessonsCount ?? 0} محاضرة · ${course.homeworkCount ?? 0} واجبات`}</p></div></>}
+        {!showInstructor && <p className="text-sm text-[var(--ink-600)] dark:text-slate-300">{meta}</p>}
       </div>
-      {singleAction ? <Button variant="primary" size="md" className="w-full" onClick={() => onOpen?.(course)} disabled={openDisabled}>{openLabel}</Button> : <div className="flex gap-2"><Button variant="ghost" size="sm" className="flex-1" onClick={() => onOpen?.(course)} disabled={openDisabled}>{openLabel}</Button><Button variant="primary" size="sm" className="flex-1" onClick={() => onEnroll?.(course)} disabled={enrollDisabled}>{enrollLabel}</Button></div>}
+      {singleAction ? <Button variant="primary" size="md" className="w-full" onClick={() => onOpen?.(course)} disabled={openDisabled}>{openLabel}</Button> : <div className="flex gap-2"><Button variant="subtle" size="sm" className="flex-1 !bg-[var(--surface-muted)] !text-[var(--ink-700)] hover:!bg-[var(--surface-border)] dark:!bg-white/10 dark:!text-white dark:hover:!bg-white/20" onClick={() => onOpen?.(course)} disabled={openDisabled}>{openLabel}</Button><Button variant="primary" size="sm" className="flex-1" onClick={() => onEnroll?.(course)} disabled={enrollDisabled}>{enrollLabel}</Button></div>}
     </div>
   </article>;
 }
