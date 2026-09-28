@@ -1,9 +1,12 @@
 // src/components/forms/LoginForm.jsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
+import instructorService from '../../services/instructorService';
+import { egyptianWhatsappUrl } from '../../utils/phone';
 import { useAuth } from '../../hooks/useAuth';
 import Input from '../ui/Input';
+import PasswordInput from '../ui/PasswordInput';
 import Button from '../ui/Button';
 
 export default function LoginForm({ onSuccess, instructorId }) {
@@ -20,6 +23,18 @@ export default function LoginForm({ onSuccess, instructorId }) {
   const [pendingLoginToken, setPendingLoginToken] = useState(null);
   const [mfaCode, setMfaCode] = useState('');
   const [useBackupCode, setUseBackupCode] = useState(false);
+  const [hasFailedLogin, setHasFailedLogin] = useState(false);
+  const [supportPhone, setSupportPhone] = useState('');
+
+  useEffect(() => {
+    let active = true;
+    setSupportPhone('');
+    if (!instructorId) return () => { active = false; };
+    instructorService.get(instructorId)
+      .then((response) => { if (active) setSupportPhone(response.data?.supportPhone || ''); })
+      .catch(() => { if (active) setSupportPhone(''); });
+    return () => { active = false; };
+  }, [instructorId]);
 
   const handleChange = (e) => {
     setForm((s) => ({ ...s, [e.target.name]: e.target.value }));
@@ -52,9 +67,11 @@ export default function LoginForm({ onSuccess, instructorId }) {
       } else if (res.mfaRequired) {
         setPendingLoginToken(res.pendingLoginToken);
       } else {
+        setHasFailedLogin(true);
         setServerError(res.error?.message || res.error || 'فشل تسجيل الدخول');
       }
     } catch (err) {
+      setHasFailedLogin(true);
       setServerError(err?.message || 'حدث خطأ غير متوقع');
     } finally {
       setSubmitting(false);
@@ -97,6 +114,14 @@ export default function LoginForm({ onSuccess, instructorId }) {
       {serverError && (
         <div className="rounded-md p-3 bg-danger-soft text-danger-DEFAULT text-sm">{serverError}</div>
       )}
+      {hasFailedLogin && (
+        <p className="-mt-2 text-sm text-ink-500" role="status">
+          نسيت كلمة المرور؟{' '}
+          {egyptianWhatsappUrl(supportPhone)
+            ? <a href={egyptianWhatsappUrl(supportPhone)} target="_blank" rel="noopener noreferrer" className="font-semibold text-brand-700 underline">تواصل مع الدعم</a>
+            : <span>تواصل مع الدعم</span>}
+        </p>
+      )}
 
       <div>
         <label htmlFor="identifier" className="block text-sm font-medium text-ink-700 mb-1">البريد الإلكتروني أو رقم الهاتف</label>
@@ -114,10 +139,9 @@ export default function LoginForm({ onSuccess, instructorId }) {
 
       <div>
         <label htmlFor="password" className="block text-sm font-medium text-ink-700 mb-1">كلمة المرور</label>
-        <Input
+        <PasswordInput
           id="password"
           name="password"
-          type="password"
           value={form.password}
           onChange={handleChange}
           placeholder="••••••••"

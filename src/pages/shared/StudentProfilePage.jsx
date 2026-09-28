@@ -69,6 +69,7 @@ export default function StudentProfilePage() {
             <h1 className="mt-1 text-2xl font-extrabold">{student.name}</h1>
             <p className="mt-1 text-sm text-white/65">منضم منذ {formatDate(student.joinedAt)}</p>
             {isAdmin && <p className="mt-1 text-sm text-white/65">{student.email || 'لا يوجد بريد'} · {student.phone || 'لا يوجد هاتف'}</p>}
+            <p className="mt-1 text-sm text-white/65">حالة ولي الأمر: {student.parentLinked ? 'مرتبط بالطالب' : 'غير مرتبط بالطالب'}</p>
           </div>
           <Badge variant="success">طالب</Badge>
         </div>

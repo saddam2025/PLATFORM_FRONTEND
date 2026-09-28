@@ -7,6 +7,7 @@ export const route = {
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import notificationService from '../../services/notificationService';
@@ -23,16 +24,21 @@ function formatDate(value) {
   return Number.isNaN(date.getTime()) ? 'غير متاح' : date.toLocaleString('ar-EG');
 }
 
-function destinationFor(notification, instructorId) {
-  // Only new_course provides a related entity with a matching application route.
-  if (notification.type === 'new_course' && notification.relatedId) {
+function destinationFor(notification, instructorId, role) {
+  if (['new_course', 'new_lecture'].includes(notification.type) && notification.relatedId) {
+    if (role === 'parent') return `/${instructorId}/parent/courses`;
     return `/${instructorId}/courses/${notification.relatedId}`;
   }
+  if (notification.type === 'assignment_submitted' && notification.relatedId) return `/${instructorId}/assistant/grade/${notification.relatedId}`;
+  if (notification.type === 'assignment_graded') return role === 'parent' ? `/${instructorId}/parent/assignment-grades` : `/${instructorId}/assignment-grades`;
+  if (notification.type === 'exam_result') return role === 'parent' ? `/${instructorId}/parent/exam-grades` : `/${instructorId}/exam-grades`;
+  if (notification.type === 'message') return role === 'parent' ? `/${instructorId}/parent/activity` : `/${instructorId}/assistant/messages`;
   return null;
 }
 
 export default function NotificationCenter() {
   const { instructorId } = useParams();
+  const { user } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [page, setPage] = useState(1);
@@ -76,6 +82,7 @@ export default function NotificationCenter() {
       } else {
         await loadNotifications();
       }
+      window.dispatchEvent(new Event('notifications-updated'));
     } catch (requestError) {
       setActionError(messageFor(requestError, 'تعذر تعليم الإشعار كمقروء. حاول مرة أخرى.'));
     } finally {
@@ -89,6 +96,7 @@ export default function NotificationCenter() {
     try {
       await notificationService.markAllRead();
       await loadNotifications();
+      window.dispatchEvent(new Event('notifications-updated'));
     } catch (requestError) {
       setActionError(messageFor(requestError, 'تعذر تعليم جميع الإشعارات كمقروءة. حاول مرة أخرى.'));
     } finally {
@@ -126,7 +134,7 @@ export default function NotificationCenter() {
         <>
           <div className="overflow-hidden rounded-[var(--radius-xl)] border border-surface-border bg-surface-default shadow-card">
             {notifications.map((notification) => {
-              const destination = destinationFor(notification, instructorId);
+              const destination = destinationFor(notification, instructorId, user?.role);
               const isReading = readingId === notification._id;
               return (
                 <article key={notification._id} className={`flex items-start gap-4 border-b border-surface-border p-5 text-right last:border-0 ${notification.read ? 'bg-surface-default' : 'bg-surface-muted'}`}>
@@ -139,7 +147,7 @@ export default function NotificationCenter() {
                     {notification.body && <p className="mt-1 text-sm leading-6 text-ink-600">{notification.body}</p>}
                     <p className="mt-2 text-xs text-ink-500">{formatDate(notification.createdAt)}</p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      {destination && <Link className="text-sm font-bold text-brand-600 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-brand-500/50" to={destination}>عرض الدورة</Link>}
+                      {destination && <Link className="text-sm font-bold text-brand-600 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-brand-500/50" to={destination}>{notification.type === 'new_course' || notification.type === 'new_lecture' ? 'عرض الكورس' : notification.type === 'assignment_submitted' ? 'فتح الواجب للتصحيح' : notification.type === 'message' ? 'فتح الرسائل' : 'عرض التفاصيل'}</Link>}
                       {!notification.read && <Button variant="subtle" size="sm" onClick={() => markRead(notification._id)} disabled={isReading}>{isReading ? 'جارٍ التحديث...' : 'تعليم كمقروء'}</Button>}
                     </div>
                   </div>

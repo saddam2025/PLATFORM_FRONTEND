@@ -23,7 +23,17 @@ export default function useTenantData(instructorId) {
     let active = true;
     Promise.all([instructorService.get(instructorId), instructorService.getCourses(instructorId)])
       .then(([tenantResponse, coursesResponse]) => {
-        if (active) setData({ instructorProfile: tenantResponse.data, catalogCourses: coursesResponse.data });
+        if (!active) return;
+        const instructorProfile = tenantResponse.data;
+        const catalogCourses = coursesResponse.data.map((course) => ({
+          ...course,
+          instructor: {
+            ...course.instructor,
+            name: course.instructor?.name || instructorProfile.name,
+            avatar: instructorProfile.logoUrl || course.instructor?.logoUrl || course.instructor?.avatar,
+          },
+        }));
+        setData({ instructorProfile, catalogCourses });
       })
       .catch((requestError) => {
         if (active) {

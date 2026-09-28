@@ -25,11 +25,21 @@ export default function CourseCatalogPage() {
   const [activeCategory, setActiveCategory] = useState(null);
   const [courses, setCourses] = useState([]);
   const [exams, setExams] = useState([]);
+  const [platformLogoUrl, setPlatformLogoUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const { user } = useAuth() || {};
 
   useEffect(() => setSearch(searchParams.get('search') || ''), [searchParams]);
+
+  useEffect(() => {
+    let active = true;
+    setPlatformLogoUrl('');
+    instructorService.get(instructorId)
+      .then((response) => { if (active) setPlatformLogoUrl(response.data?.logoUrl || ''); })
+      .catch(() => { if (active) setPlatformLogoUrl(''); });
+    return () => { active = false; };
+  }, [instructorId]);
 
   // A stage supplied by the stage-specific route is authoritative when the
   // page first opens. The general catalog starts with all stages selected.
@@ -130,6 +140,7 @@ export default function CourseCatalogPage() {
         <CourseCard
           key={course.id}
           course={course}
+          platformLogoUrl={platformLogoUrl}
           openLabel={course.owned ? 'ادخل الكورس' : 'عرض التفاصيل'}
           singleAction={course.owned}
           onOpen={() => navigate(`/${instructorId}/courses/${course.id}`)}

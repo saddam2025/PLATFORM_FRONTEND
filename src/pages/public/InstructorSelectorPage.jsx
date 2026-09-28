@@ -3,11 +3,10 @@ export const route = { path: '/', index: true, auth: null, title: 'ابدأ رح
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { InstructorContext } from '../../contexts/InstructorContext';
-import Avatar from '../../components/ui/Avatar';
-import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import Footer from '../../components/common/Footer';
 import CourseCard from '../../components/common/CourseCard';
+import GeometricHero from '../../components/hero/GeometricHero';
 import { landingAssets, landingFeatures } from '../../mocks/landingMockData';
 import Navbar from '../../layouts/Navbar';
 import instructorService from '../../services/instructorService';
@@ -144,37 +143,27 @@ export default function InstructorSelectorPage() {
           </div>
         </section>
 
-        <section id="teachers-section" ref={teachersRef} className="landing-dark-section bg-[#102f5c] px-5 py-20 text-white lg:px-8">
+        <section id="teachers-section" ref={teachersRef} className="landing-dark-section bg-[#102f5c] px-5 py-16 text-white lg:px-8 lg:py-20">
           <div className="mx-auto max-w-7xl">
             <div className="max-w-2xl text-right">
               <span className="text-sm font-extrabold text-[#9fe4ff]">اختار اللي يناسبك</span>
               <h2 className="mt-3 text-3xl font-extrabold sm:text-4xl">تعلّم مع ناس فاهمة احتياجاتك</h2>
               <p className="mt-4 leading-8 text-white/75">شوف المحتوى المتاح واختار البداية اللي تناسب مستواك.</p>
             </div>
-            <div className={`mt-9 grid gap-6 ${instructors.length === 1 ? 'mx-auto w-full max-w-md grid-cols-1 lg:max-w-2xl' : 'md:grid-cols-2'}`}>
-              {loading && <p className="text-white/75">جارٍ تحميل المنصات المتاحة...</p>}
-              {!loading && instructors.length === 0 && <p className="text-white/75">لا توجد منصات متاحة حاليًا.</p>}
+            <div className="mt-9 grid gap-8">
+              {loading && <GeometricHero loading />}
+              {!loading && instructors.length === 0 && <GeometricHero />}
               {instructors.map((teacher) => (
-                <article key={teacher.subdomain} className="overflow-hidden rounded-3xl bg-white text-[#102650] shadow-xl">
-                  <div className="h-72 bg-[#eaf5ff]">
-                    {teacher.profileImageUrl || teacher.avatar ? <img src={teacher.profileImageUrl || teacher.avatar} alt={teacher.name} className="h-full w-full object-cover object-top" /> : <div className="grid h-full place-items-center text-5xl">📚</div>}
-                  </div>
-                  <div className="p-6">
-                  <div className="flex items-center gap-4">
-                    <Avatar src={teacher.profileImageUrl || teacher.avatar} name={teacher.name} size="lg" />
-                    <div className="min-w-0 text-right">
-                      <h3 className="text-xl font-extrabold">{teacher.name}</h3>
-                      <p className="mt-1 text-sm text-[#607897]">{teacher.subdomain}</p>
-                    </div>
-                  </div>
-                  <div className="mt-5 flex flex-wrap gap-2">
-                    {teacher.subject && <Badge variant="brand">{teacher.subject}</Badge>}
-                    {teacher.location && <span className="text-sm text-[#607897]">{teacher.location}</span>}
-                  </div>
-                  {teacher.tagline && <p className="mt-4 leading-7 text-[#526b8d]">{teacher.tagline}</p>}
-                  <Button className="mt-6 w-full" onClick={() => handleSelect(teacher)}>شوف المحتوى</Button>
-                  </div>
-                </article>
+                <GeometricHero
+                  key={teacher.subdomain}
+                  personAlt={teacher.name}
+                  instructorName={teacher.name}
+                  subdomain={teacher.subdomain}
+                  subject={teacher.subject}
+                  location={teacher.location}
+                  tagline={teacher.tagline}
+                  onCtaClick={() => handleSelect(teacher)}
+                />
               ))}
             </div>
           </div>

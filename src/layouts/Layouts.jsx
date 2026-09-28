@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, useLocation, useMatch, useParams } from 'react-router-dom';
+import clsx from 'clsx';
 import { useAuth } from '../hooks/useAuth';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
@@ -18,6 +19,9 @@ export default function Layouts() {
   const { user } = useAuth() || {};
   const showSidebar = Boolean(user);
   const isTenantHomepage = Boolean(useMatch({ path: '/:instructorId', end: true }));
+  const isTenantLoginPage = Boolean(useMatch({ path: '/:instructorId/login', end: true }));
+  const isTenantRegisterPage = Boolean(useMatch({ path: '/:instructorId/register', end: true }));
+  const isTenantAuthPage = isTenantLoginPage || isTenantRegisterPage;
   const toggleMobileSidebar = () => setMobileSidebarOpen((open) => !open);
   useEffect(() => { setMobileSidebarOpen(false); }, [location.pathname]);
   useEffect(() => {
@@ -36,8 +40,8 @@ export default function Layouts() {
         </aside>
       )}
 
-      <div className="flex-1 min-w-0 lg:mr-72 flex flex-col">
-<Navbar sidebarOpen={mobileSidebarOpen} onToggleSidebar={showSidebar ? toggleMobileSidebar : undefined} sticky={isTenantHomepage} />
+      <div className={clsx('flex-1 min-w-0 flex flex-col', showSidebar && 'lg:mr-72')}>
+        {!isTenantAuthPage && <Navbar sidebarOpen={mobileSidebarOpen} onToggleSidebar={showSidebar ? toggleMobileSidebar : undefined} sticky={isTenantHomepage} />}
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8 animate-fadeIn">
           <Outlet />

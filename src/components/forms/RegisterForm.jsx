@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Input from '../ui/Input';
+import PasswordInput from '../ui/PasswordInput';
 import Button from '../ui/Button';
 import Badge from '../ui/Badge';
 // FIX: real hook file is src/hooks/useAuth.js (there is no src/contexts/AuthContext.jsx —
@@ -26,8 +27,7 @@ export default function RegisterForm({ instructorId: propInstructorId, instructo
     parentAccessCode: '',
     // Student-only fields (match the student sign-up design)
     phone: '',
-    fatherPhone: '',
-    motherPhone: '',
+    guardianPhone: '',
     guardianJob: '',
     schoolName: '',
     governorate: '',
@@ -89,8 +89,7 @@ export default function RegisterForm({ instructorId: propInstructorId, instructo
 
     if (form.role === 'student') {
       if (!form.phone.trim()) e.phone = 'رقم هاتف الطالب مطلوب';
-      if (!form.fatherPhone.trim()) e.fatherPhone = 'رقم هاتف الأب مطلوب';
-      if (!form.motherPhone.trim()) e.motherPhone = 'رقم هاتف الأم مطلوب';
+      if (!form.guardianPhone.trim()) e.guardianPhone = 'رقم ولي الأمر مطلوب';
       if (!form.guardianJob.trim()) e.guardianJob = 'مهنة ولي الأمر مطلوبة';
       if (!form.schoolName.trim()) e.schoolName = 'اسم المدرسة مطلوب';
       if (!form.governorate) e.governorate = 'المحافظة مطلوبة';
@@ -122,8 +121,7 @@ export default function RegisterForm({ instructorId: propInstructorId, instructo
         ...(form.role === 'student'
           ? {
               phone: form.phone.trim(),
-              fatherPhone: form.fatherPhone.trim(),
-              motherPhone: form.motherPhone.trim(),
+              guardianPhone: form.guardianPhone.trim(),
               guardianJob: form.guardianJob.trim(),
               schoolName: form.schoolName.trim(),
               governorate: form.governorate,
@@ -239,18 +237,14 @@ export default function RegisterForm({ instructorId: propInstructorId, instructo
         {form.role === 'student' && (
           <>
             {/* Student / parent phones */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="phone" className="block text-sm font-medium text-ink-700 mb-2">رقم هاتف الطالب</label>
                 <Input id="phone" name="phone" type="tel" value={form.phone} onChange={onChange('phone')} error={errors.phone} required />
               </div>
               <div>
-                <label htmlFor="fatherPhone" className="block text-sm font-medium text-ink-700 mb-2">رقم هاتف الأب</label>
-                <Input id="fatherPhone" name="fatherPhone" type="tel" value={form.fatherPhone} onChange={onChange('fatherPhone')} error={errors.fatherPhone} required />
-              </div>
-              <div>
-                <label htmlFor="motherPhone" className="block text-sm font-medium text-ink-700 mb-2">رقم هاتف الأم</label>
-                <Input id="motherPhone" name="motherPhone" type="tel" value={form.motherPhone} onChange={onChange('motherPhone')} error={errors.motherPhone} required />
+                <label htmlFor="guardianPhone" className="block text-sm font-medium text-ink-700 mb-2">رقم ولي الأمر</label>
+                <Input id="guardianPhone" name="guardianPhone" type="tel" value={form.guardianPhone} onChange={onChange('guardianPhone')} error={errors.guardianPhone} required />
               </div>
             </div>
 
@@ -360,7 +354,7 @@ export default function RegisterForm({ instructorId: propInstructorId, instructo
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-ink-700 mb-2">كلمة السر</label>
-            <Input id="password" name="password" type="password" value={form.password} onChange={onChange('password')} error={errors.password} required />
+            <PasswordInput id="password" name="password" value={form.password} onChange={onChange('password')} error={errors.password} required />
             <div className="mt-2 space-y-1 text-xs text-ink-500" aria-live="polite">
               <p className={passwordStatus.minLength ? 'text-success-text' : undefined}>12 حرفًا على الأقل {passwordStatus.minLength ? '✓' : '✗'}</p>
               <p className={passwordStatus.hasLetter ? 'text-success-text' : undefined}>يحتوي على حروف {passwordStatus.hasLetter ? '✓' : '✗'}</p>
@@ -370,7 +364,7 @@ export default function RegisterForm({ instructorId: propInstructorId, instructo
 
           <div>
             <label htmlFor="confirmPassword" className="block text-sm font-medium text-ink-700 mb-2">تأكيد كلمة السر</label>
-            <Input id="confirmPassword" name="confirmPassword" type="password" value={form.confirmPassword} onChange={onChange('confirmPassword')} error={errors.confirmPassword} required />
+            <PasswordInput id="confirmPassword" name="confirmPassword" value={form.confirmPassword} onChange={onChange('confirmPassword')} error={errors.confirmPassword} required />
           </div>
         </div>
 

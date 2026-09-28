@@ -12,6 +12,8 @@ import { ThemeProvider } from './contexts/ThemeProvider';
 import useAuth from './hooks/useAuth';
 import { dashboardPathFor, managedInstructorIdFor } from './utils/dashboardPath';
 import ScrollToTop from './components/common/ScrollToTop';
+import { Toaster } from 'react-hot-toast';
+import SupportContactButton from './components/common/SupportContactButton';
 
 function RouteGuard({ route, children }) {
   const { user, loading } = useAuth();
@@ -175,6 +177,8 @@ export default function App() {
 
                   <Route path="*" element={<div className="p-6">الصفحة غير موجودة</div>} />
                 </Routes>
+                <Toaster position="top-center" />
+                <SupportContactButton />
               </Suspense>
 
             </ThemeProvider>
