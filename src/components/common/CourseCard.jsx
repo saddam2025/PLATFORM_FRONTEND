@@ -8,7 +8,7 @@ export default function CourseCard({ course, onOpen, onEnroll, price, openLabel 
   const displayPrice = price ?? course.price;
   const [imageFailed, setImageFailed] = useState(false);
   const thumbnailUrl = course.image || course.thumbnailUrl;
-  return <article dir="rtl" className="group overflow-hidden rounded-[2rem] border border-[var(--surface-border)] bg-[var(--surface-default)] shadow-card transition duration-300 hover:-translate-y-1 hover:shadow-soft dark:border-white/10 dark:bg-[#12151d] animate-fadeIn">
+  return <article dir="rtl" className="group overflow-hidden rounded-[2rem] border border-[var(--surface-border)] bg-[var(--surface-default)] shadow-card transition duration-300 hover:-translate-y-1 hover:shadow-soft dark:border-white/10 dark:bg-[#071426] animate-fadeIn">
     <div className="relative aspect-[16/10] overflow-hidden rounded-b-[2rem] bg-gradient-to-bl from-brand-100 via-brand-50 to-surface-muted">
       {thumbnailUrl && !imageFailed ? <img src={thumbnailUrl} alt={course.title} onError={() => setImageFailed(true)} className="h-full w-full object-cover transition duration-500 group-hover:scale-110" /> : <div className="grid h-full place-items-center text-4xl" aria-label="لا توجد صورة للكورس">📚</div>}
       <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/5 to-transparent" />
@@ -16,7 +16,7 @@ export default function CourseCard({ course, onOpen, onEnroll, price, openLabel 
       {course.level && <div className="absolute right-4 top-4"><Badge variant={course.levelVariant || 'info'} className="bg-slate-900/75 !text-white ring-0 backdrop-blur-sm">{course.level}</Badge></div>}
       {status && <div className="absolute bottom-4 right-4"><Badge variant={status.variant || 'neutral'} className="bg-slate-900/75 !text-white ring-0 backdrop-blur-sm">{status.label}</Badge></div>}
     </div>
-    <div className="relative z-10 -mt-8 rounded-t-[2rem] border-t border-[var(--surface-border)] bg-[var(--surface-default)] p-5 pt-7 text-[var(--ink-900)] shadow-[0_-10px_25px_rgba(15,23,42,0.12)] dark:border-white/10 dark:bg-[#12151d] dark:text-white dark:shadow-[0_-10px_25px_rgba(0,0,0,0.2)]">
+    <div className="relative z-10 -mt-8 rounded-t-[2rem] border-t border-[var(--surface-border)] bg-[var(--surface-default)] p-5 pt-7 text-[var(--ink-900)] shadow-[0_-10px_25px_rgba(15,23,42,0.12)] dark:border-white/10 dark:bg-[#071426] dark:text-white dark:shadow-[0_-10px_25px_rgba(0,0,0,0.2)]">
       <h3 className="min-h-14 text-lg font-extrabold leading-7 text-[var(--ink-900)] line-clamp-2 dark:text-white">{course.title}</h3>
       <p className="mt-2 min-h-10 text-sm leading-6 text-[var(--ink-600)] line-clamp-2 dark:text-slate-300">{course.subtitle || 'شرح مبسط وتدريبات تساعدك على إتقان المادة.'}</p>
       <div className="my-4 flex min-h-14 items-center gap-3 border-y border-[var(--surface-border)] py-3 dark:border-white/10">
