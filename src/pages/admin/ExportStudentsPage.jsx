@@ -2,7 +2,8 @@
 export const route = {
   path: '/:instructorId/admin/students/export',
   index: false,
-  auth: 'admin',
+  auth: 'required',
+  roles: ['admin', 'assistant'],
   title: 'تصدير بيانات الطلاب'
 };
 
@@ -20,7 +21,9 @@ function DownloadIcon({ className = 'w-4 h-4' }) {
 
 function getDownloadFilename(contentDisposition) {
   const utf8Match = contentDisposition?.match(/filename\*=UTF-8''([^;]+)/i);
-  if (utf8Match) return decodeURIComponent(utf8Match[1]);
+  if (utf8Match) {
+    try { return decodeURIComponent(utf8Match[1]); } catch { /* Use the fallback header below. */ }
+  }
 
   const filenameMatch = contentDisposition?.match(/filename="?([^";]+)"?/i);
   return filenameMatch?.[1] || `students-export-${new Date().toISOString().slice(0, 10)}.csv`;
@@ -53,7 +56,7 @@ export default function ExportStudentsPage() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch (error) {
       setExportError(error?.message || 'تعذر تصدير بيانات الطلاب. حاول مرة أخرى.');
     } finally {

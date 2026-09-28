@@ -154,6 +154,7 @@ export default function Sidebar() {
   const canGrade = role === 'admin' || role === 'teacher' || permissions.includes('can_grade_exams');
   const canCreateQuizzes = role === 'admin' || permissions.includes('can_create_quizzes');
   const canGenerateWalletCodes = role === 'admin' || permissions.includes('can_generate_wallet_codes');
+  const canGenerateAccessCodes = role === 'admin' || permissions.includes('can_generate_access_codes');
 
   // Public pages use a tenant slug in the URL. Management pages must instead
   // use the authenticated owner's ObjectId, otherwise the backend correctly
@@ -225,8 +226,9 @@ export default function Sidebar() {
           <Item to={`${base}/assistant/messages`} icon="family_restroom">رسائل أولياء الأمور</Item>
           <Item to={`${base}/students`} icon="family_restroom">الطلاب</Item>
           <Item to={`${base}/leaderboard`} icon="military_tech">لوحة الشرف</Item>
-          {canGenerateWalletCodes && <Item to={`${base}/admin/scratchcards`} icon="vpn_key">أكواد شحن المحفظة</Item>}
+          {(canGenerateWalletCodes || canGenerateAccessCodes) && <Item to={`${base}/admin/scratchcards`} icon="vpn_key">إدارة الأكواد</Item>}
           <Item to={`${base}/security`} icon="admin_panel_settings">أمان الحساب</Item>
+          <Item to={`${base}/admin/students/export`} icon="menu_book">تصدير الطلاب</Item>
         </nav>
 
         <InstructorsList />

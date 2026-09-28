@@ -60,10 +60,17 @@ try {
 // normalize response errors
 instance.interceptors.response.use(
   (res) => res,
-  (error) => {
+  async (error) => {
     const responseData = error?.response?.data;
-    const payload = responseData
-      ? { ...responseData, status: responseData.status || error.response.status }
+    let normalizedData = responseData;
+    if (typeof Blob !== 'undefined' && responseData instanceof Blob) {
+      try {
+        const text = await responseData.text();
+        try { normalizedData = JSON.parse(text); } catch { normalizedData = { message: text }; }
+      } catch { normalizedData = null; }
+    }
+    const payload = normalizedData
+      ? { ...(typeof normalizedData === 'object' ? normalizedData : { message: String(normalizedData) }), status: normalizedData.status || error.response.status }
       : { message: error.message || 'Network error', status: error?.response?.status || 0 };
     return Promise.reject(payload);
   }
