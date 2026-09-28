@@ -14,6 +14,7 @@ import { dashboardPathFor, managedInstructorIdFor } from './utils/dashboardPath'
 import ScrollToTop from './components/common/ScrollToTop';
 import { Toaster } from 'react-hot-toast';
 import SupportContactButton from './components/common/SupportContactButton';
+import LoadingScreen from './components/common/LoadingScreen';
 
 function RouteGuard({ route, children }) {
   const { user, loading } = useAuth();
@@ -21,7 +22,7 @@ function RouteGuard({ route, children }) {
   const location = useLocation();
 
   if (loading) {
-    return <div className="p-6">جارٍ التحميل...</div>;
+    return <LoadingScreen />;
   }
 
   // FIX: instructor selector now lives at '/'. The old '/select-instructor'
@@ -90,7 +91,7 @@ export default function App() {
   }, []);
 
   if (routesLoading) {
-    return <div className="p-6">جارٍ التحميل...</div>;
+    return <LoadingScreen />;
   }
 
   return (
@@ -102,7 +103,7 @@ export default function App() {
         <InstructorProvider>
           <SelectedChildProvider>
             <ThemeProvider>
-              <Suspense fallback={<div className="p-6">جارٍ التحميل...</div>}>
+              <Suspense fallback={<LoadingScreen />}>
                 <Routes>
                   {routes
                     .filter((r) => r.path && !r.path.startsWith('/:instructorId') && !r.path.startsWith('/super-admin'))
