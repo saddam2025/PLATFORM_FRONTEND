@@ -1,7 +1,7 @@
 .geometric-hero {
-  --hero-bg-a: #eaf2ff;
-  --hero-bg-b: #cfe0fb;
-  --hero-glow: rgb(59 130 246 / 22%);
+  --hero-bg-a: #0c2249;
+  --hero-bg-b: #050d1f;
+  --hero-glow: rgb(59 130 246 / 30%);
   --shape-stroke: rgb(37 99 235 / 38%);
   --shape-fill: rgb(59 130 246 / 7%);
   --shape-stroke-strong: rgb(37 99 235 / 55%);
@@ -28,9 +28,6 @@
 }
 
 html.dark .geometric-hero {
-  --hero-bg-a: #0c2249;
-  --hero-bg-b: #050d1f;
-  --hero-glow: rgb(59 130 246 / 30%);
   --shape-stroke: rgb(96 165 250 / 45%);
   --shape-fill: rgb(59 130 246 / 12%);
   --shape-stroke-strong: rgb(147 197 253 / 65%);
