@@ -1,0 +1,41 @@
+.atia-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr);
+  align-items: stretch;
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  width: min(100%, 1600px);
+  margin-inline: auto;
+  padding: clamp(1rem, 3vw, 2.5rem);
+  border: 1px solid rgb(147 197 253 / 12%);
+  border-radius: clamp(1.25rem, 4vw, 2.5rem);
+  background: #0c2249;
+  box-shadow: 0 28px 80px rgb(2 12 30 / 24%);
+}
+
+.atia-intro__art { display: flex; min-width: 0; width: 100%; }
+.atia-intro__copy { min-width: 0; color: #f4f8ff; text-align: right; }
+.atia-intro__badge { display: inline-flex; border-radius: 999px; background: rgb(37 99 235 / 18%); padding: .45rem 1rem; color: #93c5fd; font-size: .9rem; font-weight: 700; }
+.atia-intro__title { margin: .8rem 0 .25rem; color: #fff; font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 850; line-height: 1.25; }
+.atia-intro__lead { margin: 0 0 1.25rem; color: #60a5fa; font-size: clamp(1.15rem, 2.3vw, 1.65rem); font-weight: 800; line-height: 1.7; }
+.atia-intro__paragraphs { display: grid; gap: .8rem; color: rgb(255 255 255 / 82%); font-size: clamp(.95rem, 1.2vw, 1.08rem); line-height: 1.9; overflow-wrap: anywhere; }
+.atia-intro__paragraphs p { margin: 0; }
+.atia-intro__emphasis { color: #93c5fd; font-size: 1.12em; font-weight: 800; }
+.atia-intro__signature { display: grid; gap: .15rem; margin: 1rem 0 0; color: #bfdbfe; font-weight: 800; }
+.atia-intro__signature span { color: rgb(255 255 255 / 65%); font-size: .9rem; font-weight: 500; }
+.atia-intro__quote { display: flex; align-items: flex-start; gap: .65rem; margin: 1.25rem 0 0; border: 1px solid rgb(59 130 246 / 35%); border-radius: 1rem; background: rgb(37 99 235 / 10%); padding: 1rem; color: #fff; }
+.atia-intro__quote svg { flex: none; color: #60a5fa; }
+.atia-intro__quote p { margin: 0; font-weight: 650; line-height: 1.85; }
+.atia-intro__actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.4rem; }
+
+@media (max-width: 900px) {
+  .atia-intro { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; padding: clamp(.75rem, 4vw, 1.5rem); }
+  .atia-intro__art { order: 0; width: min(100%, 720px); margin-inline: auto; }
+  .atia-intro__art .geometric-hero--artwork-only { flex: none; height: auto; aspect-ratio: 1 / .9; }
+  .atia-intro__copy { order: 1; }
+}
+
+@media (max-width: 640px) {
+  .atia-intro { border-radius: 1.25rem; }
+  .atia-intro__quote { padding: .85rem; }
+  .atia-intro__actions > * { flex: 1 1 100%; }
+}

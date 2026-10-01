@@ -23,10 +23,10 @@ const DOTS = [
   ...dots(915, 685, 9, 2).map((dot) => ({ ...dot, group: 'dots-se', depth: 0.8, mobileHide: true })),
 ];
 
-export default function GeometricHero({ personSrc = '/assets/instructor-transparent.png', personAlt = 'مدرس المنصة', instructorName, subdomain, subject, location, tagline, onCtaClick, loading = false }) {
+export default function GeometricHero({ personSrc = '/assets/instructor-transparent.png', personAlt = 'مدرس المنصة', instructorName, subdomain, subject, location, tagline, onCtaClick, loading = false, artworkOnly = false }) {
   const ref = useRef(null);
   useHeroParallax(ref);
-  return <section ref={ref} className="geometric-hero" dir="rtl">
+  return <section ref={ref} className={`geometric-hero${artworkOnly ? ' geometric-hero--artwork-only' : ''}`} dir="rtl">
     <svg dir="ltr" viewBox="0 0 1152 928" preserveAspectRatio="xMidYMid slice" className="geometric-hero__shapes" aria-hidden="true">
       {SHAPES.map((shape) => <g key={shape.id} className={`hero-parallax ${shape.mobileHide ? 'hero-shape--small' : ''}`} data-depth={shape.depth} data-range="24">
         <g className="hero-shape-float" style={{ '--float-duration': `${shape.duration}s`, '--float-delay': `${-shape.duration / 2}s` }}>
@@ -44,9 +44,9 @@ export default function GeometricHero({ personSrc = '/assets/instructor-transpar
     </svg>
     <div className="geometric-hero__glow" aria-hidden="true" />
     {!loading && <img src={personSrc} alt={personAlt} width="1141" height="1280" loading="eager" fetchPriority="high" className="geometric-hero__person hero-parallax" data-depth="0.3" data-range="8" />}
-    <div className="geometric-hero__identity" aria-live="polite">
+    {!artworkOnly && <div className="geometric-hero__identity" aria-live="polite">
       {loading ? <span>جارٍ تحميل المنصات المتاحة...</span> : instructorName ? <><h3>{instructorName}</h3>{subdomain && <p dir="ltr">{subdomain}</p>}{(subject || location || tagline) && <small>{[subject, location, tagline].filter(Boolean).join(' · ')}</small>}</> : <span>لا توجد منصات متاحة حاليًا.</span>}
-    </div>
+    </div>}
     {!loading && instructorName && <button type="button" onClick={onCtaClick} className="geometric-hero__cta hero-parallax" data-depth="0.4" data-range="10">شوف المحتوى</button>}
   </section>;
 }

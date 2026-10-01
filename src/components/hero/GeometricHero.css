@@ -203,14 +203,23 @@ html.dark .geometric-hero__identity small {
   outline-offset: 5px;
 }
 
-.geometric-hero--visible .hero-shape-float,
-.geometric-hero--visible .hero-dots {
-  animation-play-state: running;
+.geometric-hero--artwork-only {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: none;
+  min-height: 0;
+  height: 100%;
+  aspect-ratio: auto;
+  border-radius: 2rem;
 }
 
-.geometric-hero:not(.geometric-hero--visible) .hero-shape-float,
-.geometric-hero:not(.geometric-hero--visible) .hero-dots {
-  animation-play-state: paused;
+.geometric-hero--artwork-only .geometric-hero__person {
+  top: 50%;
+  bottom: 0;
+  height: 94%;
+  max-width: 96%;
+  object-position: center;
+  translate: -50% -50%;
 }
 
 @keyframes hero-float {
@@ -239,6 +248,23 @@ html.dark .geometric-hero__identity small {
 
   .hero-shape--small { display: none; }
 
+  .geometric-hero--artwork-only {
+    flex: initial;
+    width: 100%;
+    max-width: none;
+    min-height: 0;
+    height: auto;
+    aspect-ratio: 1 / .9;
+  }
+
+  .geometric-hero--artwork-only .geometric-hero__person {
+    top: 50%;
+    bottom: auto;
+    height: 92%;
+    max-width: 92%;
+    translate: -50% -50%;
+  }
+
   .geometric-hero__person {
     bottom: 10%;
     height: 70%;
@@ -258,11 +284,6 @@ html.dark .geometric-hero__identity small {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-shape-float,
-  .hero-dots {
-    animation: none !important;
-  }
-
   .geometric-hero__cta {
     transition: none;
   }
