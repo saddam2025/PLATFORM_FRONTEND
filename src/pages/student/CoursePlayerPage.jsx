@@ -246,7 +246,8 @@ export default function CoursePlayerPage() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              {access.viewsRemaining != null && <Badge variant="info" className="text-xs">المشاهدات المتبقية: {access.viewsRemaining}</Badge>}
+              {access.courseViewsRemaining != null && <Badge variant="info" className="text-xs">متبقي من حد الكورس: {access.courseViewsRemaining}</Badge>}
+              {access.lectureViewsRemaining != null && <Badge variant="info" className="text-xs">متبقي من حد المحاضرة: {access.lectureViewsRemaining}</Badge>}
               {access.daysRemaining != null && <Badge variant="info" className="text-xs">الأيام المتبقية: {access.daysRemaining}</Badge>}
             </div>
           </div>

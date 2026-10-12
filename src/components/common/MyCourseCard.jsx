@@ -13,7 +13,7 @@ export default function MyCourseCard({ enrollment, instructorId, tenant }) {
   const { course } = enrollment;
   const title = course.title_ar || course.title_en || 'كورس';
   const thumbnail = resolveApiAssetUrl(course.thumbnailUrl);
-  const views = enrollment.viewsRemaining == null ? 'غير محدودة' : enrollment.viewsRemaining;
+  const views = enrollment.viewsRemaining == null ? 'غير متاح' : enrollment.viewsRemaining;
 
   return (
     <Link to={`/${instructorId}/courses/${course._id}`} className="group block h-full rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2">
