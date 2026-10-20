@@ -192,9 +192,6 @@ export default function CoursePlayerPage() {
     <iframe className="h-full w-full" src={bunnyEmbedUrl} title={title} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" />
     <div className="video-watermark">{watermarkText}</div>
     <button type="button" className="video-fullscreen-button" onClick={toggleFullscreen}>{fullscreenLabel}</button>
-    {/* This is rendered only for phones and intercepts Bunny's own fullscreen
-        control before it can enter an iframe-only mode without the watermark. */}
-    {isPhone && <button type="button" className="video-mobile-fullscreen-control" onClick={toggleFullscreen} aria-label={fullscreenLabel}>⛶</button>}
   </div> : videoUrl ? <div ref={playerFrameRef} className={`video-player-frame relative w-full overflow-hidden rounded-2xl bg-black ring-1 ring-black/40${isMobileFullscreen ? ' video-mobile-fullscreen' : ''}`}>
     <video
       ref={videoRef}
@@ -269,11 +266,6 @@ export default function CoursePlayerPage() {
               <p className="text-sm font-bold text-ink-900">الامتحان</p>
               {quizId ? <><p className="mt-2 text-sm text-ink-600">اختبار المحاضرة جاهز. تأكد من فهم الدرس قبل البدء.</p><Button className="mt-4" size="sm" variant="primary" onClick={() => navigate(quizSubmission ? `/${instructorId}/exam-grades` : `/${instructorId}/courses/${courseId}/quizzes/${quizId}`)}>{quizSubmission ? 'شوف درجتك' : 'بدء الامتحان'}</Button></> : <p className="mt-2 text-sm text-ink-500">الامتحان لسه منزلش.</p>}
             </article>
-          </div>
-          <div className="mt-5">
-            <Button variant="ghost" onClick={() => { window.location.href = 'mailto:support@riyadiaty.example.com'; }}>
-              تواصل مع الدعم
-            </Button>
           </div>
         </section>
       </main>
