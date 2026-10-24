@@ -179,7 +179,7 @@ export default function CourseEditorPage() {
   };
 
   return (
-    <div className="min-h-screen bg-surface-canvas text-ink-900" dir="rtl">
+    <div className="min-h-screen text-ink-900" dir="rtl">
       <div className="container mx-auto px-4 py-6">
         <div className="flex items-center justify-between mb-6">
           <div className="text-right">

@@ -15,6 +15,7 @@ import Badge from '../../components/ui/Badge';
 import courseService from '../../services/courseService';
 import { STAGES } from '../../constants/stages';
 import { resolveApiAssetUrl } from '../../services/api';
+import { BookOpen, Filter, Pencil, Plus, Search, SlidersHorizontal, Trash2 } from 'lucide-react';
 
 function formatPrice(n) {
   return `${n.toLocaleString('ar-EG')} ج.م`;
@@ -95,9 +96,7 @@ export default function CourseManagementPage() {
           </p>
         </div>
         <Button variant="primary" onClick={() => navigate(`/${instructorId}/admin/courses/edit/new`)}>
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
-            <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <Plus className="w-4 h-4" aria-hidden="true" />
           دورة جديدة
         </Button>
       </div>
@@ -106,23 +105,16 @@ export default function CourseManagementPage() {
       {/* Toolbar: sort / filter / search */}
       <div className="bg-surface-default rounded-2xl shadow-card p-4 flex items-center gap-3 flex-wrap">
         <Button variant="subtle" size="sm">
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
-            <path d="M3 6h18M6 12h12M10 18h4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-          </svg>
+          <SlidersHorizontal className="w-4 h-4" aria-hidden="true" />
           ترتيب
         </Button>
         <Button variant="subtle" size="sm">
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
-            <path d="M4 5h16l-6 8v5l-4 2v-7L4 5z" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <Filter className="w-4 h-4" aria-hidden="true" />
           تصفية
         </Button>
         <div className="relative flex-1 min-w-[220px]">
           <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-ink-400">
-            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
-              <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.7" />
-              <path d="M20 20l-3-3" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-            </svg>
+            <Search className="w-5 h-5" aria-hidden="true" />
           </span>
           <Input
             className="pr-12"
@@ -147,11 +139,11 @@ export default function CourseManagementPage() {
           {visibleCourses.map((course) => (
             <article key={course._id} className="group overflow-hidden rounded-3xl border border-surface-border bg-surface-default shadow-card transition duration-300 hover:-translate-y-1 hover:shadow-soft">
               <div className="relative aspect-[16/9] overflow-hidden bg-surface-muted">
-                {course.thumbnailUrl ? <img src={resolveApiAssetUrl(course.thumbnailUrl)} alt={course.title_ar || course.title_en} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" /> : <div className="grid h-full place-items-center text-4xl text-brand-500" aria-label="لا توجد صورة للكورس">📚</div>}
+                {course.thumbnailUrl ? <img src={resolveApiAssetUrl(course.thumbnailUrl)} alt={course.title_ar || course.title_en} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" /> : <div className="grid h-full place-items-center text-brand-500" aria-label="لا توجد صورة للكورس"><BookOpen size={32} aria-hidden="true" /></div>}
                 <div className="absolute inset-0 bg-gradient-to-t from-navy-900/60 via-transparent to-transparent" />
                 <div className="absolute left-3 top-3 flex gap-1">
-                  <Button variant="ghost" size="sm" aria-label="تعديل" onClick={() => navigate(`/${instructorId}/admin/courses/edit/${course._id}`)}><svg className="h-4 w-4" viewBox="0 0 24 24" fill="none"><path d="M4 20h4l10-10-4-4L4 16v4z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /></svg></Button>
-                  <Button variant="ghost" size="sm" className="text-danger-DEFAULT" aria-label="حذف" onClick={() => setConfirmingDeleteId(course._id)}><svg className="h-4 w-4" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg></Button>
+                  <Button variant="ghost" size="sm" aria-label="تعديل" onClick={() => navigate(`/${instructorId}/admin/courses/edit/${course._id}`)}><Pencil className="h-4 w-4" aria-hidden="true" /></Button>
+                  <Button variant="ghost" size="sm" className="text-danger-DEFAULT" aria-label="حذف" onClick={() => setConfirmingDeleteId(course._id)}><Trash2 className="h-4 w-4" aria-hidden="true" /></Button>
                 </div>
               </div>
               <div className="space-y-4 p-5">

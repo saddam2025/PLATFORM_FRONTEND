@@ -10,14 +10,7 @@ export const route = {
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../../services/api';
-
-function DownloadIcon({ className = 'w-4 h-4' }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
-      <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 20h16" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
+import { Download } from 'lucide-react';
 
 function getDownloadFilename(contentDisposition) {
   const utf8Match = contentDisposition?.match(/filename\*=UTF-8''([^;]+)/i);
@@ -65,12 +58,12 @@ export default function ExportStudentsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-surface-canvas text-ink-900" dir="rtl">
+    <div className="min-h-screen text-ink-900" dir="rtl">
       <div className="container mx-auto max-w-2xl px-4 py-8">
         <section className="rounded-2xl border border-surface-border bg-surface-default p-6 text-right">
           <div className="flex items-start gap-3">
             <div className="rounded-xl bg-brand-100 p-3 text-brand-700 dark:bg-brand-500/15 dark:text-brand-400">
-              <DownloadIcon className="h-6 w-6" />
+              <Download className="h-6 w-6" aria-hidden="true" />
             </div>
             <div>
               <h1 className="text-2xl font-semibold">تصدير بيانات الطلاب</h1>
@@ -92,7 +85,7 @@ export default function ExportStudentsPage() {
             disabled={!instructorId || isExporting}
             className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-semibold text-ink-900 transition-colors hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <DownloadIcon />
+            <Download className="h-4 w-4" aria-hidden="true" />
             {isExporting ? 'جارٍ إعداد الملف...' : 'تصدير الطلاب CSV'}
           </button>
         </section>

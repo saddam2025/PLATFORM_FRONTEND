@@ -1,5 +1,6 @@
 // src/components/forms/RegisterForm.jsx
 import React, { useState } from 'react';
+import { Camera } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Input from '../ui/Input';
 import PasswordInput from '../ui/PasswordInput';
@@ -373,7 +374,7 @@ export default function RegisterForm({ instructorId: propInstructorId, instructo
           <div className="rounded-2xl border border-dashed border-surface-border p-4 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-surface-muted flex items-center justify-center text-ink-500 shrink-0">
-                📷
+                <Camera size={20} aria-hidden="true" />
               </div>
               <div className="text-right">
                 <p className="text-sm text-ink-700">

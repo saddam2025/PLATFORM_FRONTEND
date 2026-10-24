@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import clsx from 'clsx';
-import { Bell } from 'lucide-react';
+import { Bell, Menu, UserRound } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import ThemeToggle from '../components/ui/ThemeToggle';
 import Button from '../components/ui/Button';
@@ -9,10 +9,8 @@ import Logo from '../components/common/Logo';
 import { dashboardPathFor } from '../utils/dashboardPath';
 import notificationService from '../services/notificationService';
 
-const HamburgerIcon = () => <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>;
-const UserIcon = () => <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM6 20c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>;
 
-export default function Navbar({ sidebarOpen = false, onToggleSidebar, sticky = true, sidebarOffset = false }) {
+export default function Navbar({ sidebarOpen = false, onToggleSidebar, sticky = true, sidebarOffset = false, sidebarCollapsed = true }) {
   const { user } = useAuth() || {};
   const { instructorId } = useParams();
   const navigate = useNavigate();
@@ -61,16 +59,16 @@ export default function Navbar({ sidebarOpen = false, onToggleSidebar, sticky = 
   };
 
   return (
-    <>{sticky && <div className="h-[84px] shrink-0" aria-hidden="true" />}<header className={clsx(sticky ? `fixed left-4 right-4 top-3 z-30 mx-auto w-auto max-w-[1800px] ${sidebarOffset ? 'lg:left-4 lg:right-[19rem]' : ''}` : 'relative z-30 mx-auto w-[calc(100%-2rem)] max-w-[1800px]', 'flex items-center justify-between rounded-[2rem] bg-[#1081f5] px-5 py-3 shadow-[0_18px_45px_rgba(6,70,151,.25)] sm:px-7')}>
+    <>{sticky && <div className="h-[84px] shrink-0" aria-hidden="true" />}<header className={clsx(sticky ? `fixed left-4 right-4 top-3 z-30 mx-auto w-auto max-w-[1800px] ${sidebarOffset ? (sidebarCollapsed ? 'md:left-4 md:right-[var(--sidebar-collapsed-header-offset)]' : 'md:left-4 md:right-80') : ''}` : 'relative z-30 mx-auto w-[calc(100%-2rem)] max-w-[1800px]', 'flex items-center justify-between rounded-[2rem] bg-[#1081f5] px-3 py-3 shadow-[0_18px_45px_rgba(6,70,151,.25)] sm:px-7')}>
       <div className="flex min-w-0 items-center gap-3">
-        {onToggleSidebar && <button type="button" onClick={onToggleSidebar} aria-label={sidebarOpen ? 'إغلاق القائمة' : 'فتح القائمة'} aria-expanded={sidebarOpen} className="rounded-xl p-2 text-white transition hover:bg-white/10 lg:hidden"><HamburgerIcon /></button>}
+        {onToggleSidebar && <button type="button" onClick={onToggleSidebar} aria-label={sidebarOpen ? 'إغلاق القائمة' : 'فتح القائمة'} aria-expanded={sidebarOpen} className="rounded-xl p-2 text-white transition hover:bg-white/10 md:hidden"><Menu className="h-5 w-5" aria-hidden="true" /></button>}
         <Logo to={homeLink} light />
       </div>
       <nav className="flex items-center gap-2 sm:gap-3">
         {user?.role === 'student' && <form onSubmit={submitSearch} className="hidden items-center gap-2 rounded-full bg-[#173454] px-4 py-2 text-sm font-bold text-white lg:flex"><label htmlFor="site-search" className="sr-only">ابحث في المحتوى</label><button type="button" onClick={() => submitSearch()} aria-label="بحث" className="rounded p-1 transition hover:bg-white/10">⌕</button><input id="site-search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="ابحث في المحتوى" className="w-32 bg-transparent text-white outline-none placeholder:text-white/75" /></form>}
         <ThemeToggle className="!border-white/20 !bg-white/10 !text-white !shadow-none" />
         {canSeeNotifications && instructorId && <Link to={`/${instructorId}/notifications`} aria-label={unreadCount ? `الإشعارات، ${unreadCount} غير مقروء` : 'الإشعارات'} title="الإشعارات" className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"><Bell size={19} aria-hidden="true" />{unreadCount > 0 && <span className="absolute -right-1 -top-1 min-w-5 rounded-full bg-danger-DEFAULT px-1 text-center text-[10px] font-bold leading-5 text-white">{unreadCount > 99 ? '99+' : unreadCount}</span>}</Link>}
-        {user ? <Link to={accountLink} className="inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-2 text-sm font-bold text-[#0759a8] transition hover:bg-white"><UserIcon /><span className="hidden sm:inline">حسابي</span></Link> : <><Link to={loginLink}><Button variant="ghost" size="sm">تسجيل الدخول</Button></Link><Link to={registerLink}><Button variant="primary" size="sm">حساب جديد</Button></Link></>}
+        {user ? <Link to={accountLink} aria-label="حسابي" className="inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-2 text-sm font-bold text-[#0759a8] transition hover:bg-white"><UserRound className="h-4 w-4" aria-hidden="true" /><span className="hidden sm:inline">حسابي</span></Link> : <><Link to={loginLink}><Button variant="ghost" size="sm">تسجيل الدخول</Button></Link><Link to={registerLink}><Button variant="primary" size="sm">حساب جديد</Button></Link></>}
       </nav>
     </header></>
   );

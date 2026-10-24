@@ -48,7 +48,7 @@ export default function SubscriptionPlanPage() {
   );
 
   return (
-    <div className="min-h-screen bg-surface-canvas text-ink-900" dir="rtl">
+    <div className="min-h-screen text-ink-900" dir="rtl">
       <header className="bg-surface-default border-b border-surface-border">
         <div className="container mx-auto px-4 py-6 text-right">
           <h1 className="text-2xl font-semibold">خطط الاشتراك</h1>

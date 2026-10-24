@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import Avatar from '../ui/Avatar';
 import { resolveApiAssetUrl } from '../../services/api';
+import { BookOpen } from 'lucide-react';
 
 function formatDate(value) {
   if (!value) return 'غير محدد';
@@ -19,7 +20,7 @@ export default function MyCourseCard({ enrollment, instructorId, tenant }) {
     <Link to={`/${instructorId}/courses/${course._id}`} className="group block h-full rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2">
       <article dir="rtl" className="h-full overflow-hidden rounded-2xl border border-surface-border bg-surface-default text-ink-900 shadow-card transition hover:-translate-y-0.5 hover:border-brand-400 hover:shadow-panel dark:border-white/10 dark:bg-[#071426] dark:text-white">
         <div className="aspect-video overflow-hidden bg-surface-muted">
-          {thumbnail ? <img src={thumbnail} alt={`صورة ${title}`} className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]" /> : <div className="grid h-full place-items-center text-3xl" aria-label="لا توجد صورة للكورس">📚</div>}
+          {thumbnail ? <img src={thumbnail} alt={`صورة ${title}`} className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]" /> : <div className="grid h-full place-items-center text-brand-500" aria-label="لا توجد صورة للكورس"><BookOpen size={32} aria-hidden="true" /></div>}
         </div>
         <div className="p-3 sm:p-4">
           <div className="flex min-w-0 items-center gap-2">

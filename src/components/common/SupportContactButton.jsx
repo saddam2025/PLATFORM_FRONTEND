@@ -25,7 +25,7 @@ export default function SupportContactButton() {
 
   const href = egyptianWhatsappUrl(supportPhone);
   return (
-    <a href={href} target="_blank" rel="noopener noreferrer" aria-label="تواصل مع الدعم الفني عبر واتساب" title="تواصل مع الدعم الفني" className="fixed bottom-4 left-4 z-[60] grid h-14 w-14 place-items-center overflow-hidden rounded-full bg-white shadow-lg ring-1 ring-surface-border transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/40">
+    <a href={href} target="_blank" rel="noopener noreferrer" aria-label="تواصل مع الدعم الفني عبر واتساب" title="تواصل مع الدعم الفني" className="support-contact-button fixed bottom-4 left-4 z-[60] grid h-14 w-14 place-items-center overflow-hidden rounded-full bg-white shadow-lg ring-1 ring-surface-border transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/40">
       <img src="/assets/support-floating.png" alt="" draggable="false" className="h-full w-full select-none object-cover" />
     </a>
   );

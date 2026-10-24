@@ -13,41 +13,14 @@ import Avatar from '../../components/ui/Avatar';
 import { useAuth } from '../../hooks/useAuth';
 import leaderboardService from '../../services/leaderboardService';
 import { STAGES, stageLabel } from '../../constants/stages';
+import { ChevronDown, Crown, Star, Trophy } from 'lucide-react';
 
 const VISIBLE_REST_STEP = 3;
 
-function TrophyIcon({ className = 'w-6 h-6' }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path d="M8 3h8v2a4 4 0 01-4 4h0a4 4 0 01-4-4V3z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M4 7v2a6 6 0 006 6v2H6v2h12v-2h-4v-2a6 6 0 006-6V7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function CrownIcon({ className = 'w-6 h-6' }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <path d="M3 8l4 3 5-6 5 6 4-3-2 10H5L3 8z" />
-    </svg>
-  );
-}
-
-function StarIcon({ className = 'w-4 h-4' }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7-6.2-3.9L6 21l1.6-7L2.2 9.2l7.1-.6L12 2z" />
-    </svg>
-  );
-}
-
-function ChevronDownIcon({ className = 'w-4 h-4' }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
-      <path d="M6 9l6 6 6-6" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
+const TrophyIcon = Trophy;
+const CrownIcon = Crown;
+const StarIcon = Star;
+const ChevronDownIcon = ChevronDown;
 
 // Simple, theme-aware styling per podium rank. Colors are kept minimal and
 // reuse the app's surface/ink tokens so they adapt automatically to dark mode;
@@ -148,7 +121,7 @@ export default function LeaderboardPage() {
   const hasMore = visibleRestCount < rest.length;
 
   return (
-    <div className="min-h-screen bg-surface-canvas text-ink-900" dir="rtl">
+    <div className="min-h-screen text-ink-900" dir="rtl">
       <header className="bg-surface-default border-b border-surface-border">
         <div className="container mx-auto px-4 py-6 flex items-center justify-between">
           <div className="text-right">

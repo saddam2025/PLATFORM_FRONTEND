@@ -241,6 +241,15 @@ section.bg-surface-default.shadow-card > div.space-y-2 > article > div:last-chil
   max-height: none;
   object-fit: contain;
 }
+
+/* Static texture for shared application page canvases. Foreground surfaces
+   keep their own opaque theme backgrounds and naturally cover these dots. */
+.dot-grid-background {
+  background-color: var(--surface-canvas);
+  background-image: radial-gradient(circle, var(--dot-grid-dot-color) 1.2px, transparent 1.45px);
+  background-size: 29px 29px;
+  background-position: 0 0;
+}
 /* Keep sidebar content scrollable without showing a browser-specific track. */
 .sidebar-scroll {
   -ms-overflow-style: none;
@@ -250,11 +259,27 @@ section.bg-surface-default.shadow-card > div.space-y-2 > article > div:last-chil
   display: none;
 }
 
+/* Keep the fixed mobile destination bar clear of device safe areas. */
+.mobile-navigation {
+  height: var(--mobile-navigation-height);
+  box-sizing: border-box;
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
+}
+
+@media (max-width: 767px) {
+  .support-contact-button {
+    width: 44px;
+    height: 44px;
+    bottom: calc(var(--mobile-navigation-height) + var(--mobile-navigation-support-gap));
+    left: max(12px, calc(env(safe-area-inset-left, 0px) + 12px));
+  }
+}
+
 /* Landing page: its marketing sections use image-oriented light surfaces in
    light mode, so explicitly map those surfaces back to the shared tokens
    when the global theme switches to dark. */
 html.dark .landing-page {
-  background: var(--surface-canvas) !important;
+  background-color: var(--surface-canvas) !important;
   color: var(--ink-900);
 }
 html.dark .landing-page .landing-light-section,

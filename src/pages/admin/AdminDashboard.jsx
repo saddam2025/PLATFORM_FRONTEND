@@ -8,7 +8,7 @@ export const route = {
 
 import React from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, CreditCard, FileDown, GraduationCap, Settings, Zap } from 'lucide-react';
+import { ArrowLeft, CreditCard, FileDown, FolderOpen, Settings, Zap } from 'lucide-react';
 import useAuth from '../../hooks/useAuth';
 import AnalysisSection from '../../components/admin/AnalysisSection';
 
@@ -16,7 +16,7 @@ export default function AdminDashboard() {
   const { user } = useAuth() || {};
   const { instructorId } = useParams();
   const quickActions = [
-    { to: `/${instructorId}/admin/courses`, title: 'إدارة الدورات', description: 'إضافة الدروس وتنظيم المحتوى', Icon: GraduationCap, highlight: true },
+    { to: `/${instructorId}/admin/courses`, title: 'إدارة الدورات', description: 'إضافة الدروس وتنظيم المحتوى', Icon: FolderOpen, highlight: true },
     { to: `/${instructorId}/admin/scratchcards`, title: 'أكواد الدخول / كروت الشحن', description: 'إدارة الأكواد وعمليات الشحن', Icon: CreditCard },
     ...(user?.role === 'admin' ? [{ to: `/${instructorId}/admin/settings`, title: 'الإعدادات', description: 'تخصيص إعدادات المنصة', Icon: Settings }] : []),
     { to: `/${instructorId}/admin/students/export`, title: 'تصدير بيانات الطلاب', description: 'تحميل تقرير بيانات الطلاب', Icon: FileDown },

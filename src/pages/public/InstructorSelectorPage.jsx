@@ -11,6 +11,15 @@ import AtiaIntroduction from '../../components/hero/AtiaIntroduction';
 import { landingAssets, landingFeatures } from '../../mocks/landingMockData';
 import Navbar from '../../layouts/Navbar';
 import instructorService from '../../services/instructorService';
+import { Award, BookOpen, ChartNoAxesCombined, ClipboardList, MessageCircle } from 'lucide-react';
+
+const featureIcons = {
+  content: BookOpen,
+  progress: ChartNoAxesCombined,
+  exams: ClipboardList,
+  support: MessageCircle,
+  completion: Award,
+};
 
 const valuePoints = [
   ['محتوى مرتب', 'كل حاجة قدامك بشكل واضح عشان تركز في اللي يهمك.'],
@@ -65,7 +74,7 @@ export default function InstructorSelectorPage() {
   };
 
   return (
-    <div className="landing-page min-h-screen overflow-x-hidden bg-[#f5f9ff] text-[#102650]" dir="rtl">
+    <div className="landing-page dot-grid-background min-h-screen overflow-x-hidden bg-[#f5f9ff] text-[#102650]" dir="rtl">
       <div className="bg-[#0c254a] px-3 pb-14 sm:px-6 lg:px-10">
         <Navbar sticky />
         <section className="mx-auto max-w-7xl px-3 pb-6 pt-10 lg:px-8 lg:pb-14 lg:pt-14">
@@ -103,7 +112,7 @@ export default function InstructorSelectorPage() {
               <div className="mt-7 space-y-4">
                 {landingFeatures.slice(0, 3).map((feature) => (
                   <div key={feature.id} className="flex items-start gap-4 rounded-2xl bg-white/10 p-4">
-                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#43e7ad] text-lg text-[#102650]">{feature.icon}</span>
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#43e7ad] text-[#102650]">{React.createElement(featureIcons[feature.icon], { size: 20, 'aria-hidden': true })}</span>
                     <div>
                       <h3 className="font-extrabold">{feature.title}</h3>
                       <p className="mt-1 text-sm text-white/80">{feature.description}</p>

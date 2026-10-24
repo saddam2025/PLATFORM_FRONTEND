@@ -38,11 +38,11 @@ export const landingTeachers = [
 ];
 
 export const landingFeatures = [
-  { id: 'f-1', number: 1, title: 'محتوى منسق', description: 'دروس مرتبة ومبسطة تناسب كل مستوى', icon: '📚' },
-  { id: 'f-2', number: 2, title: 'متابعة شخصية', description: 'تقارير وتحديثات لتتبع تقدمك', icon: '👩‍🏫' },
-  { id: 'f-3', number: 3, title: 'اختبارات دورية', description: 'اختبارات تساعدك على التقييم والتحسن', icon: '📝' },
-  { id: 'f-4', number: 4, title: 'دعم مباشر', description: 'تواصل مع المدرس واستفسر بسهولة', icon: '💬' },
-  { id: 'f-5', number: 5, title: 'شهادات إتمام', description: 'احصل على شهادة عند إنهاء المسار', icon: '🏅' },
+  { id: 'f-1', number: 1, title: 'محتوى منسق', description: 'دروس مرتبة ومبسطة تناسب كل مستوى', icon: 'content' },
+  { id: 'f-2', number: 2, title: 'متابعة شخصية', description: 'تقارير وتحديثات لتتبع تقدمك', icon: 'progress' },
+  { id: 'f-3', number: 3, title: 'اختبارات دورية', description: 'اختبارات تساعدك على التقييم والتحسن', icon: 'exams' },
+  { id: 'f-4', number: 4, title: 'دعم مباشر', description: 'تواصل مع المدرس واستفسر بسهولة', icon: 'support' },
+  { id: 'f-5', number: 5, title: 'شهادات إتمام', description: 'احصل على شهادة عند إنهاء المسار', icon: 'completion' },
 ];
 
 export const landingCourses = [

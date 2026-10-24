@@ -11,7 +11,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Link, useParams } from 'react-router-dom';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { CheckCheck, CircleUserRound, Clock3, RotateCcw, Search, Sparkles, X } from 'lucide-react';
+import { CheckCheck, CircleUserRound, ClipboardX, Clock3, RotateCcw, Search, Sparkles, X } from 'lucide-react';
 // FIX: real hook file is src/hooks/useAuth.js — there is no src/contexts/AuthContext.jsx.
 // The context itself is defined/exported inside AuthProvider.jsx.
 import { useAuth } from '../../hooks/useAuth';
@@ -184,7 +184,7 @@ export default function AssistantDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-surface-canvas text-ink-900" dir="rtl">
+    <div className="min-h-screen text-ink-900" dir="rtl">
       <div className="container mx-auto px-4 py-6">
         <header className="mb-6">
           <div className="flex items-center justify-between gap-4">
@@ -203,11 +203,7 @@ export default function AssistantDashboard() {
         {!canGrade ? (
           <div className="rounded-2xl bg-surface-muted p-8 text-center">
             <div className="mb-4">
-              <svg className="mx-auto w-12 h-12 text-ink-500" viewBox="0 0 24 24" fill="none" aria-hidden>
-                <path d="M12 2v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M6 8v10a2 2 0 002 2h8a2 2 0 002-2V8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                <rect x="8" y="10" width="8" height="6" rx="1" stroke="currentColor" strokeWidth="1.5" />
-              </svg>
+              <ClipboardX className="mx-auto h-12 w-12 text-ink-500" aria-hidden="true" />
             </div>
             <div className="text-lg font-semibold text-ink-900">ليس لديك صلاحية تصحيح الواجبات</div>
             <div className="mt-2 text-sm text-ink-500">تواصل مع المدرس لطلب تفعيل صلاحية تصحيح الواجبات.</div>

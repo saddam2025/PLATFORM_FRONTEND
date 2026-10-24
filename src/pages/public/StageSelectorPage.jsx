@@ -28,7 +28,7 @@ export default function StageSelectorPage() {
   const gridCols = 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6';
 
   return (
-    <div className="min-h-screen bg-surface-canvas text-ink-900" dir="rtl">
+    <div className="min-h-screen text-ink-900" dir="rtl">
       {/* Header banner */}
       <header className="bg-surface-default border-b border-surface-border">
         <div className="container mx-auto px-4 py-6 flex items-center gap-4">

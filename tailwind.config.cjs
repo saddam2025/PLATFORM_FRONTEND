@@ -30,6 +30,9 @@ module.exports = {
         surface: {
           canvas: 'var(--surface-canvas)',
           DEFAULT: 'var(--surface-default)',
+          default: ({ opacityValue }) => opacityValue === undefined
+            ? 'var(--surface-default)'
+            : `rgb(var(--surface-default-rgb) / ${opacityValue})`,
           muted: 'var(--surface-muted)',
           border: 'var(--surface-border)'
         },

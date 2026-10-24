@@ -14,20 +14,7 @@ import CourseCard from '../../components/common/CourseCard';
 import instructorService from '../../services/instructorService';
 import { useAuth } from '../../hooks/useAuth';
 import api, { resolveApiAssetUrl } from '../../services/api';
-
-function LockIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 text-ink-400">
-      <path
-        d="M6 10V8a6 6 0 1112 0v2M5 10h14a1 1 0 011 1v9a1 1 0 01-1 1H5a1 1 0 01-1-1v-9a1 1 0 011-1z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
+import { ArrowRight, Clock3, Info, ShoppingCart } from 'lucide-react';
 
 export default function CourseDetailPage() {
   const { instructorId, courseId } = useParams();
@@ -75,9 +62,7 @@ export default function CourseDetailPage() {
         onClick={() => navigate(`/${instructorId}/catalog`)}
         className="flex items-center gap-2 text-sm text-ink-500 transition-colors hover:text-ink-900"
       >
-        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
-          <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
+        <ArrowRight className="w-4 h-4" aria-hidden="true" />
         العودة إلى الدورات
       </button>
 
@@ -119,10 +104,7 @@ export default function CourseDetailPage() {
         <section className="rounded-2xl bg-surface-default p-6 shadow-card lg:col-span-1">
           <div className="flex items-center justify-center">
             <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-500/12 text-brand-600">
-              <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="13" r="8" stroke="currentColor" strokeWidth="1.6" />
-                <path d="M12 9v4l2 2M9 2h6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-              </svg>
+              <Clock3 className="w-7 h-7" aria-hidden="true" />
             </span>
           </div>
           <h2 className="mt-4 text-center text-lg font-bold text-ink-900">شروط الوصول</h2>
@@ -142,10 +124,7 @@ export default function CourseDetailPage() {
         <section className="rounded-2xl bg-surface-default p-6 shadow-card lg:col-span-2">
           <div className="mb-3 flex items-center gap-2">
             <span className="text-brand-600">
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6" />
-                <path d="M12 11v5M12 8h.01" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-              </svg>
+              <Info className="w-5 h-5" aria-hidden="true" />
             </span>
             <h2 className="text-lg font-bold text-ink-900">عن الدورة</h2>
           </div>
@@ -174,11 +153,7 @@ export default function CourseDetailPage() {
             إجمالي السعر: <span className="text-lg font-bold text-ink-900">{course.price} ج.م</span>
           </div>
           <Button variant="primary" size="md" onClick={() => navigate(courseOwned ? `/${instructorId}/dashboard` : `/${instructorId}/checkout/${courseId}`)}>
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
-              <path d="M6 6h15l-1.5 9h-12z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-              <circle cx="9" cy="20" r="1.4" fill="currentColor" />
-              <circle cx="18" cy="20" r="1.4" fill="currentColor" />
-            </svg>
+            <ShoppingCart className="w-4 h-4" aria-hidden="true" />
             {courseOwned ? 'الذهاب إلى كورساتي' : 'شراء الدورة'}
           </Button>
         </div>
